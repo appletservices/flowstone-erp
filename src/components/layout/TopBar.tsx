@@ -11,8 +11,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
 
 export function TopBar() {
+  const { user, signOut } = useAuth();
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
       {/* Search */}
@@ -66,11 +68,13 @@ export function TopBar() {
             <Button variant="ghost" className="flex items-center gap-2 px-2">
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                  AD
+                  {user?.email?.slice(0, 2).toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col items-start">
-                <span className="text-sm font-medium">Admin User</span>
+                <span className="text-sm font-medium truncate max-w-32">
+                  {user?.email || "User"}
+                </span>
                 <span className="text-xs text-muted-foreground">Administrator</span>
               </div>
               <ChevronDown className="w-4 h-4 text-muted-foreground" />
@@ -82,7 +86,9 @@ export function TopBar() {
             <DropdownMenuItem>Profile Settings</DropdownMenuItem>
             <DropdownMenuItem>Preferences</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Sign Out</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive" onClick={signOut}>
+              Sign Out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
