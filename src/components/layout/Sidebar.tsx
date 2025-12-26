@@ -18,6 +18,10 @@ import {
   Scissors,
   PackageCheck,
   ChevronLeft,
+  Wrench,
+  Ruler,
+  Cog,
+  FolderOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -48,6 +52,15 @@ const menuItems: MenuItem[] = [
       { label: "Design Inventory", path: "/inventory/design", icon: Palette },
       { label: "Katae Product", path: "/inventory/katae", icon: Scissors },
       { label: "Finished Product", path: "/inventory/finished", icon: PackageCheck },
+    ],
+  },
+  {
+    label: "Setup",
+    icon: Wrench,
+    children: [
+      { label: "Units", path: "/setup/units", icon: Ruler },
+      { label: "Machines", path: "/setup/machines", icon: Cog },
+      { label: "Expense Categories", path: "/setup/expense-categories", icon: FolderOpen },
     ],
   },
   { label: "Vendors", icon: Truck, path: "/vendors" },
