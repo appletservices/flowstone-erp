@@ -1,59 +1,46 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from "react";
-import { User, Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { createContext, useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  signOut: () => Promise<void>;
-}
+type AuthContextType = {
+  isAuthenticated: boolean;
+  user: any;
+  logout: () => void;
+};
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  session: null,
-  loading: true,
-  signOut: async () => {},
-});
+const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
+    const token = localStorage.getItem("auth_token");
+    const storedUser = localStorage.getItem("auth_user");
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    if (token && storedUser) {
+      setIsAuthenticated(true);
+      setUser(JSON.parse(storedUser));
+    }
   }, []);
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
+  const logout = () => {
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_user");
+    setIsAuthenticated(false);
+    setUser(null);
+    navigate("/auth", { replace: true });
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
+  return ctx;
 };
