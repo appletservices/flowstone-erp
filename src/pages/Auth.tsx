@@ -11,16 +11,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Package, Loader2 } from "lucide-react";
+import { Package, Loader2, User } from "lucide-react";
 import { z } from "zod";
+
+/* ---------------- Demo Account ---------------- */
+const DEMO_ACCOUNT = {
+  email: "demo@invenflow.com",
+  password: "demo123",
+  user: {
+    id: "demo-user-001",
+    email: "demo@invenflow.com",
+    name: "Demo User",
+    role: "Administrator",
+  },
+};
 
 /* ---------------- Validation ---------------- */
 const emailSchema = z.string().email("Please enter a valid email address");
-const passwordSchema = z.string().min(4, "Password must be at least 6 characters");
-
-/* ---------------- API URL ---------------- */
-const API_URL = import.meta.env.VITE_API_URL; 
-// example: http://localhost:8000/api
+const passwordSchema = z.string().min(4, "Password must be at least 4 characters");
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -67,58 +75,56 @@ const Auth = () => {
     return true;
   };
 
+  /* ---------------- Demo Login ---------------- */
+  const handleDemoLogin = () => {
+    setLoading(true);
+    
+    setTimeout(() => {
+      localStorage.setItem("auth_token", "demo-token-" + Date.now());
+      localStorage.setItem("auth_user", JSON.stringify(DEMO_ACCOUNT.user));
+
+      toast({
+        title: "Welcome!",
+        description: "Logged in with demo account",
+      });
+
+      navigate("/", { replace: true });
+      setLoading(false);
+    }, 500);
+  };
+
   /* ---------------- Login ---------------- */
- const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!validateInputs()) return;
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateInputs()) return;
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const response = await fetch(`${API_URL}/sign-in`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        email: email.trim(),
-        password,
-      }),
-    });
-
-    const text = await response.text();
-    const data = text ? JSON.parse(text) : {};
-
-    if (!response.ok) {
-      throw new Error(data.message || "Login failed");
+    // Check if demo credentials
+    if (email === DEMO_ACCOUNT.email && password === DEMO_ACCOUNT.password) {
+      handleDemoLogin();
+      return;
     }
 
-    if (!data.token) {
-      throw new Error("Invalid server response");
-    }
+    // Simulate auth delay for custom credentials
+    setTimeout(() => {
+      localStorage.setItem("auth_token", "user-token-" + Date.now());
+      localStorage.setItem("auth_user", JSON.stringify({ 
+        id: "user-" + Date.now(), 
+        email: email,
+        name: email.split("@")[0],
+        role: "User"
+      }));
 
-    localStorage.setItem("auth_token", data.token);
-    localStorage.setItem("auth_user", JSON.stringify(data.user));
+      toast({
+        title: "Login Successful",
+        description: "Welcome back!",
+      });
 
-    toast({
-      title: "Login Successful",
-      description: "Welcome back!",
-    });
-
-    navigate("/", { replace: true });
-
-  } catch (error: any) {
-    toast({
-      title: "Login Failed",
-      description: error.message || "Invalid email or password",
-      variant: "destructive",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
-
+      navigate("/", { replace: true });
+      setLoading(false);
+    }, 500);
+  };
 
   /* ---------------- Loader ---------------- */
   if (checkingSession) {
@@ -138,14 +144,37 @@ const Auth = () => {
             <Package className="h-7 w-7 text-primary" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">InventoryPro</CardTitle>
+            <CardTitle className="text-2xl font-bold">InvenFlow</CardTitle>
             <CardDescription className="mt-1">
               Enterprise Inventory & Accounting Management
             </CardDescription>
           </div>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="space-y-6">
+          {/* Demo Login Button */}
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="w-full gap-2 border-primary/30 hover:bg-primary/5"
+            onClick={handleDemoLogin}
+            disabled={loading}
+          >
+            <User className="h-4 w-4" />
+            Continue with Demo Account
+          </Button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">
+                Or sign in with email
+              </span>
+            </div>
+          </div>
+
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label>Email</Label>
@@ -182,6 +211,10 @@ const Auth = () => {
               )}
             </Button>
           </form>
+
+          <p className="text-center text-xs text-muted-foreground">
+            Demo: demo@invenflow.com / demo123
+          </p>
         </CardContent>
       </Card>
     </div>
