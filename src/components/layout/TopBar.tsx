@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 
 export function TopBar() {
-  const { user, signOut } = useAuth();
+  const { user, logout } = useAuth();
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
       {/* Search */}
@@ -86,7 +86,7 @@ export function TopBar() {
             <DropdownMenuItem>Profile Settings</DropdownMenuItem>
             <DropdownMenuItem>Preferences</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive" onClick={signOut}>
+            <DropdownMenuItem className="text-destructive" onClick={logout}>
               Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>

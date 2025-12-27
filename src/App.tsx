@@ -18,7 +18,9 @@ import Settings from "@/pages/Settings";
 import Units from "@/pages/Units";
 import Machines from "@/pages/Machines";
 import ExpenseCategories from "@/pages/ExpenseCategories";
-import Customers from "@/pages/Customers";
+import Receivable from "@/pages/Receivable";
+import ContactVendors from "@/pages/ContactVendors";
+import Others from "@/pages/Others";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 
@@ -58,10 +60,9 @@ const App = () => (
                 path="/setup/expense-categories"
                 element={<ExpenseCategories />}
               />
-              <Route
-                path="/receivable/customers"
-                element={<Customers />}
-              />
+              <Route path="/contact/receivable" element={<Receivable />} />
+              <Route path="/contact/vendors" element={<ContactVendors />} />
+              <Route path="/contact/others" element={<Others />} />
             </Route>
 
             {/* 404 */}

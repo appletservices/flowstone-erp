@@ -36,13 +36,14 @@ const menuItems: MenuItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/" },
   { label: "Chart of Accounts", icon: BookOpen, path: "/accounts" },
   {
-    label: "Receivable",
+    label: "Contact",
     icon: Users,
     children: [
-      { label: "Customers", path: "/receivable/customers" },
+      { label: "Receivable", path: "/contact/receivable", icon: Users },
+      { label: "Vendors", path: "/contact/vendors", icon: Truck },
+      { label: "Others", path: "/contact/others", icon: Package },
     ],
   },
-  { label: "Vendors", icon: Truck, path: "/vendors" },
   {
     label: "Inventory",
     icon: Package,
@@ -75,7 +76,7 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const location = useLocation();
-  const [expandedItems, setExpandedItems] = useState<string[]>(["Inventory", "Receivable"]);
+  const [expandedItems, setExpandedItems] = useState<string[]>(["Inventory", "Contact"]);
 
   const toggleExpand = (label: string) => {
     setExpandedItems((prev) =>
