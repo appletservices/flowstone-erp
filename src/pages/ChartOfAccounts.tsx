@@ -21,15 +21,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/useauth"; // <-- import useAuth
+import { useAuth } from "@/hooks/useAuth";
 
 interface Account {
-  id: string;
+  id?: string;
   code: string;
   name: string;
   type: "asset" | "liability" | "equity" | "revenue" | "expense";
   balance: number;
-  balanceType: "Dr" | "Cr";
+  balanceType?: "Dr" | "Cr";
   children?: Account[];
 }
 
@@ -93,18 +93,20 @@ function AccountNode({ account, level }: AccountNodeProps) {
           </div>
         </div>
 
-        <span className={cn("chip text-xs", config.bg, config.color)}>
-          {config.label}
-        </span>
+        <span className={cn("chip text-xs", config.bg, config.color)}>{config.label}</span>
 
         <div className="text-right min-w-[120px]">
           <span className="font-semibold">{formatCurrency(account.balance)}</span>
-          <span className={cn(
-            "ml-1 text-xs",
-            account.balanceType === "Dr" ? "text-primary" : "text-secondary"
-          )}>
-            {account.balanceType}
-          </span>
+          {account.balanceType && (
+            <span
+              className={cn(
+                "ml-1 text-xs",
+                account.balanceType === "Dr" ? "text-primary" : "text-secondary"
+              )}
+            >
+              {account.balanceType}
+            </span>
+          )}
         </div>
 
         <DropdownMenu>
@@ -130,7 +132,7 @@ function AccountNode({ account, level }: AccountNodeProps) {
       {hasChildren && isExpanded && (
         <div className="border-l border-border ml-8">
           {account.children!.map((child) => (
-            <AccountNode key={child.id} account={child} level={level + 1} />
+            <AccountNode key={child.id || child.code} account={child} level={level + 1} />
           ))}
         </div>
       )}
@@ -141,10 +143,10 @@ function AccountNode({ account, level }: AccountNodeProps) {
 export default function ChartOfAccounts() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth(); // <-- get auth context
+  const { user } = useAuth();
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token"); // <-- get token from localStorage
+    const token = localStorage.getItem("auth_token");
     if (!token) return;
 
     async function fetchAccounts() {
@@ -157,7 +159,19 @@ export default function ChartOfAccounts() {
         });
         if (!res.ok) throw new Error("Failed to fetch accounts");
         const data: Account[] = await res.json();
-        setAccounts(data);
+
+        // Normalize API data for UI
+        const normalized: Account[] = data.map((acc) => ({
+          ...acc,
+          type: acc.type.toLowerCase() as Account["type"],
+          children: acc.children?.map((child) => ({
+            ...child,
+            type: child.type.toLowerCase() as Account["type"],
+            children: child.children ?? [],
+          })) ?? [],
+        }));
+
+        setAccounts(normalized);
       } catch (error) {
         console.error("Error fetching accounts:", error);
       } finally {
@@ -166,18 +180,22 @@ export default function ChartOfAccounts() {
     }
 
     fetchAccounts();
-  }, [user]); // fetch when user is available
+  }, [user]);
 
   if (loading) return <p>Loading Chart of Accounts...</p>;
+
+  // Map top-level accounts for summary cards
+  const summaryAccounts = accounts.reduce<Record<string, Account>>((acc, item) => {
+    acc[item.type] = item;
+    return acc;
+  }, {});
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Chart of Accounts</h1>
-          <p className="text-muted-foreground">
-            Manage your complete account hierarchy with balances
-          </p>
+          <p className="text-muted-foreground">Manage your complete account hierarchy with balances</p>
         </div>
         <Button className="gap-2">
           <Plus className="w-4 h-4" />
@@ -199,7 +217,7 @@ export default function ChartOfAccounts() {
       <div className="grid grid-cols-5 gap-4">
         {Object.entries(accountTypeConfig).map(([type, config]) => {
           const Icon = config.icon;
-          const account = accounts.find((a) => a.type === type);
+          const account = summaryAccounts[type];
           return (
             <div key={type} className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
               <div className={cn("p-2.5 rounded-xl", config.bg)}>
@@ -207,7 +225,9 @@ export default function ChartOfAccounts() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{config.label}</p>
-                <p className="font-semibold">{account ? formatCurrency(account.balance) : "₹0"}</p>
+                <p className="font-semibold">
+                  {account ? formatCurrency(account.balance) : "₹0"}
+                </p>
               </div>
             </div>
           );
@@ -225,14 +245,10 @@ export default function ChartOfAccounts() {
         </div>
         <div className="p-2">
           {accounts.map((account) => (
-            <AccountNode key={account.id} account={account} level={0} />
+            <AccountNode key={account.type} account={account} level={0} />
           ))}
         </div>
       </div>
     </div>
   );
 }
-
-
-//cahnging
-
