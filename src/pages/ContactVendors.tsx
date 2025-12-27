@@ -11,6 +11,7 @@ import {
   IndianRupee,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { ContactFormDialog } from "@/components/contact/ContactFormDialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -145,10 +146,19 @@ export default function ContactVendors() {
             Manage your Karahi and Katae vendor relationships
           </p>
         </div>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Vendor
-        </Button>
+        <ContactFormDialog
+          trigger={
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              Add Vendor
+            </Button>
+          }
+          title="Add Vendor"
+          accountTypes={[
+            { value: "karahi", label: "Karahi Vendor" },
+            { value: "katae", label: "Katae Vendor" },
+          ]}
+        />
       </div>
 
       {/* Summary Cards */}
