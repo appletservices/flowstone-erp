@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ContactFormDialog } from "@/components/contact/ContactFormDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -132,10 +133,20 @@ export default function Receivable() {
             Manage customer receivables and payments
           </p>
         </div>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Customer
-        </Button>
+        <ContactFormDialog
+          trigger={
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              Add Customer
+            </Button>
+          }
+          title="Add Customer"
+          accountTypes={[
+            { value: "retail", label: "Retail Customer" },
+            { value: "wholesale", label: "Wholesale Customer" },
+            { value: "distributor", label: "Distributor" },
+          ]}
+        />
       </div>
 
       {/* Summary Cards */}
