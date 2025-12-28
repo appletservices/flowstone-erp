@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Pencil, Trash2, Cog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,19 +28,37 @@ interface Machine {
   size: string;
 }
 
-const initialMachines: Machine[] = [
-  { id: "1", areaCode: "A-101", headCode: "H-001", size: "Large" },
-  { id: "2", areaCode: "A-102", headCode: "H-002", size: "Medium" },
-  { id: "3", areaCode: "B-201", headCode: "H-003", size: "Small" },
-  { id: "4", areaCode: "B-202", headCode: "H-004", size: "Large" },
-  { id: "5", areaCode: "C-301", headCode: "H-005", size: "Medium" },
-];
-
 export default function Machines() {
-  const [machines, setMachines] = useState<Machine[]>(initialMachines);
+  const [machines, setMachines] = useState<Machine[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMachine, setEditingMachine] = useState<Machine | null>(null);
   const [formData, setFormData] = useState({ areaCode: "", headCode: "", size: "" });
+  const token = localStorage.getItem("auth_token"); // if auth required
+
+  /* ---------------- FETCH MACHINES ---------------- */
+  const fetchMachines = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/setup/machines-list`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      const data = await res.json();
+      if (data.status) {
+        const normalized = data.data.map((m: any) => ({
+          id: m.id.toString(),
+          areaCode: m.area_code,
+          headCode: m.head_code,
+          size: m.size,
+        }));
+        setMachines(normalized);
+      }
+    } catch (err) {
+      console.error("Failed to fetch machines:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchMachines();
+  }, []);
 
   const handleOpenDialog = (machine?: Machine) => {
     if (machine) {
@@ -53,17 +71,48 @@ export default function Machines() {
     setDialogOpen(true);
   };
 
-  const handleSave = () => {
+  /* ---------------- SAVE / CREATE MACHINE ---------------- */
+  const handleSave = async () => {
     if (formData.areaCode && formData.headCode && formData.size) {
       if (editingMachine) {
+        // Local update for now
         setMachines(
           machines.map((m) =>
             m.id === editingMachine.id ? { ...m, ...formData } : m
           )
         );
       } else {
-        setMachines([...machines, { ...formData, id: Date.now().toString() }]);
+        try {
+          // Call API to create new machine
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/setup/machine-store`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({
+              area_code: formData.areaCode,
+              head_code: formData.headCode,
+              size: formData.size,
+            }),
+          });
+          const data = await res.json();
+          if (data.status) {
+            // Add newly created machine to state
+            setMachines([...machines, {
+              id: data.data.id.toString(),
+              areaCode: data.data.area_code,
+              headCode: data.data.head_code,
+              size: data.data.size,
+            }]);
+          } else {
+            console.error("Failed to create machine:", data.message);
+          }
+        } catch (err) {
+          console.error("Error creating machine:", err);
+        }
       }
+
       setDialogOpen(false);
       setFormData({ areaCode: "", headCode: "", size: "" });
       setEditingMachine(null);
