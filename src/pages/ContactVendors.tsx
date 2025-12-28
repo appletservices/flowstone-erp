@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Truck,
   Search,
@@ -9,6 +10,9 @@ import {
   Mail,
   MapPin,
   IndianRupee,
+  Pencil,
+  Trash2,
+  BookOpen,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContactFormDialog } from "@/components/contact/ContactFormDialog";
@@ -17,10 +21,22 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Vendor {
   id: string;
@@ -29,13 +45,17 @@ interface Vendor {
   phone: string;
   email: string;
   address: string;
+  cnic: string;
+  balanceType: "credit" | "debit";
+  openingAmount: string;
   totalTransactions: number;
   pendingAmount: string;
   status: "active" | "inactive";
   lastTransaction: string;
+  date: Date;
 }
 
-const vendors: Vendor[] = [
+const initialVendors: Vendor[] = [
   {
     id: "1",
     name: "Raju Karahi Works",
@@ -43,10 +63,14 @@ const vendors: Vendor[] = [
     phone: "+91 98765 43210",
     email: "raju.karahi@email.com",
     address: "Shop #12, Industrial Area, Mumbai",
+    cnic: "12345-6789012-3",
+    balanceType: "credit",
+    openingAmount: "45000",
     totalTransactions: 245,
     pendingAmount: "₹45,000",
     status: "active",
     lastTransaction: "Today",
+    date: new Date(),
   },
   {
     id: "2",
@@ -55,10 +79,14 @@ const vendors: Vendor[] = [
     phone: "+91 87654 32109",
     email: "shyam.katae@email.com",
     address: "Unit 5, Textile Hub, Surat",
+    cnic: "23456-7890123-4",
+    balanceType: "debit",
+    openingAmount: "0",
     totalTransactions: 189,
     pendingAmount: "₹0",
     status: "active",
     lastTransaction: "Yesterday",
+    date: new Date(),
   },
   {
     id: "3",
@@ -67,10 +95,14 @@ const vendors: Vendor[] = [
     phone: "+91 76543 21098",
     email: "krishna.k@email.com",
     address: "Plot 8, GIDC, Ahmedabad",
+    cnic: "34567-8901234-5",
+    balanceType: "credit",
+    openingAmount: "18500",
     totalTransactions: 156,
     pendingAmount: "₹18,500",
     status: "active",
     lastTransaction: "2 days ago",
+    date: new Date(),
   },
   {
     id: "4",
@@ -79,10 +111,14 @@ const vendors: Vendor[] = [
     phone: "+91 65432 10987",
     email: "mohan.factory@email.com",
     address: "Building B, Sector 7, Noida",
+    cnic: "45678-9012345-6",
+    balanceType: "credit",
+    openingAmount: "72000",
     totalTransactions: 78,
     pendingAmount: "₹72,000",
     status: "inactive",
     lastTransaction: "1 week ago",
+    date: new Date(),
   },
   {
     id: "5",
@@ -91,10 +127,14 @@ const vendors: Vendor[] = [
     phone: "+91 54321 09876",
     email: "suresh.ent@email.com",
     address: "Lane 3, Textile Market, Jaipur",
+    cnic: "56789-0123456-7",
+    balanceType: "credit",
+    openingAmount: "25000",
     totalTransactions: 312,
     pendingAmount: "₹25,000",
     status: "active",
     lastTransaction: "3 days ago",
+    date: new Date(),
   },
   {
     id: "6",
@@ -103,10 +143,14 @@ const vendors: Vendor[] = [
     phone: "+91 43210 98765",
     email: "ramesh.works@email.com",
     address: "Shop 45, Fabric Lane, Delhi",
+    cnic: "67890-1234567-8",
+    balanceType: "debit",
+    openingAmount: "8750",
     totalTransactions: 98,
     pendingAmount: "₹8,750",
     status: "active",
     lastTransaction: "Today",
+    date: new Date(),
   },
 ];
 
@@ -121,7 +165,13 @@ const statusConfig = {
 };
 
 export default function ContactVendors() {
+  const navigate = useNavigate();
+  const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [vendorToDelete, setVendorToDelete] = useState<Vendor | null>(null);
+  const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const filteredVendors = vendors.filter(
     (vendor) =>
@@ -135,6 +185,67 @@ export default function ContactVendors() {
     const amount = parseInt(v.pendingAmount.replace(/[₹,]/g, "")) || 0;
     return acc + amount;
   }, 0);
+
+  const handleAddVendor = (data: any) => {
+    const newVendor: Vendor = {
+      id: Date.now().toString(),
+      name: data.name,
+      type: data.accountType as "karahi" | "katae",
+      phone: data.phone,
+      email: "",
+      address: data.address,
+      cnic: data.cnic,
+      balanceType: data.balanceType,
+      openingAmount: data.openingAmount,
+      totalTransactions: 0,
+      pendingAmount: `₹${parseInt(data.openingAmount || "0").toLocaleString("en-IN")}`,
+      status: "active",
+      lastTransaction: "Never",
+      date: data.date || new Date(),
+    };
+    setVendors([...vendors, newVendor]);
+  };
+
+  const handleEditVendor = (data: any) => {
+    if (!editingVendor) return;
+    
+    setVendors(vendors.map(v => 
+      v.id === editingVendor.id 
+        ? {
+            ...v,
+            name: data.name,
+            type: data.accountType as "karahi" | "katae",
+            phone: data.phone,
+            address: data.address,
+            cnic: data.cnic,
+            balanceType: data.balanceType,
+            openingAmount: data.openingAmount,
+            date: data.date || v.date,
+          }
+        : v
+    ));
+    setEditingVendor(null);
+    setEditDialogOpen(false);
+    toast.success("Vendor updated successfully");
+  };
+
+  const handleDeleteVendor = () => {
+    if (!vendorToDelete) return;
+    setVendors(vendors.filter(v => v.id !== vendorToDelete.id));
+    setDeleteDialogOpen(false);
+    setVendorToDelete(null);
+    toast.success("Vendor deleted successfully");
+  };
+
+  const openEditDialog = (vendor: Vendor) => {
+    setEditingVendor(vendor);
+    setEditDialogOpen(true);
+  };
+
+  const openDeleteDialog = (vendor: Vendor) => {
+    setVendorToDelete(vendor);
+    setDeleteDialogOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -158,6 +269,7 @@ export default function ContactVendors() {
             { value: "karahi", label: "Karahi Vendor" },
             { value: "katae", label: "Katae Vendor" },
           ]}
+          onSubmit={handleAddVendor}
         />
       </div>
 
@@ -262,11 +374,22 @@ export default function ContactVendors() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-card">
-                  <DropdownMenuItem>View Profile</DropdownMenuItem>
-                  <DropdownMenuItem>View Ledger</DropdownMenuItem>
-                  <DropdownMenuItem>Issue Inventory</DropdownMenuItem>
-                  <DropdownMenuItem>Receive Inventory</DropdownMenuItem>
-                  <DropdownMenuItem>Record Payment</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openEditDialog(vendor)}>
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate(`/ledger/vendor/${vendor.id}`)}>
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    View Ledger
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => openDeleteDialog(vendor)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -279,7 +402,7 @@ export default function ContactVendors() {
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Mail className="w-4 h-4" />
-                <span className="truncate">{vendor.email}</span>
+                <span className="truncate">{vendor.email || "N/A"}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="w-4 h-4" />
@@ -309,13 +432,64 @@ export default function ContactVendors() {
               <span className="text-xs text-muted-foreground">
                 Last transaction: {vendor.lastTransaction}
               </span>
-              <Button variant="ghost" size="sm" className="text-primary h-7 px-2">
-                View Details
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-primary h-7 px-2"
+                onClick={() => navigate(`/ledger/vendor/${vendor.id}`)}
+              >
+                View Ledger
               </Button>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Edit Dialog */}
+      {editingVendor && (
+        <ContactFormDialog
+          trigger={<span />}
+          title="Edit Vendor"
+          accountTypes={[
+            { value: "karahi", label: "Karahi Vendor" },
+            { value: "katae", label: "Katae Vendor" },
+          ]}
+          onSubmit={handleEditVendor}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          defaultValues={{
+            accountType: editingVendor.type,
+            name: editingVendor.name,
+            date: editingVendor.date,
+            phone: editingVendor.phone,
+            cnic: editingVendor.cnic,
+            balanceType: editingVendor.balanceType,
+            openingAmount: editingVendor.openingAmount,
+            address: editingVendor.address,
+          }}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="bg-card">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Vendor</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{vendorToDelete?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteVendor}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
