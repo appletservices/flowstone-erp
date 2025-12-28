@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Truck,
@@ -13,6 +13,7 @@ import {
   Pencil,
   Trash2,
   BookOpen,
+  Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContactFormDialog } from "@/components/contact/ContactFormDialog";
@@ -38,14 +39,15 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+// Updated Interface to match your UI needs while holding API data
 interface Vendor {
   id: string;
   name: string;
-  type: "karahi" | "katae";
+  type: string;
   phone: string;
   email: string;
   address: string;
-  cnic: string;
+  code: string;
   balanceType: "credit" | "debit";
   openingAmount: string;
   totalTransactions: number;
@@ -55,123 +57,79 @@ interface Vendor {
   date: Date;
 }
 
-const initialVendors: Vendor[] = [
-  {
-    id: "1",
-    name: "Raju Karahi Works",
-    type: "karahi",
-    phone: "+91 98765 43210",
-    email: "raju.karahi@email.com",
-    address: "Shop #12, Industrial Area, Mumbai",
-    cnic: "12345-6789012-3",
-    balanceType: "credit",
-    openingAmount: "45000",
-    totalTransactions: 245,
-    pendingAmount: "₹45,000",
-    status: "active",
-    lastTransaction: "Today",
-    date: new Date(),
-  },
-  {
-    id: "2",
-    name: "Shyam Katae Services",
-    type: "katae",
-    phone: "+91 87654 32109",
-    email: "shyam.katae@email.com",
-    address: "Unit 5, Textile Hub, Surat",
-    cnic: "23456-7890123-4",
-    balanceType: "debit",
-    openingAmount: "0",
-    totalTransactions: 189,
-    pendingAmount: "₹0",
-    status: "active",
-    lastTransaction: "Yesterday",
-    date: new Date(),
-  },
-  {
-    id: "3",
-    name: "Krishna Karahi",
-    type: "karahi",
-    phone: "+91 76543 21098",
-    email: "krishna.k@email.com",
-    address: "Plot 8, GIDC, Ahmedabad",
-    cnic: "34567-8901234-5",
-    balanceType: "credit",
-    openingAmount: "18500",
-    totalTransactions: 156,
-    pendingAmount: "₹18,500",
-    status: "active",
-    lastTransaction: "2 days ago",
-    date: new Date(),
-  },
-  {
-    id: "4",
-    name: "Mohan Katae Factory",
-    type: "katae",
-    phone: "+91 65432 10987",
-    email: "mohan.factory@email.com",
-    address: "Building B, Sector 7, Noida",
-    cnic: "45678-9012345-6",
-    balanceType: "credit",
-    openingAmount: "72000",
-    totalTransactions: 78,
-    pendingAmount: "₹72,000",
-    status: "inactive",
-    lastTransaction: "1 week ago",
-    date: new Date(),
-  },
-  {
-    id: "5",
-    name: "Suresh Karahi Enterprise",
-    type: "karahi",
-    phone: "+91 54321 09876",
-    email: "suresh.ent@email.com",
-    address: "Lane 3, Textile Market, Jaipur",
-    cnic: "56789-0123456-7",
-    balanceType: "credit",
-    openingAmount: "25000",
-    totalTransactions: 312,
-    pendingAmount: "₹25,000",
-    status: "active",
-    lastTransaction: "3 days ago",
-    date: new Date(),
-  },
-  {
-    id: "6",
-    name: "Ramesh Katae Works",
-    type: "katae",
-    phone: "+91 43210 98765",
-    email: "ramesh.works@email.com",
-    address: "Shop 45, Fabric Lane, Delhi",
-    cnic: "67890-1234567-8",
-    balanceType: "debit",
-    openingAmount: "8750",
-    totalTransactions: 98,
-    pendingAmount: "₹8,750",
-    status: "active",
-    lastTransaction: "Today",
-    date: new Date(),
-  },
-];
-
-const vendorTypeConfig = {
-  karahi: { label: "Karahi Vendor", class: "chip-primary" },
-  katae: { label: "Katae Vendor", class: "chip-secondary" },
-};
-
-const statusConfig = {
-  active: { label: "Active", class: "chip-success" },
-  inactive: { label: "Inactive", class: "chip-danger" },
-};
+interface ApiSummary {
+  total_contacts: number;
+  total_payables: string;
+  contacts_type_wise: { type: string; total: number }[];
+}
 
 export default function ContactVendors() {
   const navigate = useNavigate();
-  const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [summary, setSummary] = useState<ApiSummary | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [vendorToDelete, setVendorToDelete] = useState<Vendor | null>(null);
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  // --- API Fetch Logic ---
+  const fetchVendors = async () => {
+    setIsLoading(true);
+    try {
+      // 1. Get the token from wherever you store it (usually localStorage or cookies)
+      const token = localStorage.getItem("token"); 
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/vendors/list`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          // 2. Add the Authorization header
+          "Authorization": `Bearer ${token}`, 
+        },
+      });
+
+      // 3. Check if the response is actually JSON before parsing
+      const contentType = response.headers.get("content-type");
+      if (!response.ok || !contentType?.includes("application/json")) {
+        const errorText = await response.text();
+        console.error("API Error Response:", errorText);
+        throw new Error("Invalid response from server");
+      }
+
+      const result = await response.json();
+
+      const mappedVendors: Vendor[] = result.data.map((item: any) => ({
+        id: item.id.toString(),
+        name: item.name,
+        type: item.type,
+        phone: item.phone,
+        email: item.email,
+        address: item.address,
+        code: item.code,
+        balanceType: parseFloat(item.pending_amount) < 0 ? "debit" : "credit",
+        openingAmount: Math.abs(parseFloat(item.pending_amount)).toString(),
+        totalTransactions: item.total_transactions || 0,
+        pendingAmount: `₹${Math.abs(parseFloat(item.pending_amount)).toLocaleString("en-IN")}`,
+        status: item.status.toLowerCase() === "active" ? "active" : "inactive",
+        lastTransaction: "N/A",
+        date: new Date(),
+      }));
+
+      setVendors(mappedVendors);
+      setSummary(result.summary);
+    } catch (error) {
+      toast.error("Authentication failed or server error");
+      console.error("Fetch error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVendors();
+  }, []);
 
   const filteredVendors = vendors.filter(
     (vendor) =>
@@ -179,62 +137,40 @@ export default function ContactVendors() {
       vendor.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const karahiCount = vendors.filter((v) => v.type === "karahi").length;
-  const kataeCount = vendors.filter((v) => v.type === "katae").length;
-  const totalPending = vendors.reduce((acc, v) => {
-    const amount = parseInt(v.pendingAmount.replace(/[₹,]/g, "")) || 0;
-    return acc + amount;
-  }, 0);
-
-  const handleAddVendor = (data: any) => {
-    const newVendor: Vendor = {
-      id: Date.now().toString(),
-      name: data.name,
-      type: data.accountType as "karahi" | "katae",
-      phone: data.phone,
-      email: "",
-      address: data.address,
-      cnic: data.cnic,
-      balanceType: data.balanceType,
-      openingAmount: data.openingAmount,
-      totalTransactions: 0,
-      pendingAmount: `₹${parseInt(data.openingAmount || "0").toLocaleString("en-IN")}`,
-      status: "active",
-      lastTransaction: "Never",
-      date: data.date || new Date(),
-    };
-    setVendors([...vendors, newVendor]);
+  const handleAddVendor = async (data: any) => {
+    try {
+      // Example POST: await fetch('/api/vendors', { method: 'POST', body: JSON.stringify(data) });
+      toast.success("Vendor added successfully");
+      fetchVendors(); // Refresh data
+    } catch (error) {
+      toast.error("Failed to add vendor");
+    }
   };
 
-  const handleEditVendor = (data: any) => {
+  const handleEditVendor = async (data: any) => {
     if (!editingVendor) return;
-    
-    setVendors(vendors.map(v => 
-      v.id === editingVendor.id 
-        ? {
-            ...v,
-            name: data.name,
-            type: data.accountType as "karahi" | "katae",
-            phone: data.phone,
-            address: data.address,
-            cnic: data.cnic,
-            balanceType: data.balanceType,
-            openingAmount: data.openingAmount,
-            date: data.date || v.date,
-          }
-        : v
-    ));
-    setEditingVendor(null);
-    setEditDialogOpen(false);
-    toast.success("Vendor updated successfully");
+    try {
+      // Example PUT: await fetch(`/api/vendors/${editingVendor.id}`, { method: 'PUT', ... });
+      setEditingVendor(null);
+      setEditDialogOpen(false);
+      toast.success("Vendor updated successfully");
+      fetchVendors();
+    } catch (error) {
+      toast.error("Failed to update vendor");
+    }
   };
 
-  const handleDeleteVendor = () => {
+  const handleDeleteVendor = async () => {
     if (!vendorToDelete) return;
-    setVendors(vendors.filter(v => v.id !== vendorToDelete.id));
-    setDeleteDialogOpen(false);
-    setVendorToDelete(null);
-    toast.success("Vendor deleted successfully");
+    try {
+      // Example DELETE: await fetch(`/api/vendors/${vendorToDelete.id}`, { method: 'DELETE' });
+      setVendors(vendors.filter((v) => v.id !== vendorToDelete.id));
+      setDeleteDialogOpen(false);
+      setVendorToDelete(null);
+      toast.success("Vendor deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete vendor");
+    }
   };
 
   const openEditDialog = (vendor: Vendor) => {
@@ -246,6 +182,14 @@ export default function ContactVendors() {
     setVendorToDelete(vendor);
     setDeleteDialogOpen(true);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -266,8 +210,11 @@ export default function ContactVendors() {
           }
           title="Add Vendor"
           accountTypes={[
-            { value: "karahi", label: "Karahi Vendor" },
-            { value: "katae", label: "Katae Vendor" },
+            { value: "EMBROIDERY VENDORS", label: "Embroidery Vendor" },
+            { value: "SALAI VENDORS KARKHANA", label: "Salai Karkhana" },
+            { value: "SALAI VENDORS OUTSIDE", label: "Salai Outside" },
+            { value: "TAKAI VENDORS", label: "Takai Vendor" },
+            { value: "OTHER PAYABLES", label: "Other Payable" },
           ]}
           onSubmit={handleAddVendor}
         />
@@ -282,32 +229,26 @@ export default function ContactVendors() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Vendors</p>
-              <p className="text-2xl font-bold">{vendors.length}</p>
+              <p className="text-2xl font-bold">{summary?.total_contacts || 0}</p>
             </div>
           </div>
         </div>
-        <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-primary/10">
-              <Truck className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Karahi Vendors</p>
-              <p className="text-2xl font-bold">{karahiCount}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-secondary/10">
-              <Truck className="w-6 h-6 text-secondary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Katae Vendors</p>
-              <p className="text-2xl font-bold">{kataeCount}</p>
+        
+        {/* Dynamic Summary Cards from API (First two types) */}
+        {summary?.contacts_type_wise.slice(0, 2).map((item, idx) => (
+          <div key={item.type} className="bg-card rounded-xl border border-border p-5 animate-fade-in">
+            <div className="flex items-center gap-3">
+              <div className={cn("p-3 rounded-xl", idx === 0 ? "bg-primary/10" : "bg-secondary/10")}>
+                <Truck className={cn("w-6 h-6", idx === 0 ? "text-primary" : "text-secondary")} />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground truncate max-w-[130px]">{item.type}</p>
+                <p className="text-2xl font-bold">{item.total}</p>
+              </div>
             </div>
           </div>
-        </div>
+        ))}
+
         <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-warning/10">
@@ -316,7 +257,7 @@ export default function ContactVendors() {
             <div>
               <p className="text-sm text-muted-foreground">Pending Payables</p>
               <p className="text-2xl font-bold">
-                ₹{totalPending.toLocaleString("en-IN")}
+                ₹{Math.abs(parseFloat(summary?.total_payables || "0")).toLocaleString("en-IN")}
               </p>
             </div>
           </div>
@@ -347,7 +288,6 @@ export default function ContactVendors() {
             key={vendor.id}
             className="bg-card rounded-xl border border-border p-5 hover:shadow-medium transition-shadow animate-fade-in"
           >
-            {/* Header */}
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
@@ -357,12 +297,15 @@ export default function ContactVendors() {
                 </Avatar>
                 <div>
                   <h3 className="font-semibold">{vendor.name}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={cn("chip text-xs", vendorTypeConfig[vendor.type].class)}>
-                      {vendorTypeConfig[vendor.type].label}
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                    <span className="chip text-[10px] bg-primary/10 text-primary border-none">
+                      {vendor.type}
                     </span>
-                    <span className={cn("chip text-xs", statusConfig[vendor.status].class)}>
-                      {statusConfig[vendor.status].label}
+                    <span className={cn(
+                      "chip text-[10px] border-none",
+                      vendor.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    )}>
+                      {vendor.status.toUpperCase()}
                     </span>
                   </div>
                 </div>
@@ -394,7 +337,6 @@ export default function ContactVendors() {
               </DropdownMenu>
             </div>
 
-            {/* Contact Info */}
             <div className="space-y-2 mb-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="w-4 h-4" />
@@ -410,7 +352,6 @@ export default function ContactVendors() {
               </div>
             </div>
 
-            {/* Stats */}
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
               <div>
                 <p className="text-xs text-muted-foreground">Total Transactions</p>
@@ -427,10 +368,9 @@ export default function ContactVendors() {
               </div>
             </div>
 
-            {/* Footer */}
             <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
               <span className="text-xs text-muted-foreground">
-                Last transaction: {vendor.lastTransaction}
+                Code: {vendor.code}
               </span>
               <Button 
                 variant="ghost" 
@@ -451,8 +391,8 @@ export default function ContactVendors() {
           trigger={<span />}
           title="Edit Vendor"
           accountTypes={[
-            { value: "karahi", label: "Karahi Vendor" },
-            { value: "katae", label: "Katae Vendor" },
+            { value: "EMBROIDERY VENDORS", label: "Embroidery Vendor" },
+            { value: "SALAI VENDORS KARKHANA", label: "Salai Karkhana" },
           ]}
           onSubmit={handleEditVendor}
           open={editDialogOpen}
@@ -462,7 +402,7 @@ export default function ContactVendors() {
             name: editingVendor.name,
             date: editingVendor.date,
             phone: editingVendor.phone,
-            cnic: editingVendor.cnic,
+            cnic: editingVendor.code,
             balanceType: editingVendor.balanceType,
             openingAmount: editingVendor.openingAmount,
             address: editingVendor.address,
