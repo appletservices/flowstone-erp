@@ -22,51 +22,62 @@ import {
   Ruler,
   Cog,
   FolderOpen,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRoles } from "@/hooks/useRoles";
+import { Badge } from "@/components/ui/badge";
 
 interface MenuItem {
   label: string;
   icon: React.ElementType;
   path?: string;
-  children?: { label: string; path: string; icon?: React.ElementType }[];
+  permissionId?: string;
+  children?: { label: string; path: string; icon?: React.ElementType; permissionId?: string }[];
 }
 
 const menuItems: MenuItem[] = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/" },
-  { label: "Chart of Accounts", icon: BookOpen, path: "/accounts" },
+  { label: "Dashboard", icon: LayoutDashboard, path: "/", permissionId: "dashboard" },
+  { label: "Chart of Accounts", icon: BookOpen, path: "/accounts", permissionId: "accounts" },
   {
     label: "Contact",
     icon: Users,
     children: [
-      { label: "Receivable", path: "/contact/receivable", icon: Users },
-      { label: "Vendors", path: "/contact/vendors", icon: Truck },
-      { label: "Others", path: "/contact/others", icon: Package },
+      { label: "Receivable", path: "/contact/receivable", icon: Users, permissionId: "contact_receivable" },
+      { label: "Vendors", path: "/contact/vendors", icon: Truck, permissionId: "contact_vendors" },
+      { label: "Others", path: "/contact/others", icon: Package, permissionId: "contact_others" },
     ],
   },
   {
     label: "Inventory",
     icon: Package,
     children: [
-      { label: "Overview", path: "/inventory", icon: Layers },
-      { label: "Raw Inventory", path: "/inventory/raw", icon: Box },
-      { label: "Design Inventory", path: "/inventory/design", icon: Palette },
-      { label: "Katae Product", path: "/inventory/katae", icon: Scissors },
-      { label: "Finished Product", path: "/inventory/finished", icon: PackageCheck },
+      { label: "Overview", path: "/inventory", icon: Layers, permissionId: "inventory_overview" },
+      { label: "Raw Inventory", path: "/inventory/raw", icon: Box, permissionId: "inventory_raw" },
+      { label: "Design Inventory", path: "/inventory/design", icon: Palette, permissionId: "inventory_design" },
+      { label: "Katae Product", path: "/inventory/katae", icon: Scissors, permissionId: "inventory_katae" },
+      { label: "Finished Product", path: "/inventory/finished", icon: PackageCheck, permissionId: "inventory_finished" },
     ],
   },
   {
     label: "Setup",
     icon: Wrench,
     children: [
-      { label: "Units", path: "/setup/units", icon: Ruler },
-      { label: "Machines", path: "/setup/machines", icon: Cog },
-      { label: "Expense Categories", path: "/setup/expense-categories", icon: FolderOpen },
+      { label: "Units", path: "/setup/units", icon: Ruler, permissionId: "setup_units" },
+      { label: "Machines", path: "/setup/machines", icon: Cog, permissionId: "setup_machines" },
+      { label: "Expense Categories", path: "/setup/expense-categories", icon: FolderOpen, permissionId: "setup_expense" },
     ],
   },
-  { label: "Purchase", icon: ShoppingCart, path: "/purchase" },
-  { label: "Sales", icon: Receipt, path: "/sales" },
-  { label: "Settings", icon: Settings, path: "/settings" },
+  { label: "Purchase", icon: ShoppingCart, path: "/purchase", permissionId: "purchase" },
+  { label: "Sales", icon: Receipt, path: "/sales", permissionId: "sales" },
+  {
+    label: "Settings",
+    icon: Settings,
+    children: [
+      { label: "General", path: "/settings", icon: Settings, permissionId: "settings" },
+      { label: "Roles & Permissions", path: "/settings/roles", icon: Shield, permissionId: "role_management" },
+    ],
+  },
 ];
 
 interface SidebarProps {
@@ -76,7 +87,8 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const location = useLocation();
-  const [expandedItems, setExpandedItems] = useState<string[]>(["Inventory", "Contact"]);
+  const { hasPermission, currentRole } = useRoles();
+  const [expandedItems, setExpandedItems] = useState<string[]>(["Inventory", "Contact", "Settings"]);
 
   const toggleExpand = (label: string) => {
     setExpandedItems((prev) =>
@@ -92,6 +104,31 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const isParentActive = (children?: { path: string }[]) => {
     if (!children) return false;
     return children.some((child) => location.pathname === child.path);
+  };
+
+  // Filter menu items based on permissions (check view permission)
+  const filterMenuItem = (item: MenuItem): MenuItem | null => {
+    if (item.children) {
+      const filteredChildren = item.children.filter((child) =>
+        child.permissionId ? hasPermission(child.permissionId, "view") : true
+      );
+      if (filteredChildren.length === 0) return null;
+      return { ...item, children: filteredChildren };
+    }
+    if (item.permissionId && !hasPermission(item.permissionId, "view")) {
+      return null;
+    }
+    return item;
+  };
+
+  const filteredMenuItems = menuItems
+    .map(filterMenuItem)
+    .filter((item): item is MenuItem => item !== null);
+
+  const roleLabels: { [key: string]: string } = {
+    admin: "Admin",
+    manager: "Manager",
+    user: "User",
   };
 
   return (
@@ -113,10 +150,20 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         </div>
       </div>
 
+      {/* Role Badge */}
+      {!collapsed && (
+        <div className="px-4 py-2 border-b border-sidebar-border">
+          <Badge variant="secondary" className="w-full justify-center text-xs">
+            <Shield className="w-3 h-3 mr-1" />
+            {roleLabels[currentRole] || currentRole}
+          </Badge>
+        </div>
+      )}
+
       {/* Navigation */}
       <nav className="flex-1 py-4 px-3 overflow-y-auto scrollbar-thin">
         <ul className="space-y-1">
-          {menuItems.map((item) => (
+          {filteredMenuItems.map((item) => (
             <li key={item.label}>
               {item.children ? (
                 <div>
