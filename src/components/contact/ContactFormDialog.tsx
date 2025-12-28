@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import {
@@ -33,6 +33,9 @@ interface ContactFormDialogProps {
   title: string;
   accountTypes: { value: string; label: string }[];
   onSubmit?: (data: ContactFormData) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  defaultValues?: Partial<ContactFormData>;
 }
 
 export interface ContactFormData {
@@ -46,23 +49,41 @@ export interface ContactFormData {
   address: string;
 }
 
+const emptyFormData: ContactFormData = {
+  accountType: "",
+  name: "",
+  date: undefined,
+  phone: "",
+  cnic: "",
+  balanceType: "credit",
+  openingAmount: "",
+  address: "",
+};
+
 export function ContactFormDialog({
   trigger,
   title,
   accountTypes,
   onSubmit,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  defaultValues,
 }: ContactFormDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<ContactFormData>({
-    accountType: "",
-    name: "",
-    date: undefined,
-    phone: "",
-    cnic: "",
-    balanceType: "credit",
-    openingAmount: "",
-    address: "",
-  });
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen;
+
+  const [formData, setFormData] = useState<ContactFormData>(
+    defaultValues ? { ...emptyFormData, ...defaultValues } : emptyFormData
+  );
+
+  useEffect(() => {
+    if (defaultValues && open) {
+      setFormData({ ...emptyFormData, ...defaultValues });
+    }
+  }, [defaultValues, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,23 +94,23 @@ export function ContactFormDialog({
     }
 
     onSubmit?.(formData);
-    toast.success(`${title} added successfully`);
+    if (!defaultValues) {
+      toast.success(`${title} added successfully`);
+    }
     setOpen(false);
-    setFormData({
-      accountType: "",
-      name: "",
-      date: undefined,
-      phone: "",
-      cnic: "",
-      balanceType: "credit",
-      openingAmount: "",
-      address: "",
-    });
+    setFormData(emptyFormData);
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      setFormData(emptyFormData);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      {!isControlled && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-[500px] bg-card">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -233,7 +254,7 @@ export function ContactFormDialog({
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit">{defaultValues ? "Update" : "Save"}</Button>
           </div>
         </form>
       </DialogContent>
