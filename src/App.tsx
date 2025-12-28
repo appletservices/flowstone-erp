@@ -44,7 +44,6 @@ const App = () => (
               {/* Public Route */}
               <Route path="/auth" element={<Auth />} />
 
-<<<<<<< HEAD
               {/* Protected Routes */}
               <Route
                 element={
@@ -74,36 +73,6 @@ const App = () => (
                 <Route path="/contact/others" element={<PermissionGuard permissionId="contact_others"><Others /></PermissionGuard>} />
                 <Route path="/ledger/:type/:id" element={<Ledger />} />
               </Route>
-=======
-            {/* Protected Routes */}
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/accounts" element={<ChartOfAccounts />} />
-              <Route path="/inventory" element={<Inventory />} />
-              <Route path="/inventory/raw" element={<RawInventory />} />
-              <Route path="/inventory/:category" element={<Inventory />} />
-              <Route path="/vendors" element={<Vendors />} />
-              <Route path="/purchase" element={<Purchase />} />
-              <Route path="/sales" element={<Sales />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/setup/units" element={<Units />} />
-              <Route path="/setup/machines" element={<Machines />} />
-              <Route
-                path="/setup/expense-categories"
-                element={<ExpenseCategories />}
-              />
-              <Route path="/contact/receivable" element={<Receivable />} />
-              <Route path="/contact/vendors" element={<ContactVendors />} />
-              <Route path="/contact/others" element={<Others />} />
-              <Route path="/ledger/:type/:id" element={<Ledger />} />
-            </Route>
->>>>>>> 99ec63645dd930e46436551578f1b84422c085e7
 
               {/* 404 */}
               <Route path="*" element={<NotFound />} />
