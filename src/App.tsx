@@ -11,6 +11,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import ChartOfAccounts from "@/pages/ChartOfAccounts";
 import Inventory from "@/pages/Inventory";
+import RawInventory from "@/pages/RawInventory";
 import Vendors from "@/pages/Vendors";
 import Purchase from "@/pages/Purchase";
 import Sales from "@/pages/Sales";
@@ -21,6 +22,7 @@ import ExpenseCategories from "@/pages/ExpenseCategories";
 import Receivable from "@/pages/Receivable";
 import ContactVendors from "@/pages/ContactVendors";
 import Others from "@/pages/Others";
+import Ledger from "@/pages/Ledger";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 
@@ -49,6 +51,7 @@ const App = () => (
               <Route path="/" element={<Dashboard />} />
               <Route path="/accounts" element={<ChartOfAccounts />} />
               <Route path="/inventory" element={<Inventory />} />
+              <Route path="/inventory/raw" element={<RawInventory />} />
               <Route path="/inventory/:category" element={<Inventory />} />
               <Route path="/vendors" element={<Vendors />} />
               <Route path="/purchase" element={<Purchase />} />
@@ -63,6 +66,7 @@ const App = () => (
               <Route path="/contact/receivable" element={<Receivable />} />
               <Route path="/contact/vendors" element={<ContactVendors />} />
               <Route path="/contact/others" element={<Others />} />
+              <Route path="/ledger/:type/:id" element={<Ledger />} />
             </Route>
 
             {/* 404 */}
