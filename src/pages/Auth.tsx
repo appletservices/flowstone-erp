@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Package, Loader2, User } from "lucide-react";
 import { z } from "zod";
 
@@ -39,14 +39,17 @@ const Auth = () => {
   const [checkingSession, setCheckingSession] = useState(true);
 
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const location = useLocation();
+  
+  // Get the intended redirect path from location state, default to "/"
+  const from = (location.state as { from?: string })?.from || "/";
 
   /* ---------------- Existing Session ---------------- */
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
-    if (token) navigate("/", { replace: true });
+    if (token) navigate(from, { replace: true });
     setCheckingSession(false);
-  }, [navigate]);
+  }, [navigate, from]);
 
   /* ---------------- Demo Login ---------------- */
   const handleDemoLogin = () => {
@@ -56,8 +59,8 @@ const Auth = () => {
       localStorage.setItem("auth_token", "demo-token");
       localStorage.setItem("auth_user", JSON.stringify(DEMO_ACCOUNT.user));
 
-      toast({ title: "Demo Login Successful" });
-      navigate("/", { replace: true });
+      toast.success("Demo Login Successful");
+      navigate(from, { replace: true });
       setLoading(false);
     }, 500);
   };
@@ -67,12 +70,12 @@ const Auth = () => {
     e.preventDefault();
 
     if (!emailSchema.safeParse(email).success) {
-      toast({ title: "Invalid email", variant: "destructive" });
+      toast.error("Invalid email");
       return;
     }
 
     if (!passwordSchema.safeParse(password).success) {
-      toast({ title: "Invalid password", variant: "destructive" });
+      toast.error("Password must be at least 4 characters");
       return;
     }
 
@@ -104,18 +107,11 @@ const Auth = () => {
       localStorage.setItem("auth_token", data.token);
       localStorage.setItem("auth_user", JSON.stringify(data.user));
 
-      toast({
-        title: "Login Successful",
-        description: `Welcome ${data.user.name}`,
-      });
+      toast.success(`Welcome ${data.user.name}`);
 
-      navigate("/", { replace: true });
+      navigate(from, { replace: true });
     } catch (error: any) {
-      toast({
-        title: "Authentication Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || "Authentication Failed");
     } finally {
       setLoading(false);
     }
