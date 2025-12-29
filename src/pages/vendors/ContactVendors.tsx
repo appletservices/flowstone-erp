@@ -39,7 +39,17 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-// Updated Interface to match your UI needs while holding API data
+// Helper for dynamic coloring based on Vendor Type
+const getTypeStyles = (type: string) => {
+  const t = type.toUpperCase();
+  if (t.includes("EMBROIDERY")) return "bg-blue-100 text-blue-600";
+  if (t.includes("KARKHANA")) return "bg-purple-100 text-purple-600";
+  if (t.includes("OUTSIDE")) return "bg-orange-100 text-orange-600";
+  if (t.includes("TAKAI")) return "bg-pink-100 text-pink-600";
+  if (t.includes("PAYABLES")) return "bg-slate-200 text-slate-700";
+  return "bg-primary/10 text-primary";
+};
+
 interface Vendor {
   id: string;
   name: string;
@@ -74,29 +84,17 @@ export default function ContactVendors() {
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  // --- API Fetch Logic ---
   const fetchVendors = async () => {
     setIsLoading(true);
     try {
-      // 1. Get the token from wherever you store it (usually localStorage or cookies)
-      const token = localStorage.getItem("token"); 
-
+      const token = localStorage.getItem("auth_token"); 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/vendors/list`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          // 2. Add the Authorization header
           "Authorization": `Bearer ${token}`, 
         },
       });
-
-      // 3. Check if the response is actually JSON before parsing
-      const contentType = response.headers.get("content-type");
-      if (!response.ok || !contentType?.includes("application/json")) {
-        const errorText = await response.text();
-        console.error("API Error Response:", errorText);
-        throw new Error("Invalid response from server");
-      }
 
       const result = await response.json();
 
@@ -120,8 +118,8 @@ export default function ContactVendors() {
       setVendors(mappedVendors);
       setSummary(result.summary);
     } catch (error) {
-      toast.error("Authentication failed or server error");
-      console.error("Fetch error:", error);
+      toast.error("Failed to load vendor data");
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -134,43 +132,25 @@ export default function ContactVendors() {
   const filteredVendors = vendors.filter(
     (vendor) =>
       vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vendor.email.toLowerCase().includes(searchQuery.toLowerCase())
+      vendor.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAddVendor = async (data: any) => {
-    try {
-      // Example POST: await fetch('/api/vendors', { method: 'POST', body: JSON.stringify(data) });
-      toast.success("Vendor added successfully");
-      fetchVendors(); // Refresh data
-    } catch (error) {
-      toast.error("Failed to add vendor");
-    }
+    toast.success("Vendor added successfully");
+    fetchVendors();
   };
 
   const handleEditVendor = async (data: any) => {
-    if (!editingVendor) return;
-    try {
-      // Example PUT: await fetch(`/api/vendors/${editingVendor.id}`, { method: 'PUT', ... });
-      setEditingVendor(null);
-      setEditDialogOpen(false);
-      toast.success("Vendor updated successfully");
-      fetchVendors();
-    } catch (error) {
-      toast.error("Failed to update vendor");
-    }
+    setEditDialogOpen(false);
+    toast.success("Vendor updated successfully");
+    fetchVendors();
   };
 
   const handleDeleteVendor = async () => {
     if (!vendorToDelete) return;
-    try {
-      // Example DELETE: await fetch(`/api/vendors/${vendorToDelete.id}`, { method: 'DELETE' });
-      setVendors(vendors.filter((v) => v.id !== vendorToDelete.id));
-      setDeleteDialogOpen(false);
-      setVendorToDelete(null);
-      toast.success("Vendor deleted successfully");
-    } catch (error) {
-      toast.error("Failed to delete vendor");
-    }
+    setVendors(vendors.filter((v) => v.id !== vendorToDelete.id));
+    setDeleteDialogOpen(false);
+    toast.success("Vendor deleted successfully");
   };
 
   const openEditDialog = (vendor: Vendor) => {
@@ -193,21 +173,14 @@ export default function ContactVendors() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Vendors</h1>
-          <p className="text-muted-foreground">
-            Manage your Karahi and Katae vendor relationships
-          </p>
+          <p className="text-muted-foreground">Manage your Karahi and Katae vendor relationships</p>
         </div>
         <ContactFormDialog
-          trigger={
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />
-              Add Vendor
-            </Button>
-          }
+          trigger={<Button className="gap-2"><Plus className="w-4 h-4" /> Add Vendor</Button>}
           title="Add Vendor"
           accountTypes={[
             { value: "EMBROIDERY VENDORS", label: "Embroidery Vendor" },
@@ -220,8 +193,9 @@ export default function ContactVendors() {
         />
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards - Dynamically generated from API summary data */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Total Contacts */}
         <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-muted">
@@ -233,22 +207,25 @@ export default function ContactVendors() {
             </div>
           </div>
         </div>
-        
-        {/* Dynamic Summary Cards from API (First two types) */}
-        {summary?.contacts_type_wise.slice(0, 2).map((item, idx) => (
+
+        {/* Dynamic Cards per Vendor Type */}
+        {summary?.contacts_type_wise.map((item) => (
           <div key={item.type} className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <div className="flex items-center gap-3">
-              <div className={cn("p-3 rounded-xl", idx === 0 ? "bg-primary/10" : "bg-secondary/10")}>
-                <Truck className={cn("w-6 h-6", idx === 0 ? "text-primary" : "text-secondary")} />
+              <div className={cn("p-3 rounded-xl", getTypeStyles(item.type))}>
+                <Truck className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground truncate max-w-[130px]">{item.type}</p>
+                <p className="text-sm text-muted-foreground truncate max-w-[120px]" title={item.type}>
+                  {item.type.replace("VENDORS", "").trim()}
+                </p>
                 <p className="text-2xl font-bold">{item.total}</p>
               </div>
             </div>
           </div>
         ))}
 
+        {/* Payables Total */}
         <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-warning/10">
@@ -269,86 +246,63 @@ export default function ContactVendors() {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 
-            placeholder="Search vendors by name or email..." 
+            placeholder="Search vendors by name or code..." 
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button variant="outline" className="gap-2">
-          <Filter className="w-4 h-4" />
-          Filter
-        </Button>
+        <Button variant="outline" className="gap-2"><Filter className="w-4 h-4" /> Filter</Button>
       </div>
 
-      {/* Vendor Cards Grid */}
+      {/* Vendor Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredVendors.map((vendor) => (
-          <div
-            key={vendor.id}
-            className="bg-card rounded-xl border border-border p-5 hover:shadow-medium transition-shadow animate-fade-in"
-          >
+          <div key={vendor.id} className="bg-card rounded-xl border border-border p-5 hover:shadow-medium transition-shadow animate-fade-in">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
-                  <AvatarFallback className="bg-muted text-foreground font-semibold">
+                  <AvatarFallback className={cn("font-semibold", getTypeStyles(vendor.type))}>
                     {vendor.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <h3 className="font-semibold">{vendor.name}</h3>
                   <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <span className="chip text-[10px] bg-primary/10 text-primary border-none">
+                    <span className={cn("chip text-[10px] border-none font-medium",  getTypeStyles(vendor.type))}>
                       {vendor.type}
                     </span>
-                    <span className={cn(
+                    {/* <span className={cn(
                       "chip text-[10px] border-none",
                       vendor.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                     )}>
                       {vendor.status.toUpperCase()}
-                    </span>
+                    </span> */}
                   </div>
                 </div>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="w-4 h-4" />
-                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="w-4 h-4" /></Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-card">
-                  <DropdownMenuItem onClick={() => openEditDialog(vendor)}>
-                    <Pencil className="w-4 h-4 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate(`/ledger/vendor/${vendor.id}`)}>
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    View Ledger
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openEditDialog(vendor)}><Pencil className="w-4 h-4 mr-2" /> Edit</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate(`/contacts/vendor/ledger/${vendor.id}`)}><BookOpen className="w-4 h-4 mr-2" /> View Ledger</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    onClick={() => openDeleteDialog(vendor)}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openDeleteDialog(vendor)} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" /> Delete</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
 
             <div className="space-y-2 mb-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Phone className="w-4 h-4" />
-                <span>{vendor.phone}</span>
+                <Phone className="w-4 h-4" /> <span>{vendor.phone}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Mail className="w-4 h-4" />
-                <span className="truncate">{vendor.email || "N/A"}</span>
+                <Mail className="w-4 h-4" /> <span className="truncate">{vendor.email || "N/A"}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="w-4 h-4" />
-                <span className="truncate">{vendor.address}</span>
+                <MapPin className="w-4 h-4" /> <span className="truncate">{vendor.address}</span>
               </div>
             </div>
 
@@ -359,27 +313,15 @@ export default function ContactVendors() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Pending Amount</p>
-                <p className={cn(
-                  "font-semibold",
-                  vendor.pendingAmount !== "₹0" && "text-warning"
-                )}>
+                <p className={cn("font-semibold", vendor.pendingAmount !== "₹0" && "text-warning")}>
                   {vendor.pendingAmount}
                 </p>
               </div>
             </div>
 
             <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">
-                Code: {vendor.code}
-              </span>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-primary h-7 px-2"
-                onClick={() => navigate(`/ledger/vendor/${vendor.id}`)}
-              >
-                View Ledger
-              </Button>
+              <span className="text-xs text-muted-foreground">Code: {vendor.code}</span>
+              <Button variant="ghost" size="sm" className="text-primary h-7 px-2" onClick={() => navigate(`/contacts/vendor/ledger/${vendor.id}`)}>View Ledger</Button>
             </div>
           </div>
         ))}
@@ -388,7 +330,6 @@ export default function ContactVendors() {
       {/* Edit Dialog */}
       {editingVendor && (
         <ContactFormDialog
-          trigger={<span />}
           title="Edit Vendor"
           accountTypes={[
             { value: "EMBROIDERY VENDORS", label: "Embroidery Vendor" },
@@ -410,23 +351,16 @@ export default function ContactVendors() {
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="bg-card">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Vendor</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{vendorToDelete?.name}"? This action cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogDescription>Are you sure you want to delete "{vendorToDelete?.name}"? This action cannot be undone.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteVendor}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteVendor} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

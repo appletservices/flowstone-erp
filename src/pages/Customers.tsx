@@ -22,19 +22,19 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
-interface Receivable {
+interface Customers {
   id: string;
   name: string;
   phone: string;
   email: string;
   address: string;
   totalTransactions: number;
-  receivableAmount: string;
+  CustomersAmount: string;
   status: "active" | "inactive";
   lastTransaction: string;
 }
 
-const receivables: Receivable[] = [
+const Customerss: Customers[] = [
   {
     id: "1",
     name: "Ahmad Textiles",
@@ -42,7 +42,7 @@ const receivables: Receivable[] = [
     email: "ahmad@textiles.com",
     address: "Shop #15, Cloth Market, Faisalabad",
     totalTransactions: 245,
-    receivableAmount: "Rs. 125,000",
+    CustomersAmount: "Rs. 125,000",
     status: "active",
     lastTransaction: "Today",
   },
@@ -53,7 +53,7 @@ const receivables: Receivable[] = [
     email: "info@karachigarments.pk",
     address: "Block A, SITE Area, Karachi",
     totalTransactions: 189,
-    receivableAmount: "Rs. 250,000",
+    CustomersAmount: "Rs. 250,000",
     status: "active",
     lastTransaction: "Yesterday",
   },
@@ -64,7 +64,7 @@ const receivables: Receivable[] = [
     email: "contact@lahorefashion.com",
     address: "Liberty Market, Lahore",
     totalTransactions: 156,
-    receivableAmount: "Rs. 0",
+    CustomersAmount: "Rs. 0",
     status: "inactive",
     lastTransaction: "2 days ago",
   },
@@ -75,7 +75,7 @@ const receivables: Receivable[] = [
     email: "traders@islamabad.pk",
     address: "Blue Area, Islamabad",
     totalTransactions: 78,
-    receivableAmount: "Rs. 85,000",
+    CustomersAmount: "Rs. 85,000",
     status: "active",
     lastTransaction: "1 week ago",
   },
@@ -86,7 +86,7 @@ const receivables: Receivable[] = [
     email: "cotton@multan.pk",
     address: "Industrial Estate, Multan",
     totalTransactions: 312,
-    receivableAmount: "Rs. 175,000",
+    CustomersAmount: "Rs. 175,000",
     status: "active",
     lastTransaction: "3 days ago",
   },
@@ -97,7 +97,7 @@ const receivables: Receivable[] = [
     email: "fabrics@peshawar.pk",
     address: "Saddar Bazaar, Peshawar",
     totalTransactions: 98,
-    receivableAmount: "Rs. 45,000",
+    CustomersAmount: "Rs. 45,000",
     status: "active",
     lastTransaction: "Today",
   },
@@ -108,18 +108,18 @@ const statusConfig = {
   inactive: { label: "Inactive", class: "chip-danger" },
 };
 
-export default function Receivable() {
+export default function Customers() {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredReceivables = receivables.filter(
+  const filteredCustomerss = Customerss.filter(
     (item) =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const activeCount = receivables.filter((r) => r.status === "active").length;
-  const totalReceivable = receivables.reduce((acc, r) => {
-    const amount = parseInt(r.receivableAmount.replace(/[Rs.,\s]/g, "")) || 0;
+  const activeCount = Customerss.filter((r) => r.status === "active").length;
+  const totalCustomers = Customerss.reduce((acc, r) => {
+    const amount = parseInt(r.CustomersAmount.replace(/[Rs.,\s]/g, "")) || 0;
     return acc + amount;
   }, 0);
 
@@ -128,9 +128,9 @@ export default function Receivable() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Receivable</h1>
+          <h1 className="text-2xl font-bold text-foreground">Customers</h1>
           <p className="text-muted-foreground">
-            Manage customer receivables and payments
+            Manage customer Customerss and payments
           </p>
         </div>
         <ContactFormDialog
@@ -158,7 +158,7 @@ export default function Receivable() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Customers</p>
-              <p className="text-2xl font-bold">{receivables.length}</p>
+              <p className="text-2xl font-bold">{Customerss.length}</p>
             </div>
           </div>
         </div>
@@ -179,9 +179,9 @@ export default function Receivable() {
               <CreditCard className="w-6 h-6 text-warning" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Receivable</p>
+              <p className="text-sm text-muted-foreground">Total Customers</p>
               <p className="text-2xl font-bold">
-                Rs. {totalReceivable.toLocaleString()}
+                Rs. {totalCustomers.toLocaleString()}
               </p>
             </div>
           </div>
@@ -218,7 +218,7 @@ export default function Receivable() {
 
       {/* Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredReceivables.map((item) => (
+        {filteredCustomerss.map((item) => (
           <div
             key={item.id}
             className="bg-card rounded-xl border border-border p-5 hover:shadow-medium transition-shadow animate-fade-in"
@@ -276,12 +276,12 @@ export default function Receivable() {
                 <p className="font-semibold">{item.totalTransactions}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Receivable</p>
+                <p className="text-xs text-muted-foreground">Customers</p>
                 <p className={cn(
                   "font-semibold",
-                  item.receivableAmount !== "Rs. 0" && "text-warning"
+                  item.CustomersAmount !== "Rs. 0" && "text-warning"
                 )}>
-                  {item.receivableAmount}
+                  {item.CustomersAmount}
                 </p>
               </div>
             </div>

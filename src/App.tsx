@@ -13,7 +13,7 @@ import { PermissionGuard } from "@/components/layout/PermissionGuard";
 import Dashboard from "@/pages/Dashboard";
 import ChartOfAccounts from "@/pages/ChartOfAccounts";
 import Inventory from "@/pages/Inventory";
-import RawInventory from "@/pages/RawInventory";
+import RawInventory from "@/pages/inventory/RawInventory";
 import Vendors from "@/pages/Vendors";
 import Purchase from "@/pages/Purchase";
 import Sales from "@/pages/Sales";
@@ -21,10 +21,12 @@ import Settings from "@/pages/Settings";
 import Units from "@/pages/Units";
 import Machines from "@/pages/Machines";
 import ExpenseCategories from "@/pages/ExpenseCategories";
-import Receivable from "@/pages/Receivable";
-import ContactVendors from "@/pages/ContactVendors";
+import Receivable from "@/pages/Receiveables/Receivable";
+import ContactVendors from "@/pages/vendors/ContactVendors";
 import Others from "@/pages/Others";
 import Ledger from "@/pages/Ledger";
+import VLedger from "@/pages/vendors/VLedger";
+import RcLedger from "@/pages/Receiveables/RcLedger";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 import RoleManagement from "@/pages/RoleManagement";
@@ -71,7 +73,9 @@ const App = () => (
                 <Route path="/contact/receivable" element={<PermissionGuard permissionId="contact_receivable"><Receivable /></PermissionGuard>} />
                 <Route path="/contact/vendors" element={<PermissionGuard permissionId="contact_vendors"><ContactVendors /></PermissionGuard>} />
                 <Route path="/contact/others" element={<PermissionGuard permissionId="contact_others"><Others /></PermissionGuard>} />
-                <Route path="/ledger/:type/:id" element={<Ledger />} />
+                <Route path="/ledger/inventory/:id" element={<Ledger />} />
+                <Route path="/contacts/vendor/ledger/:id" element={<VLedger />} />
+                <Route path="/contacts/ledger/receiveable/:id" element={<RcLedger />} />
               </Route>
 
               {/* 404 */}
