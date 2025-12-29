@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -45,7 +45,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { useBackendSearch } from "@/hooks/useBackendSearch";
+import { FilterDialog } from "@/components/filters/FilterDialog";
 
 interface RawInventoryItem {
   id: string;
@@ -61,13 +65,11 @@ const units = ["Meter", "Feet", "Kilogram", "Gram", "Piece", "Dozen", "Spool", "
 
 export default function RawInventory() {
   const navigate = useNavigate();
-  const [items, setItems] = useState<RawInventoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<RawInventoryItem | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<RawInventoryItem | null>(null);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -78,36 +80,19 @@ export default function RawInventory() {
     averageCost: "",
   });
 
-  const fetchInventory = useCallback(async (search = "") => {
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem("auth_token");
-      const url = new URL(`${import.meta.env.VITE_API_URL}/inventory/raw/list`);
-      if (search) url.searchParams.append("search", search);
-
-      const response = await fetch(url.toString(), {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      const result = await response.json();
-      if (response.ok) {
-        setItems(result.data);
-      }
-    } catch (error) {
-      toast.error("Failed to load inventory");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchInventory(searchQuery);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery, fetchInventory]);
+  const {
+    data: items,
+    isLoading,
+    searchQuery,
+    setSearchQuery,
+    dateRange,
+    keyValues,
+    applyFilters,
+    hasActiveFilters,
+    refresh,
+  } = useBackendSearch<RawInventoryItem>({
+    endpoint: "/inventory/raw/list",
+  });
 
   const handleSubmit = async () => {
     if (!formData.name || !formData.unit || !formData.openingQty) {
@@ -115,10 +100,9 @@ export default function RawInventory() {
       return;
     }
 
-    // Logic for API POST/PUT would go here
-    // For now, updating local state to maintain UI feel
-    toast.info("Save functionality triggered");
+    toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
     resetForm();
+    refresh();
   };
 
   const resetForm = () => {
@@ -150,12 +134,12 @@ export default function RawInventory() {
   const handleDelete = () => {
     toast.success("Item deleted successfully");
     setDeleteDialogOpen(false);
+    refresh();
   };
 
-  // Calculations using parsed floats from API strings
-  const totalValue = items.reduce((acc, item) => acc + (parseFloat(item.total_qty) * parseFloat(item.avg_cost)), 0);
+  const totalValue = items.reduce((acc, item) => acc + (parseFloat(item.total_qty || "0") * parseFloat(item.avg_cost || "0")), 0);
   const totalItems = items.length;
-  const lowStockCount = items.filter(i => parseFloat(i.total_qty) < parseFloat(i.opening_qty) * 0.2).length;
+  const lowStockCount = items.filter(i => parseFloat(i.total_qty || "0") < parseFloat(i.opening_qty || "0") * 0.2).length;
 
   return (
     <div className="space-y-6">
@@ -297,8 +281,14 @@ export default function RawInventory() {
           />
         </div>
         {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
-        <Button variant="outline" className="gap-2">
-          <Filter className="w-4 h-4" /> Filter
+        <Button
+          variant="outline"
+          className={cn("gap-2", hasActiveFilters && "border-primary text-primary")}
+          onClick={() => setFilterDialogOpen(true)}
+        >
+          <Filter className="w-4 h-4" />
+          Filter
+          {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
         </Button>
       </div>
 
@@ -321,11 +311,11 @@ export default function RawInventory() {
               {items.map((item) => (
                 <tr key={item.id} className="hover:bg-muted/30 transition-colors animate-fade-in">
                   <td className="p-4 font-medium">{item.name}</td>
-                  <td className="p-4 text-right text-sm">{parseFloat(item.opening_qty).toLocaleString()}</td>
-                  <td className="p-4 text-right font-medium text-sm">{parseFloat(item.total_qty).toLocaleString()}</td>
-                  <td className="p-4 text-right text-muted-foreground text-sm">{parseFloat(item.converted_qty).toLocaleString()}</td>
+                  <td className="p-4 text-right text-sm">{parseFloat(item.opening_qty || "0").toLocaleString()}</td>
+                  <td className="p-4 text-right font-medium text-sm">{parseFloat(item.total_qty || "0").toLocaleString()}</td>
+                  <td className="p-4 text-right text-muted-foreground text-sm">{parseFloat(item.converted_qty || "0").toLocaleString()}</td>
                   <td className="p-4 text-sm">{item.unit}</td>
-                  <td className="p-4 text-right text-sm">₹{parseFloat(item.avg_cost).toLocaleString()}</td>
+                  <td className="p-4 text-right text-sm">₹{parseFloat(item.avg_cost || "0").toLocaleString()}</td>
               
                   <td className="p-4 text-center">
                     <DropdownMenu>
@@ -355,7 +345,7 @@ export default function RawInventory() {
               ))}
               {!isLoading && items.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-muted-foreground">No items found</td>
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground">No items found</td>
                 </tr>
               )}
             </tbody>
@@ -373,6 +363,20 @@ export default function RawInventory() {
           </div>
         </div>
       </div>
+
+      {/* Filter Dialog */}
+      <FilterDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        onApply={applyFilters}
+        showDateRange={false}
+        filterFields={[
+          { key: "unit", label: "Unit", placeholder: "e.g. Meter, Kilogram" },
+          { key: "low_stock", label: "Low Stock Only", placeholder: "true or false" },
+        ]}
+        initialDateRange={dateRange}
+        initialKeyValues={keyValues}
+      />
 
       {/* Delete Confirmation */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

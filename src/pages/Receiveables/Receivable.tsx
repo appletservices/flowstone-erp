@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User,
@@ -38,13 +38,15 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useBackendSearch } from "@/hooks/useBackendSearch";
+import { FilterDialog } from "@/components/filters/FilterDialog";
+import { Badge } from "@/components/ui/badge";
 
-// Helper for dynamic coloring based on Vendor Type
 const getTypeStyles = (type: string) => {
   const t = type.toUpperCase();
-  if (t.includes("Local")) return "bg-blue-100 text-blue-600";
-  if (t.includes("Export")) return "bg-purple-100 text-purple-600";
-  if (t.includes("Other")) return "bg-orange-100 text-orange-600";
+  if (t.includes("LOCAL")) return "bg-blue-100 text-blue-600";
+  if (t.includes("EXPORT")) return "bg-purple-100 text-purple-600";
+  if (t.includes("OTHER")) return "bg-orange-100 text-orange-600";
   return "bg-primary/10 text-primary";
 };
 
@@ -65,90 +67,75 @@ interface Vendor {
   date: Date;
 }
 
-interface ApiSummary {
-  total_contacts: number;
-  total_payables: string;
-  contacts_type_wise: { type: string; total: number }[];
+interface ApiItem {
+  id: number;
+  name: string;
+  type: string;
+  phone: string;
+  email: string;
+  address: string;
+  code: string;
+  pending_amount: string;
+  total_transactions: number;
+  status: string;
 }
 
-export default function ContactVendors() {
+export default function Receivable() {
   const navigate = useNavigate();
-  const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [summary, setSummary] = useState<ApiSummary | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [vendorToDelete, setVendorToDelete] = useState<Vendor | null>(null);
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
-  const fetchVendors = async () => {
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem("auth_token"); 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/receiveables/list`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, 
-        },
-      });
+  const {
+    data: rawData,
+    isLoading,
+    searchQuery,
+    setSearchQuery,
+    dateRange,
+    keyValues,
+    applyFilters,
+    hasActiveFilters,
+    summary,
+    refresh,
+  } = useBackendSearch<ApiItem>({
+    endpoint: "/contacts/receiveables/list",
+  });
 
-      const result = await response.json();
+  const vendors: Vendor[] = rawData.map((item) => ({
+    id: item.id.toString(),
+    name: item.name,
+    type: item.type,
+    phone: item.phone,
+    email: item.email,
+    address: item.address,
+    code: item.code,
+    balanceType: parseFloat(item.pending_amount) < 0 ? "debit" : "credit",
+    openingAmount: Math.abs(parseFloat(item.pending_amount)).toString(),
+    totalTransactions: item.total_transactions || 0,
+    pendingAmount: `₹${Math.abs(parseFloat(item.pending_amount)).toLocaleString("en-IN")}`,
+    status: item.status?.toLowerCase() === "active" ? "active" : "inactive",
+    lastTransaction: "N/A",
+    date: new Date(),
+  }));
 
-      const mappedVendors: Vendor[] = result.data.map((item: any) => ({
-        id: item.id.toString(),
-        name: item.name,
-        type: item.type,
-        phone: item.phone,
-        email: item.email,
-        address: item.address,
-        code: item.code,
-        balanceType: parseFloat(item.pending_amount) < 0 ? "debit" : "credit",
-        openingAmount: Math.abs(parseFloat(item.pending_amount)).toString(),
-        totalTransactions: item.total_transactions || 0,
-        pendingAmount: `₹${Math.abs(parseFloat(item.pending_amount)).toLocaleString("en-IN")}`,
-        status: item.status.toLowerCase() === "active" ? "active" : "inactive",
-        lastTransaction: "N/A",
-        date: new Date(),
-      }));
-
-      setVendors(mappedVendors);
-      setSummary(result.summary);
-    } catch (error) {
-      toast.error("Failed to load vendor data");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleAddVendor = async () => {
+    toast.success("Customer added successfully");
+    refresh();
   };
 
-  useEffect(() => {
-    fetchVendors();
-  }, []);
-
-  const filteredVendors = vendors.filter(
-    (vendor) =>
-      vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vendor.code.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleAddVendor = async (data: any) => {
-    toast.success("Vendor added successfully");
-    fetchVendors();
-  };
-
-  const handleEditVendor = async (data: any) => {
+  const handleEditVendor = async () => {
     setEditDialogOpen(false);
-    toast.success("Vendor updated successfully");
-    fetchVendors();
+    toast.success("Customer updated successfully");
+    refresh();
   };
 
   const handleDeleteVendor = async () => {
     if (!vendorToDelete) return;
-    setVendors(vendors.filter((v) => v.id !== vendorToDelete.id));
     setDeleteDialogOpen(false);
-    toast.success("Vendor deleted successfully");
+    toast.success("Customer deleted successfully");
+    refresh();
   };
 
   const openEditDialog = (vendor: Vendor) => {
@@ -161,7 +148,7 @@ export default function ContactVendors() {
     setDeleteDialogOpen(true);
   };
 
-  if (isLoading) {
+  if (isLoading && vendors.length === 0) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -174,12 +161,12 @@ export default function ContactVendors() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Receiveables</h1>
+          <h1 className="text-2xl font-bold text-foreground">Receivables</h1>
           <p className="text-muted-foreground">Manage customer receivables and payments</p>
         </div>
         <ContactFormDialog
           trigger={<Button className="gap-2"><Plus className="w-4 h-4" /> Add Customer</Button>}
-          title="Add Vendor"
+          title="Add Customer"
           accountTypes={[
             { value: "LOCAL CUSTOMERS ACCOUNTS", label: "LOCAL CUSTOMERS" },
             { value: "EXPORT CUSTOMERS ACCOUNTS", label: "EXPORT CUSTOMERS" },
@@ -189,9 +176,8 @@ export default function ContactVendors() {
         />
       </div>
 
-      {/* Summary Cards - Dynamically generated from API summary data */}
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* Total Contacts */}
         <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-muted">
@@ -199,13 +185,12 @@ export default function ContactVendors() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Customers</p>
-              <p className="text-2xl font-bold">{summary?.total_contacts || 0}</p>
+              <p className="text-2xl font-bold">{summary?.total_contacts || vendors.length}</p>
             </div>
           </div>
         </div>
 
-        {/* Dynamic Cards per Vendor Type */}
-        {summary?.contacts_type_wise.map((item) => (
+        {summary?.contacts_type_wise?.map((item: { type: string; total: number }) => (
           <div key={item.type} className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <div className="flex items-center gap-3">
               <div className={cn("p-3 rounded-xl", getTypeStyles(item.type))}>
@@ -213,7 +198,7 @@ export default function ContactVendors() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground truncate max-w-[120px]" title={item.type}>
-                  {item.type.replace("VENDORS", "").trim()}
+                  {item.type.replace("ACCOUNTS", "").replace("CUSTOMERS", "").trim()}
                 </p>
                 <p className="text-2xl font-bold">{item.total}</p>
               </div>
@@ -221,7 +206,6 @@ export default function ContactVendors() {
           </div>
         ))}
 
-        {/* Payables Total */}
         <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-warning/10">
@@ -242,19 +226,28 @@ export default function ContactVendors() {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 
-            placeholder="Search vendors by name or code..." 
+            placeholder="Search customers by name or code..." 
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button variant="outline" className="gap-2"><Filter className="w-4 h-4" /> Filter</Button>
+        {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+        <Button
+          variant="outline"
+          className={cn("gap-2", hasActiveFilters && "border-primary text-primary")}
+          onClick={() => setFilterDialogOpen(true)}
+        >
+          <Filter className="w-4 h-4" />
+          Filter
+          {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
+        </Button>
       </div>
 
-      {/* Vendor Grid */}
+      {/* Customer Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredVendors.map((vendor) => (
-          <div key={vendor.id} className="bg-card rounded-xl border border-border p-5 hover:shadow-medium transition-shadow animate-fade-in">
+        {vendors.map((vendor) => (
+          <div key={vendor.id} className="bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow animate-fade-in">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
@@ -265,15 +258,9 @@ export default function ContactVendors() {
                 <div>
                   <h3 className="font-semibold">{vendor.name}</h3>
                   <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <span className={cn("chip text-[10px] border-none font-medium",  getTypeStyles(vendor.type))}>
+                    <span className={cn("chip text-[10px] border-none font-medium", getTypeStyles(vendor.type))}>
                       {vendor.type}
                     </span>
-                    {/* <span className={cn(
-                      "chip text-[10px] border-none",
-                      vendor.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                    )}>
-                      {vendor.status.toUpperCase()}
-                    </span> */}
                   </div>
                 </div>
               </div>
@@ -321,15 +308,36 @@ export default function ContactVendors() {
             </div>
           </div>
         ))}
+
+        {!isLoading && vendors.length === 0 && (
+          <div className="col-span-full text-center py-12 text-muted-foreground">
+            No customers found
+          </div>
+        )}
       </div>
+
+      {/* Filter Dialog */}
+      <FilterDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        onApply={applyFilters}
+        showDateRange={false}
+        filterFields={[
+          { key: "type", label: "Account Type", placeholder: "e.g. LOCAL CUSTOMERS" },
+          { key: "status", label: "Status", placeholder: "active or inactive" },
+        ]}
+        initialDateRange={dateRange}
+        initialKeyValues={keyValues}
+      />
 
       {/* Edit Dialog */}
       {editingVendor && (
         <ContactFormDialog
-          title="Edit Vendor"
+          title="Edit Customer"
           accountTypes={[
-            { value: "EMBROIDERY VENDORS", label: "Embroidery Vendor" },
-            { value: "SALAI VENDORS KARKHANA", label: "Salai Karkhana" },
+            { value: "LOCAL CUSTOMERS ACCOUNTS", label: "LOCAL CUSTOMERS" },
+            { value: "EXPORT CUSTOMERS ACCOUNTS", label: "EXPORT CUSTOMERS" },
+            { value: "OTHER RECEIVEABLE ACCOUNTS", label: "OTHER RECEIVEABLE" },
           ]}
           onSubmit={handleEditVendor}
           open={editDialogOpen}
@@ -351,7 +359,7 @@ export default function ContactVendors() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="bg-card">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Vendor</AlertDialogTitle>
+            <AlertDialogTitle>Delete Customer</AlertDialogTitle>
             <AlertDialogDescription>Are you sure you want to delete "{vendorToDelete?.name}"? This action cannot be undone.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
