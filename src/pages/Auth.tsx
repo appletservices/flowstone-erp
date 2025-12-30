@@ -40,16 +40,13 @@ const Auth = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // Get the intended redirect path from location state, default to "/"
-  const from = (location.state as { from?: string })?.from || "/";
 
   /* ---------------- Existing Session ---------------- */
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
-    if (token) navigate(from, { replace: true });
+    if (token) navigate("/", { replace: true });
     setCheckingSession(false);
-  }, [navigate, from]);
+  }, [navigate]);
 
   /* ---------------- Demo Login ---------------- */
   const handleDemoLogin = () => {
@@ -60,7 +57,7 @@ const Auth = () => {
       localStorage.setItem("auth_user", JSON.stringify(DEMO_ACCOUNT.user));
 
       toast.success("Demo Login Successful");
-      navigate(from, { replace: true });
+      navigate("/", { replace: true });
       setLoading(false);
     }, 500);
   };
@@ -109,7 +106,7 @@ const Auth = () => {
 
       toast.success(`Welcome ${data.user.name}`);
 
-      navigate(from, { replace: true });
+      navigate("/", { replace: true });
     } catch (error: any) {
       toast.error(error.message || "Authentication Failed");
     } finally {
