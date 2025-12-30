@@ -56,7 +56,7 @@ const menuItems: MenuItem[] = [
       { label: "Raw Inventory", path: "/inventory/raw", icon: Box, permissionId: "inventory_raw" },
       { label: "Design Inventory", path: "/inventory/design", icon: Palette, permissionId: "inventory_design" },
       { label: "Katae Product", path: "/inventory/katae", icon: Scissors, permissionId: "inventory_katae" },
-      { label: "Finished Product", path: "/inventory/finished", icon: PackageCheck, permissionId: "inventory_finished" },
+      { label: "Finished Product", path: "/inventory/finish", icon: PackageCheck, permissionId: "inventory_finished" },
     ],
   },
   {
@@ -76,6 +76,7 @@ const menuItems: MenuItem[] = [
     children: [
       { label: "General", path: "/settings", icon: Settings, permissionId: "settings" },
       { label: "Roles & Permissions", path: "/settings/roles", icon: Shield, permissionId: "role_management" },
+      { label: "Security", path: "/settings/security", icon: Shield, permissionId: "security" },
     ],
   },
 ];

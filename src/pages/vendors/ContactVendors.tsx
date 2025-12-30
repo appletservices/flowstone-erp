@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Truck,
+  User,
   Search,
   Filter,
   Plus,
@@ -9,10 +9,10 @@ import {
   Phone,
   Mail,
   MapPin,
-  IndianRupee,
   Pencil,
   Trash2,
   BookOpen,
+  CreditCard,
   Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -42,11 +42,9 @@ import { toast } from "sonner";
 // Helper for dynamic coloring based on Vendor Type
 const getTypeStyles = (type: string) => {
   const t = type.toUpperCase();
-  if (t.includes("EMBROIDERY")) return "bg-blue-100 text-blue-600";
-  if (t.includes("KARKHANA")) return "bg-purple-100 text-purple-600";
-  if (t.includes("OUTSIDE")) return "bg-orange-100 text-orange-600";
-  if (t.includes("TAKAI")) return "bg-pink-100 text-pink-600";
-  if (t.includes("PAYABLES")) return "bg-slate-200 text-slate-700";
+  if (t.includes("Local")) return "bg-blue-100 text-blue-600";
+  if (t.includes("Export")) return "bg-purple-100 text-purple-600";
+  if (t.includes("Other")) return "bg-orange-100 text-orange-600";
   return "bg-primary/10 text-primary";
 };
 
@@ -176,18 +174,16 @@ export default function ContactVendors() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Vendors</h1>
-          <p className="text-muted-foreground">Manage your Karahi and Katae vendor relationships</p>
+          <h1 className="text-2xl font-bold text-foreground">Receiveables</h1>
+          <p className="text-muted-foreground">Manage customer receivables and payments</p>
         </div>
         <ContactFormDialog
-          trigger={<Button className="gap-2"><Plus className="w-4 h-4" /> Add Vendor</Button>}
+          trigger={<Button className="gap-2"><Plus className="w-4 h-4" /> Add Customer</Button>}
           title="Add Vendor"
           accountTypes={[
-            { value: "EMBROIDERY VENDORS", label: "Embroidery Vendor" },
-            { value: "SALAI VENDORS KARKHANA", label: "Salai Karkhana" },
-            { value: "SALAI VENDORS OUTSIDE", label: "Salai Outside" },
-            { value: "TAKAI VENDORS", label: "Takai Vendor" },
-            { value: "OTHER PAYABLES", label: "Other Payable" },
+            { value: "LOCAL CUSTOMERS ACCOUNTS", label: "LOCAL CUSTOMERS" },
+            { value: "EXPORT CUSTOMERS ACCOUNTS", label: "EXPORT CUSTOMERS" },
+            { value: "OTHER RECEIVEABLE ACCOUNTS", label: "OTHER RECEIVEABLE" },
           ]}
           onSubmit={handleAddVendor}
         />
@@ -199,10 +195,10 @@ export default function ContactVendors() {
         <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-muted">
-              <Truck className="w-6 h-6 text-foreground" />
+              <User className="w-6 h-6 text-foreground" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Vendors</p>
+              <p className="text-sm text-muted-foreground">Total Customers</p>
               <p className="text-2xl font-bold">{summary?.total_contacts || 0}</p>
             </div>
           </div>
@@ -213,7 +209,7 @@ export default function ContactVendors() {
           <div key={item.type} className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <div className="flex items-center gap-3">
               <div className={cn("p-3 rounded-xl", getTypeStyles(item.type))}>
-                <Truck className="w-6 h-6" />
+                <User className="w-6 h-6" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground truncate max-w-[120px]" title={item.type}>
@@ -229,10 +225,10 @@ export default function ContactVendors() {
         <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-warning/10">
-              <IndianRupee className="w-6 h-6 text-warning" />
+              <CreditCard className="w-6 h-6 text-warning" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Pending Payables</p>
+              <p className="text-sm text-muted-foreground">Total Receivable</p>
               <p className="text-2xl font-bold">
                 ₹{Math.abs(parseFloat(summary?.total_payables || "0")).toLocaleString("en-IN")}
               </p>
@@ -287,7 +283,7 @@ export default function ContactVendors() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-card">
                   <DropdownMenuItem onClick={() => openEditDialog(vendor)}><Pencil className="w-4 h-4 mr-2" /> Edit</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate(`/contacts/vendor/ledger/${vendor.id}`)}><BookOpen className="w-4 h-4 mr-2" /> View Ledger</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate(`/contacts/ledger/vendor/${vendor.id}`)}><BookOpen className="w-4 h-4 mr-2" /> View Ledger</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => openDeleteDialog(vendor)} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" /> Delete</DropdownMenuItem>
                 </DropdownMenuContent>
@@ -321,7 +317,7 @@ export default function ContactVendors() {
 
             <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Code: {vendor.code}</span>
-              <Button variant="ghost" size="sm" className="text-primary h-7 px-2" onClick={() => navigate(`/contacts/vendor/ledger/${vendor.id}`)}>View Ledger</Button>
+              <Button variant="ghost" size="sm" className="text-primary h-7 px-2" onClick={() => navigate(`/contacts/ledger/vendor/${vendor.id}`)}>View Ledger</Button>
             </div>
           </div>
         ))}

@@ -43,6 +43,7 @@ export const ALL_MODULES: Module[] = [
   { id: "sales", label: "Sales", path: "/sales", category: "Operations" },
   { id: "settings", label: "Settings", path: "/settings", category: "Admin" },
   { id: "role_management", label: "Role Management", path: "/settings/roles", category: "Admin" },
+  { id: "security", label: "Security", path: "/settings/security", category: "Admin" },
 ];
 
 // Helper to create full permissions
@@ -94,6 +95,7 @@ const DEFAULT_ROLE_PERMISSIONS: RolePermissions = {
     sales: fullPermissions(),
     settings: viewOnly(),
     role_management: noPermissions(),
+    security: noPermissions(),
   },
   
   user: {
@@ -114,6 +116,7 @@ const DEFAULT_ROLE_PERMISSIONS: RolePermissions = {
     sales: { view: true, create: true, update: false, delete: false },
     settings: noPermissions(),
     role_management: noPermissions(),
+    security: noPermissions(),
   },
 };
 

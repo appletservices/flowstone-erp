@@ -13,7 +13,10 @@ import { PermissionGuard } from "@/components/layout/PermissionGuard";
 import Dashboard from "@/pages/Dashboard";
 import ChartOfAccounts from "@/pages/ChartOfAccounts";
 import Inventory from "@/pages/Inventory";
-import RawInventory from "@/pages/inventory/RawInventory";
+import RawInventory from "@/pages/inventory/raw/RawInventory";
+import DesignInventory from "@/pages/inventory/design/DesignInventory";
+import KataeProduct from "@/pages/inventory/katae/KataeProduct";
+import FinishInventory from "@/pages/inventory/finish/FinishInventory";
 import Vendors from "@/pages/Vendors";
 import Purchase from "@/pages/Purchase";
 import Sales from "@/pages/Sales";
@@ -30,6 +33,7 @@ import RcLedger from "@/pages/Receiveables/RcLedger";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 import RoleManagement from "@/pages/RoleManagement";
+import Security from "@/pages/Security";
 
 const queryClient = new QueryClient();
 
@@ -58,12 +62,16 @@ const App = () => (
                 <Route path="/accounts" element={<PermissionGuard permissionId="accounts"><ChartOfAccounts /></PermissionGuard>} />
                 <Route path="/inventory" element={<PermissionGuard permissionId="inventory_overview"><Inventory /></PermissionGuard>} />
                 <Route path="/inventory/raw" element={<PermissionGuard permissionId="inventory_raw"><RawInventory /></PermissionGuard>} />
-                <Route path="/inventory/:category" element={<PermissionGuard permissionId="inventory_overview"><Inventory /></PermissionGuard>} />
+                <Route path="/inventory/design" element={<PermissionGuard permissionId="inventory_design"><DesignInventory /></PermissionGuard>} />
+                <Route path="/inventory/finish" element={<PermissionGuard permissionId="inventory_finish"><FinishInventory /></PermissionGuard>} />
+                 <Route path="/inventory/katae" element={<PermissionGuard permissionId="inventory_katae"><KataeProduct /></PermissionGuard>} />
+                {/* <Route path="/inventory/:category" element={<PermissionGuard permissionId="inventory_overview"><Inventory /></PermissionGuard>} /> */}
                 <Route path="/vendors" element={<Vendors />} />
                 <Route path="/purchase" element={<PermissionGuard permissionId="purchase"><Purchase /></PermissionGuard>} />
                 <Route path="/sales" element={<PermissionGuard permissionId="sales"><Sales /></PermissionGuard>} />
                 <Route path="/settings" element={<PermissionGuard permissionId="settings"><Settings /></PermissionGuard>} />
                 <Route path="/settings/roles" element={<PermissionGuard permissionId="role_management"><RoleManagement /></PermissionGuard>} />
+                 <Route path="/settings/security" element={<PermissionGuard permissionId="security"><Security /></PermissionGuard>} />
                 <Route path="/setup/units" element={<PermissionGuard permissionId="setup_units"><Units /></PermissionGuard>} />
                 <Route path="/setup/machines" element={<PermissionGuard permissionId="setup_machines"><Machines /></PermissionGuard>} />
                 <Route
@@ -74,7 +82,7 @@ const App = () => (
                 <Route path="/contact/vendors" element={<PermissionGuard permissionId="contact_vendors"><ContactVendors /></PermissionGuard>} />
                 <Route path="/contact/others" element={<PermissionGuard permissionId="contact_others"><Others /></PermissionGuard>} />
                 <Route path="/ledger/inventory/:id" element={<Ledger />} />
-                <Route path="/contacts/vendor/ledger/:id" element={<VLedger />} />
+                <Route path="/contacts/ledger/vendor/:id" element={<VLedger />} />
                 <Route path="/contacts/ledger/receiveable/:id" element={<RcLedger />} />
               </Route>
 

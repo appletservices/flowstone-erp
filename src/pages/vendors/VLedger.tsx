@@ -109,7 +109,7 @@ export default function VLedger() {
             <div className="flex items-center gap-2 mt-1">
               {vendorInfo && (
                 <>
-                  <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none">
+                  <Badge variant="secondary" className="bg-secondary border-none">
                     {vendorInfo.type}
                   </Badge>
                   <span className="text-sm text-muted-foreground">{vendorInfo.phone}</span>
@@ -217,7 +217,7 @@ export default function VLedger() {
                             onClick={() => entry.record && window.open(entry.record, '_blank')} // Opens in new tab
                             // OR: onClick={() => navigate(entry.link)} // If the link is an internal route
                             className={cn(
-                            "font-mono text-xs uppercase transition-colors",
+                            "font-medium text-xs uppercase transition-colors",
                             entry.record 
                                 ? "text-primary hover:underline cursor-pointer font-bold  font-medium" 
                                 : "text-muted-foreground cursor-default"

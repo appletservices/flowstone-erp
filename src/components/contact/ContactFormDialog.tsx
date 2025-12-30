@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface ContactFormDialogProps {
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
   title: string;
   accountTypes: { value: string; label: string }[];
   onSubmit?: (data: ContactFormData) => void;

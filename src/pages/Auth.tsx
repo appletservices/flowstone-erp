@@ -10,21 +10,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { Package, Loader2, User } from "lucide-react";
+import { toast } from "sonner";
+import { Package, Loader2 } from "lucide-react";
 import { z } from "zod";
-
-/* ---------------- Demo Account ---------------- */
-const DEMO_ACCOUNT = {
-  email: "demo@invenflow.com",
-  password: "demo123",
-  user: {
-    id: "demo-user-001",
-    email: "demo@invenflow.com",
-    name: "Demo User",
-    role: "Administrator",
-  },
-};
 
 /* ---------------- Validation ---------------- */
 const emailSchema = z.string().email();
@@ -39,46 +27,27 @@ const Auth = () => {
   const [checkingSession, setCheckingSession] = useState(true);
 
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   /* ---------------- Existing Session ---------------- */
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
-    if (token) navigate("/", { replace: true });
+    if (token) {
+      navigate("/", { replace: true });
+    }
     setCheckingSession(false);
   }, [navigate]);
 
-  /* ---------------- Demo Login ---------------- */
-  const handleDemoLogin = () => {
-    setLoading(true);
-
-    setTimeout(() => {
-      localStorage.setItem("auth_token", "demo-token");
-      localStorage.setItem("auth_user", JSON.stringify(DEMO_ACCOUNT.user));
-
-      toast({ title: "Demo Login Successful" });
-      navigate("/", { replace: true });
-      setLoading(false);
-    }, 500);
-  };
-
-  /* ---------------- Real Login ---------------- */
+  /* ---------------- Login ---------------- */
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!emailSchema.safeParse(email).success) {
-      toast({ title: "Invalid email", variant: "destructive" });
+      toast.error("Invalid email address");
       return;
     }
 
     if (!passwordSchema.safeParse(password).success) {
-      toast({ title: "Invalid password", variant: "destructive" });
-      return;
-    }
-
-    // Demo credentials
-    if (email === DEMO_ACCOUNT.email && password === DEMO_ACCOUNT.password) {
-      handleDemoLogin();
+      toast.error("Password must be at least 4 characters");
       return;
     }
 
@@ -104,18 +73,12 @@ const Auth = () => {
       localStorage.setItem("auth_token", data.token);
       localStorage.setItem("auth_user", JSON.stringify(data.user));
 
-      toast({
-        title: "Login Successful",
-        description: `Welcome ${data.user.name}`,
-      });
+      toast.success(`Welcome ${data.user.name}`);
 
+      // ✅ Always go to root
       navigate("/", { replace: true });
     } catch (error: any) {
-      toast({
-        title: "Authentication Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || "Authentication failed");
     } finally {
       setLoading(false);
     }
@@ -147,23 +110,15 @@ const Auth = () => {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            onClick={handleDemoLogin}
-            disabled={loading}
-          >
-            <User className="h-4 w-4" />
-            Continue with Demo
-          </Button>
-
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <Label>Email</Label>
               <Input
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
+                required
               />
             </div>
 
@@ -174,6 +129,7 @@ const Auth = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
+                required
               />
             </div>
 
@@ -188,10 +144,6 @@ const Auth = () => {
               )}
             </Button>
           </form>
-
-          <p className="text-center text-xs text-muted-foreground">
-            Demo: demo@invenflow.com / demo123
-          </p>
         </CardContent>
       </Card>
     </div>

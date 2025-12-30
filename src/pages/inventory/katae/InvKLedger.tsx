@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-interface InvLedgerEntry {
+interface LedgerEntry {
   id: string;
   date: string;
   description: string;
@@ -23,11 +23,11 @@ interface InvLedgerEntry {
   reference: string;
 }
 
-const mockLedgerEntries: InvLedgerEntry[] = [
+const mockLedgerEntries: LedgerEntry[] = [
   {
     id: "1",
     date: "2024-01-15",
-    description: "Opening Balance",
+    description: "Opening",
     type: "credit",
     amount: 45000,
     balance: 45000,
@@ -110,14 +110,13 @@ const contactInfo = {
   },
 };
 
-export default function InvLedger() {
+export default function InvKLedger() {
   const { type, id } = useParams<{ type: string; id: string }>();
   const navigate = useNavigate();
 
   const contact = type && id 
     ? contactInfo[type as keyof typeof contactInfo]?.[id as keyof (typeof contactInfo)["vendor"]] 
     : null;
-
   const totalDebit = mockLedgerEntries
     .filter((e) => e.type === "debit")
     .reduce((acc, e) => acc + e.amount, 0);
