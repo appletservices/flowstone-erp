@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -18,9 +19,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { FilterDialog, DateRange, FilterValue } from "@/components/filters/FilterDialog";
 
 interface LedgerEntry {
-  record:string|null;
+  record: string | null;
   narration: string;
   reference_no: string;
   tdate: string;
@@ -43,50 +45,70 @@ export default function VLedger() {
   const [ledgerData, setLedgerData] = useState<LedgerEntry[]>([]);
   const [vendorInfo, setVendorInfo] = useState<VendorInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
+  const [keyValues, setKeyValues] = useState<FilterValue[]>([]);
+
+  const fetchLedger = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("auth_token");
+      const url = new URL(`${import.meta.env.VITE_API_URL}/contacts/vendors/ledger/${id}`);
+      
+      if (searchQuery) url.searchParams.append("search", searchQuery);
+      if (dateRange.from) url.searchParams.append("from_date", format(dateRange.from, "yyyy-MM-dd"));
+      if (dateRange.to) url.searchParams.append("to_date", format(dateRange.to, "yyyy-MM-dd"));
+      keyValues.forEach((kv) => {
+        if (kv.key && kv.value) url.searchParams.append(kv.key, kv.value);
+      });
+
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        setLedgerData(result.data);
+        setVendorInfo(result.info);
+      } else {
+        toast.error(result.message || "Failed to fetch ledger");
+      }
+    } catch (error) {
+      console.error("Ledger Fetch Error:", error);
+      toast.error("Network error. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id, searchQuery, dateRange, keyValues]);
 
   useEffect(() => {
-    const fetchLedger = async () => {
-      setIsLoading(true);
-      try {
-        const token = localStorage.getItem("auth_token");
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/contacts/vendors/ledger/${id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+    if (id) {
+      const timer = setTimeout(() => {
+        fetchLedger();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [id, fetchLedger]);
 
-        const result = await response.json();
-        if (response.ok) {
-          setLedgerData(result.data);
-          setVendorInfo(result.info);
-        } else {
-          toast.error(result.message || "Failed to fetch ledger");
-        }
-      } catch (error) {
-        console.error("Ledger Fetch Error:", error);
-        toast.error("Network error. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const handleApplyFilters = (filters: { dateRange: DateRange; keyValues: FilterValue[] }) => {
+    setDateRange(filters.dateRange);
+    setKeyValues(filters.keyValues);
+  };
 
-    if (id) fetchLedger();
-  }, [id]);
+  const hasActiveFilters = !!dateRange.from || !!dateRange.to || keyValues.length > 0;
 
-  // Calculations based on API strings
-  const totalDebit = ledgerData.reduce((acc, e) => acc + parseFloat(e.debit), 0);
-  const totalCredit = ledgerData.reduce((acc, e) => acc + parseFloat(e.credit), 0);
-  // Using the balance from the last record in the array
+  const totalDebit = ledgerData.reduce((acc, e) => acc + parseFloat(e.debit || "0"), 0);
+  const totalCredit = ledgerData.reduce((acc, e) => acc + parseFloat(e.credit || "0"), 0);
   const currentBalance = ledgerData.length > 0 
     ? parseFloat(ledgerData[ledgerData.length - 1].balance) 
     : 0;
 
-  if (isLoading) {
+  if (isLoading && ledgerData.length === 0) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -104,7 +126,7 @@ export default function VLedger() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-foreground">
-              {vendorInfo?.name || "Ledger"}
+              {vendorInfo?.name || "Vendor Ledger"}
             </h1>
             <div className="flex items-center gap-2 mt-1">
               {vendorInfo && (
@@ -181,10 +203,22 @@ export default function VLedger() {
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search narration or reference..." className="pl-10" />
+          <Input 
+            placeholder="Search narration or reference..." 
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-        <Button variant="outline" className="gap-2">
-          <Filter className="w-4 h-4" /> Filter
+        {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+        <Button
+          variant="outline"
+          className={cn("gap-2", hasActiveFilters && "border-primary text-primary")}
+          onClick={() => setFilterDialogOpen(true)}
+        >
+          <Filter className="w-4 h-4" />
+          Filter
+          {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
         </Button>
       </div>
 
@@ -212,6 +246,7 @@ export default function VLedger() {
                       year: "numeric",
                     })}
                   </td>
+<<<<<<< HEAD
                   <td className="p-4 font-mono text-xs text-muted-foreground uppercase">
                      <button
                             onClick={() => entry.record && window.open(entry.record, '_blank')} // Opens in new tab
@@ -225,6 +260,21 @@ export default function VLedger() {
                             disabled={!entry.record} >
                             {entry.reference_no}
                         </button>
+=======
+                  <td className="p-4">
+                    <button
+                      onClick={() => entry.record && window.open(entry.record, '_blank')}
+                      className={cn(
+                        "font-mono text-xs uppercase transition-colors",
+                        entry.record 
+                          ? "text-primary hover:underline cursor-pointer font-medium" 
+                          : "text-muted-foreground cursor-default"
+                      )}
+                      disabled={!entry.record}
+                    >
+                      {entry.reference_no}
+                    </button>
+>>>>>>> c326f3c136df0f0f7c231326c558a1d778e6cbb2
                   </td>
                   <td className="p-4 text-sm font-medium">{entry.narration}</td>
                   <td className="p-4 text-right">
@@ -249,21 +299,30 @@ export default function VLedger() {
                   </td>
                 </tr>
               ))}
+              {!isLoading && ledgerData.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                    No entries found
+                  </td>
+                </tr>
+              )}
             </tbody>
-            <tfoot>
-              <tr className="bg-muted/30 font-bold border-t border-border">
-                <td colSpan={3} className="p-4 text-right text-sm">Totals</td>
-                <td className="p-4 text-right text-destructive">
-                  ₹{totalDebit.toLocaleString("en-IN")}
-                </td>
-                <td className="p-4 text-right text-success">
-                  ₹{totalCredit.toLocaleString("en-IN")}
-                </td>
-                <td className="p-4 text-right">
-                  ₹{Math.abs(currentBalance).toLocaleString("en-IN")}
-                </td>
-              </tr>
-            </tfoot>
+            {ledgerData.length > 0 && (
+              <tfoot>
+                <tr className="bg-muted/30 font-bold border-t border-border">
+                  <td colSpan={3} className="p-4 text-right text-sm">Totals</td>
+                  <td className="p-4 text-right text-destructive">
+                    ₹{totalDebit.toLocaleString("en-IN")}
+                  </td>
+                  <td className="p-4 text-right text-success">
+                    ₹{totalCredit.toLocaleString("en-IN")}
+                  </td>
+                  <td className="p-4 text-right">
+                    ₹{Math.abs(currentBalance).toLocaleString("en-IN")}
+                  </td>
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
 
@@ -282,6 +341,20 @@ export default function VLedger() {
           </div>
         </div>
       </div>
+
+      {/* Filter Dialog */}
+      <FilterDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        onApply={handleApplyFilters}
+        showDateRange={true}
+        filterFields={[
+          { key: "reference_no", label: "Reference No.", placeholder: "e.g. INV-001" },
+          { key: "type", label: "Transaction Type", placeholder: "debit or credit" },
+        ]}
+        initialDateRange={dateRange}
+        initialKeyValues={keyValues}
+      />
     </div>
   );
 }

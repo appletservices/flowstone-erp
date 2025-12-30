@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
+<<<<<<< HEAD
 import { Package, Loader2 } from "lucide-react";
+=======
+import { Package, Loader2, User } from "lucide-react";
+>>>>>>> c326f3c136df0f0f7c231326c558a1d778e6cbb2
 import { z } from "zod";
 
 /* ---------------- Validation ---------------- */
@@ -27,6 +31,10 @@ const Auth = () => {
   const [checkingSession, setCheckingSession] = useState(true);
 
   const navigate = useNavigate();
+<<<<<<< HEAD
+=======
+  const location = useLocation();
+>>>>>>> c326f3c136df0f0f7c231326c558a1d778e6cbb2
 
   /* ---------------- Existing Session ---------------- */
   useEffect(() => {
@@ -37,17 +45,48 @@ const Auth = () => {
     setCheckingSession(false);
   }, [navigate]);
 
+<<<<<<< HEAD
   /* ---------------- Login ---------------- */
+=======
+  /* ---------------- Demo Login ---------------- */
+  const handleDemoLogin = () => {
+    setLoading(true);
+
+    setTimeout(() => {
+      localStorage.setItem("auth_token", "demo-token");
+      localStorage.setItem("auth_user", JSON.stringify(DEMO_ACCOUNT.user));
+
+      toast.success("Demo Login Successful");
+      navigate("/", { replace: true });
+      setLoading(false);
+    }, 500);
+  };
+
+  /* ---------------- Real Login ---------------- */
+>>>>>>> c326f3c136df0f0f7c231326c558a1d778e6cbb2
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!emailSchema.safeParse(email).success) {
+<<<<<<< HEAD
       toast.error("Invalid email address");
+=======
+      toast.error("Invalid email");
+>>>>>>> c326f3c136df0f0f7c231326c558a1d778e6cbb2
       return;
     }
 
     if (!passwordSchema.safeParse(password).success) {
       toast.error("Password must be at least 4 characters");
+<<<<<<< HEAD
+=======
+      return;
+    }
+
+    // Demo credentials
+    if (email === DEMO_ACCOUNT.email && password === DEMO_ACCOUNT.password) {
+      handleDemoLogin();
+>>>>>>> c326f3c136df0f0f7c231326c558a1d778e6cbb2
       return;
     }
 
@@ -78,7 +117,11 @@ const Auth = () => {
       // ✅ Always go to root
       navigate("/", { replace: true });
     } catch (error: any) {
+<<<<<<< HEAD
       toast.error(error.message || "Authentication failed");
+=======
+      toast.error(error.message || "Authentication Failed");
+>>>>>>> c326f3c136df0f0f7c231326c558a1d778e6cbb2
     } finally {
       setLoading(false);
     }
