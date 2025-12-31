@@ -9,7 +9,6 @@ import { RolesProvider } from "@/hooks/useRoles";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PermissionGuard } from "@/components/layout/PermissionGuard";
-import { NavigationProgress } from "@/components/layout/NavigationProgress";
 
 import Dashboard from "@/pages/Dashboard";
 import ChartOfAccounts from "@/pages/ChartOfAccounts";
@@ -44,7 +43,6 @@ const App = () => (
       <AuthProvider>
         <RolesProvider>
           <TooltipProvider>
-            <NavigationProgress />
             <Toaster />
             <Sonner />
 

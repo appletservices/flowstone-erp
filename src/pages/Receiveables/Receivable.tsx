@@ -38,11 +38,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-<<<<<<< HEAD
 import { useBackendSearch } from "@/components/filters/useBackendSearch";
-=======
-import { useBackendSearch } from "@/hooks/useBackendSearch";
->>>>>>> c326f3c136df0f0f7c231326c558a1d778e6cbb2
 import { FilterDialog } from "@/components/filters/FilterDialog";
 import { Badge } from "@/components/ui/badge";
 

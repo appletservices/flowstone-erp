@@ -246,7 +246,6 @@ export default function VLedger() {
                       year: "numeric",
                     })}
                   </td>
-<<<<<<< HEAD
                   <td className="p-4 font-mono text-xs text-muted-foreground uppercase">
                      <button
                             onClick={() => entry.record && window.open(entry.record, '_blank')} // Opens in new tab
@@ -260,21 +259,6 @@ export default function VLedger() {
                             disabled={!entry.record} >
                             {entry.reference_no}
                         </button>
-=======
-                  <td className="p-4">
-                    <button
-                      onClick={() => entry.record && window.open(entry.record, '_blank')}
-                      className={cn(
-                        "font-mono text-xs uppercase transition-colors",
-                        entry.record 
-                          ? "text-primary hover:underline cursor-pointer font-medium" 
-                          : "text-muted-foreground cursor-default"
-                      )}
-                      disabled={!entry.record}
-                    >
-                      {entry.reference_no}
-                    </button>
->>>>>>> c326f3c136df0f0f7c231326c558a1d778e6cbb2
                   </td>
                   <td className="p-4 text-sm font-medium">{entry.narration}</td>
                   <td className="p-4 text-right">

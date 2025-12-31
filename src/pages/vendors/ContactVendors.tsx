@@ -161,13 +161,8 @@ export default function ContactVendors() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-<<<<<<< HEAD
           <h1 className="text-2xl font-bold text-foreground">Receiveables</h1>
           <p className="text-muted-foreground">Manage customer receivables and payments</p>
-=======
-          <h1 className="text-2xl font-bold text-foreground">Vendors</h1>
-          <p className="text-muted-foreground">Manage your vendor relationships</p>
->>>>>>> c326f3c136df0f0f7c231326c558a1d778e6cbb2
         </div>
         <ContactFormDialog
           trigger={<Button className="gap-2"><Plus className="w-4 h-4" /> Add Customer</Button>}
@@ -189,13 +184,8 @@ export default function ContactVendors() {
               <User className="w-6 h-6 text-foreground" />
             </div>
             <div>
-<<<<<<< HEAD
               <p className="text-sm text-muted-foreground">Total Customers</p>
               <p className="text-2xl font-bold">{summary?.total_contacts || 0}</p>
-=======
-              <p className="text-sm text-muted-foreground">Total Vendors</p>
-              <p className="text-2xl font-bold">{summary?.total_contacts || vendors.length}</p>
->>>>>>> c326f3c136df0f0f7c231326c558a1d778e6cbb2
             </div>
           </div>
         </div>
