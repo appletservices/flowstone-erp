@@ -43,6 +43,7 @@ import PurchaseReturn from "@/pages/PurchaseReturn";
 import PurchaseReturnForm from "@/pages/PurchaseReturnForm";
 import PurchaseReturnDetail from "@/pages/PurchaseReturnDetail";
 import PurchaseReport from "@/pages/PurchaseReport";
+import PaymentReport from "@/pages/PaymentReport";
 
 const queryClient = new QueryClient();
 
@@ -105,6 +106,7 @@ const App = () => (
                 <Route path="/katae/issued" element={<PermissionGuard permissionId="katae_issued"><IssuedKatae /></PermissionGuard>} />
                 <Route path="/katae/issued-material/:id" element={<KataeIssuedMaterial />} />
                 <Route path="/reports/purchase" element={<PermissionGuard permissionId="report_purchase"><PurchaseReport /></PermissionGuard>} />
+                <Route path="/reports/payment" element={<PermissionGuard permissionId="report_payment"><PaymentReport /></PermissionGuard>} />
               </Route>
 
               {/* 404 */}
