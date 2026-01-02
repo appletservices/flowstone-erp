@@ -70,6 +70,7 @@ export default function RawInventory() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<RawInventoryItem | null>(null);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -100,9 +101,40 @@ export default function RawInventory() {
       return;
     }
 
-    toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
-    resetForm();
-    refresh();
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/raw/store`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          opening_qty: formData.openingQty,
+          total_qty: formData.totalQty || formData.openingQty,
+          converted_qty: formData.convertedQty || "0",
+          unit: formData.unit,
+          avg_cost: formData.averageCost || "0",
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
+        resetForm();
+        refresh();
+      } else {
+        toast.error(result.message || "Failed to save item");
+      }
+    } catch (error) {
+      console.error("Submit error:", error);
+      toast.error("Failed to save item");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetForm = () => {
@@ -224,7 +256,8 @@ export default function RawInventory() {
                   onChange={(e) => setFormData({ ...formData, averageCost: e.target.value })}
                 />
               </div>
-              <Button onClick={handleSubmit} className="w-full">
+              <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {editingItem ? "Update Item" : "Add Item"}
               </Button>
             </div>
@@ -234,10 +267,10 @@ export default function RawInventory() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-card rounded-xl border border-border p-5">
+        <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-primary/10">
-              <Box className="w-6 h-6 text-primary" />
+            <div className="p-3 rounded-xl bg-muted">
+              <Box className="w-6 h-6 text-foreground" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Items</p>
@@ -245,7 +278,7 @@ export default function RawInventory() {
             </div>
           </div>
         </div>
-        <div className="bg-card rounded-xl border border-border p-5">
+        <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-success/10">
               <Box className="w-6 h-6 text-success" />
@@ -256,7 +289,7 @@ export default function RawInventory() {
             </div>
           </div>
         </div>
-        <div className="bg-card rounded-xl border border-border p-5">
+        <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-warning/10">
               <Box className="w-6 h-6 text-warning" />
@@ -269,55 +302,57 @@ export default function RawInventory() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search items by name..." 
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      {/* Inventory Table with Search/Filter in Header */}
+      <div className="bg-card rounded-xl border border-border">
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          <h3 className="font-semibold">All Items</h3>
+          <div className="flex items-center gap-4">
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input 
+                placeholder="Search items..." 
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn("gap-2", hasActiveFilters && "border-primary text-primary")}
+              onClick={() => setFilterDialogOpen(true)}
+            >
+              <Filter className="w-4 h-4" />
+              Filter
+              {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
+            </Button>
+          </div>
         </div>
-        {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
-        <Button
-          variant="outline"
-          className={cn("gap-2", hasActiveFilters && "border-primary text-primary")}
-          onClick={() => setFilterDialogOpen(true)}
-        >
-          <Filter className="w-4 h-4" />
-          Filter
-          {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
-        </Button>
-      </div>
 
-      {/* Inventory Table */}
-      <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
-        <div className="overflow-x-auto min-h-[300px]">
-          <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto">
+          <table className="data-table">
             <thead>
-              <tr className="bg-muted/50 border-b border-border">
-                <th className="p-4 text-sm font-semibold">Name</th>
-                <th className="p-4 text-sm font-semibold text-right">Opening Qty</th>
-                <th className="p-4 text-sm font-semibold text-right">Total Qty</th>
-                <th className="p-4 text-sm font-semibold text-right">Converted Qty</th>
-                <th className="p-4 text-sm font-semibold">Unit</th>
-                <th className="p-4 text-sm font-semibold text-right">Avg. Cost</th>
-                <th className="p-4 text-sm font-semibold text-center">Actions</th>
+              <tr>
+                <th>Name</th>
+                <th className="text-right">Opening Qty</th>
+                <th className="text-right">Total Qty</th>
+                <th className="text-right">Converted Qty</th>
+                <th>Unit</th>
+                <th className="text-right">Avg. Cost</th>
+                <th></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody>
               {items.map((item) => (
-                <tr key={item.id} className="hover:bg-muted/30 transition-colors animate-fade-in">
-                  <td className="p-4 font-medium">{item.name}</td>
-                  <td className="p-4 text-right text-sm">{parseFloat(item.opening_qty || "0").toLocaleString()}</td>
-                  <td className="p-4 text-right font-medium text-sm">{parseFloat(item.total_qty || "0").toLocaleString()}</td>
-                  <td className="p-4 text-right text-muted-foreground text-sm">{parseFloat(item.converted_qty || "0").toLocaleString()}</td>
-                  <td className="p-4 text-sm">{item.unit}</td>
-                  <td className="p-4 text-right text-sm">₹{parseFloat(item.avg_cost || "0").toLocaleString()}</td>
-              
-                  <td className="p-4 text-center">
+                <tr key={item.id} className="animate-fade-in">
+                  <td className="font-medium">{item.name}</td>
+                  <td className="text-right text-muted-foreground">{parseFloat(item.opening_qty || "0").toLocaleString()}</td>
+                  <td className="text-right font-medium">{parseFloat(item.total_qty || "0").toLocaleString()}</td>
+                  <td className="text-right text-muted-foreground">{parseFloat(item.converted_qty || "0").toLocaleString()}</td>
+                  <td className="text-sm">{item.unit}</td>
+                  <td className="text-right font-medium text-success">₹{parseFloat(item.avg_cost || "0").toLocaleString()}</td>
+                  <td>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -353,12 +388,13 @@ export default function RawInventory() {
         </div>
 
         {/* Pagination Footer */}
-        <div className="p-4 border-t border-border flex items-center justify-between bg-card">
+        <div className="p-4 border-t border-border flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing <span className="font-medium">{items.length}</span> results
+            Showing {items.length} results
           </p>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" disabled>Previous</Button>
+            <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">1</Button>
             <Button variant="outline" size="sm" disabled>Next</Button>
           </div>
         </div>
