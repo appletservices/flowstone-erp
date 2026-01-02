@@ -28,6 +28,7 @@ import {
     RotateCcw,
   FileBarChart,
   FileText,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRoles } from "@/hooks/useRoles";
@@ -98,6 +99,7 @@ const menuItems: MenuItem[] = [
     icon: FileBarChart,
     children: [
       { label: "Purchase Report", path: "/reports/purchase", icon: FileText, permissionId: "report_purchase" },
+      { label: "Payment Report", path: "/reports/payment", icon: CreditCard, permissionId: "report_payment" },
     ],
   },
   {
