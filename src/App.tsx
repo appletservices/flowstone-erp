@@ -19,6 +19,8 @@ import KataeProduct from "@/pages/inventory/katae/KataeProduct";
 import FinishInventory from "@/pages/inventory/finish/FinishInventory";
 import Vendors from "@/pages/Vendors";
 import Purchase from "@/pages/Purchase";
+import PurchaseOrderDetail from "@/pages/PurchaseOrderDetail";
+import PurchaseOrderForm from "@/pages/PurchaseOrderForm";
 import Sales from "@/pages/Sales";
 import Settings from "@/pages/Settings";
 import Units from "@/pages/Units";
@@ -34,6 +36,13 @@ import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 import RoleManagement from "@/pages/RoleManagement";
 import Security from "@/pages/Security";
+
+import IssuedKatae from "@/pages/IssuedKatae";
+import KataeIssuedMaterial from "@/pages/KataeIssuedMaterial";
+import PurchaseReturn from "@/pages/PurchaseReturn";
+import PurchaseReturnForm from "@/pages/PurchaseReturnForm";
+import PurchaseReturnDetail from "@/pages/PurchaseReturnDetail";
+import PurchaseReport from "@/pages/PurchaseReport";
 
 const queryClient = new QueryClient();
 
@@ -67,7 +76,16 @@ const App = () => (
                  <Route path="/inventory/katae" element={<PermissionGuard permissionId="inventory_katae"><KataeProduct /></PermissionGuard>} />
                 {/* <Route path="/inventory/:category" element={<PermissionGuard permissionId="inventory_overview"><Inventory /></PermissionGuard>} /> */}
                 <Route path="/vendors" element={<Vendors />} />
-                <Route path="/purchase" element={<PermissionGuard permissionId="purchase"><Purchase /></PermissionGuard>} />
+                <Route path="/inventory/purchase" element={<PermissionGuard permissionId="purchase"><Purchase /></PermissionGuard>} />
+                <Route path="/inventory/purchase/new" element={<PermissionGuard permissionId="purchase"><PurchaseOrderForm /></PermissionGuard>} />
+                <Route path="/inventory/purchase/:id/edit" element={<PermissionGuard permissionId="purchase"><PurchaseOrderForm /></PermissionGuard>} />
+                <Route path="/inventory/purchase/:id" element={<PermissionGuard permissionId="purchase"><PurchaseOrderDetail /></PermissionGuard>} />
+
+                <Route path="/purchase-return" element={<PermissionGuard permissionId="purchase_return"><PurchaseReturn /></PermissionGuard>} />
+                <Route path="/purchase-return/new" element={<PermissionGuard permissionId="purchase_return"><PurchaseReturnForm /></PermissionGuard>} />
+                <Route path="/purchase-return/:id/edit" element={<PermissionGuard permissionId="purchase_return"><PurchaseReturnForm /></PermissionGuard>} />
+                <Route path="/purchase-return/:id" element={<PermissionGuard permissionId="purchase_return"><PurchaseReturnDetail /></PermissionGuard>} />
+
                 <Route path="/sales" element={<PermissionGuard permissionId="sales"><Sales /></PermissionGuard>} />
                 <Route path="/settings" element={<PermissionGuard permissionId="settings"><Settings /></PermissionGuard>} />
                 <Route path="/settings/roles" element={<PermissionGuard permissionId="role_management"><RoleManagement /></PermissionGuard>} />
@@ -84,6 +102,9 @@ const App = () => (
                 <Route path="/ledger/inventory/:id" element={<Ledger />} />
                 <Route path="/contacts/ledger/vendor/:id" element={<VLedger />} />
                 <Route path="/contacts/ledger/receiveable/:id" element={<RcLedger />} />
+                <Route path="/katae/issued" element={<PermissionGuard permissionId="katae_issued"><IssuedKatae /></PermissionGuard>} />
+                <Route path="/katae/issued-material/:id" element={<KataeIssuedMaterial />} />
+                <Route path="/reports/purchase" element={<PermissionGuard permissionId="report_purchase"><PurchaseReport /></PermissionGuard>} />
               </Route>
 
               {/* 404 */}

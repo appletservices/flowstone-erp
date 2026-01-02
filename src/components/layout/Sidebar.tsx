@@ -23,6 +23,11 @@ import {
   Cog,
   FolderOpen,
   Shield,
+  Factory,
+  Send,
+    RotateCcw,
+  FileBarChart,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRoles } from "@/hooks/useRoles";
@@ -59,6 +64,23 @@ const menuItems: MenuItem[] = [
       { label: "Finished Product", path: "/inventory/finish", icon: PackageCheck, permissionId: "inventory_finished" },
     ],
   },
+
+  //  {
+  //   label: "Katae",
+  //   icon: Factory,
+  //   children: [
+  //     { label: "Issued", path: "/katae/issued", icon: Send, permissionId: "katae_issued" },
+  //   ],
+  // },
+
+  {
+    label: "Katae",
+    icon: Factory,
+    children: [
+      { label: "Issued", path: "/katae/issued", icon: Send,permissionId: "katae_issued"},
+    ],
+  },
+
   {
     label: "Setup",
     icon: Wrench,
@@ -68,8 +90,16 @@ const menuItems: MenuItem[] = [
       { label: "Expense Categories", path: "/setup/expense-categories", icon: FolderOpen, permissionId: "setup_expense" },
     ],
   },
-  { label: "Purchase", icon: ShoppingCart, path: "/purchase", permissionId: "purchase" },
+  { label: "Purchase", icon: ShoppingCart, path: "/inventory/purchase", permissionId: "purchase" },
+  { label: "Purchase Return", icon: RotateCcw, path: "/purchase-return", permissionId: "purchase_return" },
   { label: "Sales", icon: Receipt, path: "/sales", permissionId: "sales" },
+   {
+    label: "Reports",
+    icon: FileBarChart,
+    children: [
+      { label: "Purchase Report", path: "/reports/purchase", icon: FileText, permissionId: "report_purchase" },
+    ],
+  },
   {
     label: "Settings",
     icon: Settings,

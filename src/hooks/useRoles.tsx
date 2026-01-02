@@ -40,7 +40,10 @@ export const ALL_MODULES: Module[] = [
   { id: "setup_machines", label: "Machines", path: "/setup/machines", category: "Setup" },
   { id: "setup_expense", label: "Expense Categories", path: "/setup/expense-categories", category: "Setup" },
   { id: "purchase", label: "Purchase", path: "/purchase", category: "Operations" },
+  { id: "purchase_return", label: "Purchase Return", path: "/purchase-return", category: "Operations" },
   { id: "sales", label: "Sales", path: "/sales", category: "Operations" },
+  { id: "katae_issued", label: "Issued Katae", path: "/katae/issued", category: "Katae" },
+  { id: "report_purchase", label: "Purchase Report", path: "/reports/purchase", category: "Reports" },
   { id: "settings", label: "Settings", path: "/settings", category: "Admin" },
   { id: "role_management", label: "Role Management", path: "/settings/roles", category: "Admin" },
   { id: "security", label: "Security", path: "/settings/security", category: "Admin" },
@@ -70,54 +73,22 @@ const noPermissions = (): ModulePermissions => ({
   delete: false,
 });
 
-// Default permissions for each role
+// Default permissions for each role - Only admin has full access
 const DEFAULT_ROLE_PERMISSIONS: RolePermissions = {
   admin: ALL_MODULES.reduce((acc, module) => {
     acc[module.id] = fullPermissions();
     return acc;
   }, {} as { [moduleId: string]: ModulePermissions }),
   
-  manager: {
-    dashboard: fullPermissions(),
-    accounts: fullPermissions(),
-    contact_receivable: fullPermissions(),
-    contact_vendors: fullPermissions(),
-    contact_others: fullPermissions(),
-    inventory_overview: fullPermissions(),
-    inventory_raw: fullPermissions(),
-    inventory_design: fullPermissions(),
-    inventory_katae: fullPermissions(),
-    inventory_finished: fullPermissions(),
-    setup_units: { view: true, create: true, update: true, delete: false },
-    setup_machines: { view: true, create: true, update: true, delete: false },
-    setup_expense: { view: true, create: true, update: true, delete: false },
-    purchase: fullPermissions(),
-    sales: fullPermissions(),
-    settings: viewOnly(),
-    role_management: noPermissions(),
-    security: noPermissions(),
-  },
+  manager: ALL_MODULES.reduce((acc, module) => {
+    acc[module.id] = noPermissions();
+    return acc;
+  }, {} as { [moduleId: string]: ModulePermissions }),
   
-  user: {
-    dashboard: viewOnly(),
-    accounts: noPermissions(),
-    contact_receivable: viewOnly(),
-    contact_vendors: viewOnly(),
-    contact_others: viewOnly(),
-    inventory_overview: viewOnly(),
-    inventory_raw: { view: true, create: true, update: false, delete: false },
-    inventory_design: { view: true, create: true, update: false, delete: false },
-    inventory_katae: { view: true, create: true, update: false, delete: false },
-    inventory_finished: { view: true, create: true, update: false, delete: false },
-    setup_units: noPermissions(),
-    setup_machines: noPermissions(),
-    setup_expense: noPermissions(),
-    purchase: { view: true, create: true, update: false, delete: false },
-    sales: { view: true, create: true, update: false, delete: false },
-    settings: noPermissions(),
-    role_management: noPermissions(),
-    security: noPermissions(),
-  },
+  user: ALL_MODULES.reduce((acc, module) => {
+    acc[module.id] = noPermissions();
+    return acc;
+  }, {} as { [moduleId: string]: ModulePermissions }),
 };
 
 interface RolesContextType {
