@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   Filter,
@@ -6,6 +6,7 @@ import {
   MoreHorizontal,
   Palette,
   CalendarIcon,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -39,145 +40,194 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useBackendSearch } from "@/hooks/useBackendSearch";
+import { FilterDialog } from "@/components/filters/FilterDialog";
+
+const API_URL = "https://crm.dripcot.com/api";
 
 interface DesignItem {
-  id: string;
+  id: number;
   name: string;
-  product: string;
-  designCode: string;
-  openingQty: number;
-  totalQty: number;
-  avgCost: number;
+  product_id: number;
+  product_name?: string;
+  opening_qty: string;
+  total_qty: string;
+  avg_cost: string;
   unit: string;
 }
 
-const products = [
-  { value: "carpet", label: "Carpet" },
-  { value: "rug", label: "Rug" },
-  { value: "mat", label: "Mat" },
-  { value: "runner", label: "Runner" },
-  { value: "tapestry", label: "Tapestry" },
-];
-
-const units = [
-  { value: "pcs", label: "Pieces" },
-  { value: "sqm", label: "Square Meter" },
-  { value: "sqft", label: "Square Feet" },
-  { value: "meter", label: "Meter" },
-];
-
-const designItems: DesignItem[] = [
-  {
-    id: "1",
-    name: "Traditional Floral",
-    product: "carpet",
-    designCode: "DSN-001",
-    openingQty: 50,
-    totalQty: 120,
-    avgCost: 2500,
-    unit: "pcs",
-  },
-  {
-    id: "2",
-    name: "Modern Geometric",
-    product: "rug",
-    designCode: "DSN-002",
-    openingQty: 30,
-    totalQty: 85,
-    avgCost: 1800,
-    unit: "pcs",
-  },
-  {
-    id: "3",
-    name: "Vintage Pattern",
-    product: "tapestry",
-    designCode: "DSN-003",
-    openingQty: 15,
-    totalQty: 45,
-    avgCost: 3200,
-    unit: "sqm",
-  },
-  {
-    id: "4",
-    name: "Minimalist Lines",
-    product: "runner",
-    designCode: "DSN-004",
-    openingQty: 25,
-    totalQty: 60,
-    avgCost: 1200,
-    unit: "meter",
-  },
-  {
-    id: "5",
-    name: "Abstract Art",
-    product: "mat",
-    designCode: "DSN-005",
-    openingQty: 100,
-    totalQty: 250,
-    avgCost: 450,
-    unit: "pcs",
-  },
-];
+interface ProductOption {
+  id: number;
+  name: string;
+}
 
 interface FormData {
+  id?: number;
   name: string;
-  product: string;
-  designCode: string;
-  openingQuantity: string;
-  perUnitCost: string;
+  product_id: string;
+  opening_qty: string;
+  per_unit_cost: string;
   date: Date | undefined;
 }
 
 const emptyFormData: FormData = {
   name: "",
-  product: "",
-  designCode: "",
-  openingQuantity: "",
-  perUnitCost: "",
+  product_id: "",
+  opening_qty: "",
+  per_unit_cost: "",
   date: undefined,
 };
 
 export default function DesignInventory() {
-  const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>(emptyFormData);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [products, setProducts] = useState<ProductOption[]>([]);
+  const [designItems, setDesignItems] = useState<DesignItem[]>([]);
+  const [recordsTotal, setRecordsTotal] = useState(0);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
-  const filteredItems = designItems.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.designCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.product.toLowerCase().includes(searchQuery.toLowerCase())
+  const {
+    searchQuery,
+    setSearchQuery,
+    dateRange,
+    keyValues,
+    applyFilters,
+    clearFilters,
+    hasActiveFilters,
+  } = useBackendSearch<DesignItem>({ endpoint: "/inventory/design/list" });
+
+  // Fetch products from dropdown API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const token = localStorage.getItem("auth_token");
+        const response = await fetch(`${API_URL}/inventory/raw/dropdown`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const result = await response.json();
+        if (result.data) {
+          setProducts(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  // Fetch design inventory list
+  const fetchDesignItems = async () => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      const params = new URLSearchParams();
+      if (searchQuery) params.append("search", searchQuery);
+      
+      const response = await fetch(`${API_URL}/inventory/design/list?${params}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await response.json();
+      if (result.data) {
+        setDesignItems(result.data);
+        setRecordsTotal(result.recordsTotal || result.data.length);
+      }
+    } catch (error) {
+      console.error("Failed to fetch design items:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDesignItems();
+  }, [searchQuery]);
+
+  const totalItems = recordsTotal;
+  const totalValue = designItems.reduce(
+    (acc, item) => acc + parseFloat(item.total_qty || "0") * parseFloat(item.avg_cost || "0"),
+    0
   );
 
-  const totalItems = designItems.length;
-  const totalValue = designItems.reduce((acc, item) => acc + item.totalQty * item.avgCost, 0);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.product || !formData.designCode) {
+    if (!formData.name || !formData.product_id) {
       toast.error("Please fill in required fields");
       return;
     }
 
-    toast.success("Design item added successfully");
-    setDialogOpen(false);
-    setFormData(emptyFormData);
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem("auth_token");
+      const endpoint = isEditing 
+        ? `${API_URL}/inventory/design/update`
+        : `${API_URL}/inventory/design/store`;
+
+      const payload = {
+        ...(isEditing && { id: formData.id }),
+        name: formData.name,
+        product_id: formData.product_id,
+        opening_qty: formData.opening_qty || "0",
+        per_unit_cost: formData.per_unit_cost || "0",
+        date: formData.date ? format(formData.date, "yyyy-MM-dd") : null,
+      };
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success !== false) {
+        toast.success(isEditing ? "Design item updated successfully" : "Design item added successfully");
+        setDialogOpen(false);
+        setFormData(emptyFormData);
+        setIsEditing(false);
+        fetchDesignItems();
+      } else {
+        toast.error(result.message || "Failed to save design item");
+      }
+    } catch (error) {
+      console.error("Failed to save design item:", error);
+      toast.error("Failed to save design item");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEdit = (item: DesignItem) => {
+    setFormData({
+      id: item.id,
+      name: item.name,
+      product_id: String(item.product_id),
+      opening_qty: item.opening_qty,
+      per_unit_cost: item.avg_cost,
+      date: undefined,
+    });
+    setIsEditing(true);
+    setDialogOpen(true);
   };
 
   const handleDialogOpenChange = (open: boolean) => {
     setDialogOpen(open);
     if (!open) {
       setFormData(emptyFormData);
+      setIsEditing(false);
     }
   };
 
-  const getProductName = (value: string) => {
-    return products.find((p) => p.value === value)?.label || value;
-  };
-
-  const getUnitName = (value: string) => {
-    return units.find((u) => u.value === value)?.label || value;
+  const getProductName = (productId: number) => {
+    return products.find((p) => p.id === productId)?.name || String(productId);
   };
 
   return (
@@ -199,7 +249,7 @@ export default function DesignInventory() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px] bg-card">
             <DialogHeader>
-              <DialogTitle>Add Design Item</DialogTitle>
+              <DialogTitle>{isEditing ? "Edit Design Item" : "Add Design Item"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               {/* Name */}
@@ -213,68 +263,53 @@ export default function DesignInventory() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                {/* Product Dropdown */}
-                <div className="space-y-2">
-                  <Label htmlFor="product">Product *</Label>
-                  <Select
-                    value={formData.product}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, product: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select product" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card">
-                      {products.map((product) => (
-                        <SelectItem key={product.value} value={product.value}>
-                          {product.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Design Code */}
-                <div className="space-y-2">
-                  <Label htmlFor="designCode">Design Code *</Label>
-                  <Input
-                    id="designCode"
-                    placeholder="Enter design code"
-                    value={formData.designCode}
-                    onChange={(e) =>
-                      setFormData({ ...formData, designCode: e.target.value })
-                    }
-                  />
-                </div>
+              {/* Product Dropdown */}
+              <div className="space-y-2">
+                <Label htmlFor="product">Product *</Label>
+                <Select
+                  value={formData.product_id}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, product_id: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select product" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card">
+                    {products.map((product) => (
+                      <SelectItem key={product.id} value={String(product.id)}>
+                        {product.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 {/* Opening Quantity */}
                 <div className="space-y-2">
-                  <Label htmlFor="openingQuantity">Opening Quantity</Label>
+                  <Label htmlFor="opening_qty">Opening Quantity</Label>
                   <Input
-                    id="openingQuantity"
+                    id="opening_qty"
                     type="number"
                     placeholder="Enter quantity"
-                    value={formData.openingQuantity}
+                    value={formData.opening_qty}
                     onChange={(e) =>
-                      setFormData({ ...formData, openingQuantity: e.target.value })
+                      setFormData({ ...formData, opening_qty: e.target.value })
                     }
                   />
                 </div>
 
                 {/* Per Unit Cost */}
                 <div className="space-y-2">
-                  <Label htmlFor="perUnitCost">Per Unit Cost</Label>
+                  <Label htmlFor="per_unit_cost">Per Unit Cost</Label>
                   <Input
-                    id="perUnitCost"
+                    id="per_unit_cost"
                     type="number"
                     placeholder="Enter cost"
-                    value={formData.perUnitCost}
+                    value={formData.per_unit_cost}
                     onChange={(e) =>
-                      setFormData({ ...formData, perUnitCost: e.target.value })
+                      setFormData({ ...formData, per_unit_cost: e.target.value })
                     }
                   />
                 </div>
@@ -312,7 +347,10 @@ export default function DesignInventory() {
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">Save</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isEditing ? "Update" : "Save"}
+                </Button>
               </div>
             </form>
           </DialogContent>
@@ -340,7 +378,7 @@ export default function DesignInventory() {
             <div>
               <p className="text-sm text-muted-foreground">Product Types</p>
               <p className="text-2xl font-bold">
-                {new Set(designItems.map((d) => d.product)).size}
+                {new Set(designItems.map((d) => d.product_id)).size}
               </p>
             </div>
           </div>
@@ -372,10 +410,23 @@ export default function DesignInventory() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={cn("gap-2", hasActiveFilters && "border-primary")}
+              onClick={() => setFilterDialogOpen(true)}
+            >
               <Filter className="w-4 h-4" />
               Filter
+              {hasActiveFilters && <span className="h-2 w-2 rounded-full bg-primary" />}
             </Button>
+            <FilterDialog
+              open={filterDialogOpen}
+              onOpenChange={setFilterDialogOpen}
+              onApply={applyFilters}
+              initialDateRange={dateRange}
+              initialKeyValues={keyValues}
+            />
           </div>
         </div>
 
@@ -393,21 +444,21 @@ export default function DesignInventory() {
               </tr>
             </thead>
             <tbody>
-              {filteredItems.map((item) => (
+              {designItems.map((item) => (
                 <tr key={item.id} className="animate-fade-in">
                   <td className="font-medium">{item.name}</td>
                   <td>
                     <span className="text-sm capitalize">
-                      {getProductName(item.product)}
+                      {item.product_name || getProductName(item.product_id)}
                     </span>
                   </td>
-                  <td className="text-muted-foreground">{item.openingQty}</td>
-                  <td className="font-medium">{item.totalQty}</td>
+                  <td className="text-muted-foreground">{parseFloat(item.opening_qty).toLocaleString()}</td>
+                  <td className="font-medium">{parseFloat(item.total_qty).toLocaleString()}</td>
                   <td className="font-medium text-success">
-                    Rs. {item.avgCost.toLocaleString()}
+                    Rs. {parseFloat(item.avg_cost).toLocaleString()}
                   </td>
                   <td className="text-sm text-muted-foreground">
-                    {getUnitName(item.unit)}
+                    {item.unit}
                   </td>
                   <td>
                     <DropdownMenu>
@@ -418,7 +469,7 @@ export default function DesignInventory() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-card">
                         <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit Design</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEdit(item)}>Edit Design</DropdownMenuItem>
                         <DropdownMenuItem>Update Stock</DropdownMenuItem>
                         <DropdownMenuItem>Delete</DropdownMenuItem>
                       </DropdownMenuContent>
@@ -433,7 +484,7 @@ export default function DesignInventory() {
         {/* Pagination */}
         <div className="p-4 border-t border-border flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {filteredItems.length} of {designItems.length} designs
+            Showing {designItems.length} of {recordsTotal} designs
           </p>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" disabled>
@@ -442,13 +493,6 @@ export default function DesignInventory() {
             <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">
               1
             </Button>
-            <Button variant="outline" size="sm">
-              2
-            </Button>
-            <Button variant="outline" size="sm">
-              3
-            </Button>
-            <span className="text-muted-foreground">...</span>
             <Button variant="outline" size="sm">
               Next
             </Button>
