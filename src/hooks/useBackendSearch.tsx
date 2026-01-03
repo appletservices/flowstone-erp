@@ -145,10 +145,10 @@ export function useBackendSearch<T>({
     };
   }, [searchQuery, debounceMs, fetchData, dateRange, keyValues, currentPage, pageSize]);
 
-  // Reset to first page when search/filters change
+  // Reset to first page when search/filters/pageSize change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, dateRange, keyValues]);
+  }, [searchQuery, dateRange, keyValues, pageSize]);
 
   const applyFilters = useCallback(
     (filters: { dateRange: DateRange; keyValues: FilterValue[] }) => {
