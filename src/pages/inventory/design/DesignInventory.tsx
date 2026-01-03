@@ -84,19 +84,27 @@ export default function DesignInventory() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [products, setProducts] = useState<ProductOption[]>([]);
-  const [designItems, setDesignItems] = useState<DesignItem[]>([]);
-  const [recordsTotal, setRecordsTotal] = useState(0);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
   const {
+    data: designItems,
+    isLoading,
     searchQuery,
     setSearchQuery,
     dateRange,
     keyValues,
     applyFilters,
-    clearFilters,
     hasActiveFilters,
-  } = useBackendSearch<DesignItem>({ endpoint: "/inventory/design/list" });
+    refresh,
+    pagination,
+    currentPage,
+    setCurrentPage,
+    nextPage,
+    previousPage,
+  } = useBackendSearch<DesignItem>({ 
+    endpoint: "/inventory/design/list",
+    pageSize: 10,
+  });
 
   // Fetch products from dropdown API
   useEffect(() => {
@@ -119,33 +127,6 @@ export default function DesignInventory() {
     };
     fetchProducts();
   }, []);
-
-  // Fetch design inventory list
-  const fetchDesignItems = async () => {
-    try {
-      const token = localStorage.getItem("auth_token");
-      const params = new URLSearchParams();
-      if (searchQuery) params.append("search", searchQuery);
-      
-      const response = await fetch(`${API_URL}/inventory/design/list?${params}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      const result = await response.json();
-      if (result.data) {
-        setDesignItems(result.data);
-        setRecordsTotal(result.recordsTotal || result.data.length);
-      }
-    } catch (error) {
-      console.error("Failed to fetch design items:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchDesignItems();
-  }, [searchQuery]);
 
 
 
@@ -189,7 +170,7 @@ export default function DesignInventory() {
         setDialogOpen(false);
         setFormData(emptyFormData);
         setIsEditing(false);
-        fetchDesignItems();
+        refresh();
       } else {
         toast.error(result.message || "Failed to save design item");
       }
@@ -443,16 +424,36 @@ export default function DesignInventory() {
         {/* Pagination */}
         <div className="p-4 border-t border-border flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {designItems.length} of {recordsTotal} designs
+            Showing {((currentPage - 1) * pagination.pageSize) + 1} to {Math.min(currentPage * pagination.pageSize, pagination.totalRecords)} of {pagination.totalRecords} designs
           </p>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" disabled>
+            <Button variant="outline" size="sm" onClick={previousPage} disabled={currentPage === 1}>
               Previous
             </Button>
-            <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">
-              1
-            </Button>
-            <Button variant="outline" size="sm">
+            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+              let pageNum: number;
+              if (pagination.totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= pagination.totalPages - 2) {
+                pageNum = pagination.totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+              return (
+                <Button
+                  key={pageNum}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={currentPage === pageNum ? "bg-primary text-primary-foreground" : ""}
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+            <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === pagination.totalPages}>
               Next
             </Button>
           </div>
