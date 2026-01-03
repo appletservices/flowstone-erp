@@ -9,6 +9,7 @@ import {
   Trash2,
   BookOpen,
   MoreHorizontal,
+  Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -44,36 +45,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { useBackendSearch } from "@/hooks/useBackendSearch";
+import { FilterDialog } from "@/components/filters/FilterDialog";
 
-// --- API Response Data ---
-const apiResponse = {
-  data: [
-    {
-      id: 22,
-      name: "ASTAR TOKERY LARGE 35 GSM",
-      opening_qty: "218.00000000",
-      converted_qty: "218.00000000",
-      total_qty: "218.00000000",
-      opening_cost: "109000.000000",
-      avg_cost: "109000.000000",
-      unit: "Pcs",
-    },
-    {
-      id: 23,
-      name: "ASTAR INDAIN SMALL 25 GSM",
-      opening_qty: "200.00000000",
-      converted_qty: "200.00000000",
-      total_qty: "200.00000000",
-      opening_cost: "100000.000000",
-      avg_cost: "100000.000000",
-      unit: "Pcs",
-    },
-  ],
-  recordsTotal: 2,
-  recordsFiltered: 2,
-  draw: null,
-};
+interface KataeItem {
+  id: number;
+  name: string;
+  opening_qty: string;
+  converted_qty: string;
+  total_qty: string;
+  opening_cost: string;
+  avg_cost: string;
+  unit: string;
+}
 
 const products = [
   "Silk Saree",
@@ -87,12 +74,11 @@ const products = [
 
 export default function KataeProduct() {
   const navigate = useNavigate();
-  const [items, setItems] = useState(apiResponse.data);
-  const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<any | null>(null);
+  const [editingItem, setEditingItem] = useState<KataeItem | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<any | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<KataeItem | null>(null);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     product: "",
@@ -102,12 +88,25 @@ export default function KataeProduct() {
     quantity: "",
   });
 
-  const filteredItems = items.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Dynamic Summary Calculations
-
+  const {
+    data: items,
+    isLoading,
+    searchQuery,
+    setSearchQuery,
+    dateRange,
+    keyValues,
+    applyFilters,
+    hasActiveFilters,
+    refresh,
+    pagination,
+    currentPage,
+    setCurrentPage,
+    nextPage,
+    previousPage,
+  } = useBackendSearch<KataeItem>({
+    endpoint: "/inventory/katae/list",
+    pageSize: 10,
+  });
 
   const handleSubmit = () => {
     if (!formData.name || !formData.product) {
@@ -116,6 +115,7 @@ export default function KataeProduct() {
     }
     toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
     resetForm();
+    refresh();
   };
 
   const resetForm = () => {
@@ -131,7 +131,7 @@ export default function KataeProduct() {
     setDialogOpen(false);
   };
 
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: KataeItem) => {
     setEditingItem(item);
     setFormData({
       name: item.name,
@@ -146,10 +146,10 @@ export default function KataeProduct() {
 
   const handleDelete = () => {
     if (!itemToDelete) return;
-    setItems(items.filter((i) => i.id !== itemToDelete.id));
     setDeleteDialogOpen(false);
     setItemToDelete(null);
     toast.success("Item deleted successfully");
+    refresh();
   };
 
   return (
@@ -202,47 +202,55 @@ export default function KataeProduct() {
         </Dialog>
       </div>
 
-      {/* Summary Cards */}
-
-      {/* Filters */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search items..." 
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <Button variant="outline" className="gap-2"><Filter className="w-4 h-4" /> Filter</Button>
-      </div>
-
-      {/* Table */}
+      {/* Table with Search/Filter in Header */}
       <div className="bg-card rounded-xl border border-border">
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          <h3 className="font-semibold">All Items</h3>
+          <div className="flex items-center gap-4">
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input 
+                placeholder="Search items..." 
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn("gap-2", hasActiveFilters && "border-primary text-primary")}
+              onClick={() => setFilterDialogOpen(true)}
+            >
+              <Filter className="w-4 h-4" />
+              Filter
+              {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
+            </Button>
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-muted/30 border-b border-border">
+          <table className="data-table">
+            <thead>
               <tr>
-                <th className="p-4 text-xs font-bold uppercase text-muted-foreground">Name</th>
-                <th className="p-4 text-xs font-bold uppercase text-muted-foreground text-right">Opening-Qty </th>
-                <th className="p-4 text-xs font-bold uppercase text-muted-foreground text-right">Total-Qty </th>
-                <th className="p-4 text-xs font-bold uppercase text-muted-foreground">Unit</th>
-                <th className="p-4 text-xs font-bold uppercase text-muted-foreground text-right">Average Cost</th>
-                <th className="p-4"></th>
+                <th>Name</th>
+                <th className="text-right">Opening Qty</th>
+                <th className="text-right">Total Qty</th>
+                <th>Unit</th>
+                <th className="text-right">Average Cost</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              {filteredItems.map((item) => (
-                <tr key={item.id} className="border-b border-border hover:bg-muted/5 transition-colors">
-                  <td className="p-4 font-medium">{item.name}</td>
-                  <td className="p-4 text-right">{parseFloat(item.opening_qty).toLocaleString()}</td>
-                  <td className="p-4 text-right font-bold">{parseFloat(item.total_qty).toLocaleString()}</td>
-                  
-                  <td className="p-4 text-sm">{item.unit}</td>
-                  <td className="p-4 text-right">Rs. {parseFloat(item.avg_cost).toLocaleString()}</td>
-                
-                  <td className="p-4 text-right">
+              {items.map((item) => (
+                <tr key={item.id} className="animate-fade-in">
+                  <td className="font-medium">{item.name}</td>
+                  <td className="text-right text-muted-foreground">{parseFloat(item.opening_qty || "0").toLocaleString()}</td>
+                  <td className="text-right font-bold">{parseFloat(item.total_qty || "0").toLocaleString()}</td>
+                  <td className="text-sm">{item.unit}</td>
+                  <td className="text-right font-medium text-success">Rs. {parseFloat(item.avg_cost || "0").toLocaleString()}</td>
+                  <td>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="w-4 h-4" /></Button>
@@ -257,10 +265,66 @@ export default function KataeProduct() {
                   </td>
                 </tr>
               ))}
+              {!isLoading && items.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-muted-foreground">No items found</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Footer */}
+        <div className="p-4 border-t border-border flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {((currentPage - 1) * pagination.pageSize) + 1} to {Math.min(currentPage * pagination.pageSize, pagination.totalRecords)} of {pagination.totalRecords} results
+          </p>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={previousPage} disabled={currentPage === 1}>
+              Previous
+            </Button>
+            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+              let pageNum: number;
+              if (pagination.totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= pagination.totalPages - 2) {
+                pageNum = pagination.totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+              return (
+                <Button
+                  key={pageNum}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={currentPage === pageNum ? "bg-primary text-primary-foreground" : ""}
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+            <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === pagination.totalPages}>
+              Next
+            </Button>
+          </div>
+        </div>
       </div>
+
+      {/* Filter Dialog */}
+      <FilterDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        onApply={applyFilters}
+        showDateRange={false}
+        filterFields={[
+          { key: "unit", label: "Unit", placeholder: "e.g. Pcs, Meter" },
+        ]}
+        initialDateRange={dateRange}
+        initialKeyValues={keyValues}
+      />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="bg-card">
