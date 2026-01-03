@@ -42,8 +42,17 @@ export const ALL_MODULES: Module[] = [
   { id: "purchase", label: "Purchase", path: "/purchase", category: "Operations" },
   { id: "purchase_return", label: "Purchase Return", path: "/purchase-return", category: "Operations" },
   { id: "sales", label: "Sales", path: "/sales", category: "Operations" },
+
   { id: "katae_issued", label: "Issued Katae", path: "/katae/issued", category: "Katae" },
+  
+  { id: "karahi_list", label: "Karahi List", path: "/karahi/list", category: "Karahi" },
+  { id: "karahi_issue_material", label: "Karahi Issue Material", path: "/karahi/issue-material", category: "Karahi" },
+  { id: "karahi_ledger", label: "Karahi Ledger", path: "/karahi/ledger", category: "Karahi" },
+  { id: "karahi_material_opening", label: "Karahi Material Opening", path: "/karahi/material-opening", category: "Karahi" },
+
   { id: "report_purchase", label: "Purchase Report", path: "/reports/purchase", category: "Reports" },
+  { id: "report_payment", label: "Payment Report", path: "/reports/payment", category: "Reports" },
+
   { id: "settings", label: "Settings", path: "/settings", category: "Admin" },
   { id: "role_management", label: "Role Management", path: "/settings/roles", category: "Admin" },
   { id: "security", label: "Security", path: "/settings/security", category: "Admin" },
@@ -104,7 +113,7 @@ interface RolesContextType {
 
 const RolesContext = createContext<RolesContextType | null>(null);
 
-const STORAGE_KEY = "role_permissions_v2";
+const STORAGE_KEY = "user_role";
 const USER_ROLE_KEY = "user_role";
 
 export function RolesProvider({ children }: { children: ReactNode }) {

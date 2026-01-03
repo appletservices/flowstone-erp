@@ -44,6 +44,14 @@ import PurchaseReturnForm from "@/pages/PurchaseReturnForm";
 import PurchaseReturnDetail from "@/pages/PurchaseReturnDetail";
 import PurchaseReport from "@/pages/PurchaseReport";
 import PaymentReport from "@/pages/PaymentReport";
+import AccountLedger from "@/pages/reports/AccountLedger";
+
+
+import KarahiList from "@/pages/KarahiList";
+import KarahiIssueMaterial from "@/pages/KarahiIssueMaterial";
+import KarahiLedger from "@/pages/KarahiLedger";
+import KarahiMaterialOpening from "@/pages/KarahiMaterialOpening";
+
 
 const queryClient = new QueryClient();
 
@@ -105,8 +113,15 @@ const App = () => (
                 <Route path="/contacts/ledger/receiveable/:id" element={<RcLedger />} />
                 <Route path="/katae/issued" element={<PermissionGuard permissionId="katae_issued"><IssuedKatae /></PermissionGuard>} />
                 <Route path="/katae/issued-material/:id" element={<KataeIssuedMaterial />} />
+
+                <Route path="/karahi/list" element={<PermissionGuard><KarahiList /></PermissionGuard>}/>
+                <Route path="/karahi/issue-material" element={<PermissionGuard><KarahiIssueMaterial /></PermissionGuard>}/>                
+                <Route path="/karahi/ledger/:id" element={<PermissionGuard><KarahiLedger /></PermissionGuard>}/>
+                <Route path="/karahi/material-opening" element={<PermissionGuard permissionId="karahi_material_opening"><KarahiMaterialOpening /></PermissionGuard>}/>
+
                 <Route path="/reports/purchase" element={<PermissionGuard permissionId="report_purchase"><PurchaseReport /></PermissionGuard>} />
-                <Route path="/reports/payment" element={<PermissionGuard permissionId="report_payment"><PaymentReport /></PermissionGuard>} />
+                <Route path="/reports/payment" element={<PermissionGuard permissionId="report_payment" ><PaymentReport /></PermissionGuard>} />
+                <Route path="/account/report" element={<PermissionGuard ><AccountLedger /></PermissionGuard>} />
               </Route>
 
               {/* 404 */}

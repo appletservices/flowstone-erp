@@ -91,8 +91,16 @@ export default function RawInventory() {
     applyFilters,
     hasActiveFilters,
     refresh,
+    pagination,
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    nextPage,
+    previousPage,
   } = useBackendSearch<RawInventoryItem>({
     endpoint: "/inventory/raw/list",
+    pageSize: 10,
   });
 
   const handleSubmit = async () => {
@@ -350,13 +358,52 @@ export default function RawInventory() {
 
         {/* Pagination Footer */}
         <div className="p-4 border-t border-border flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {items.length} results
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-muted-foreground">
+              Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, pagination.totalRecords)} of {pagination.totalRecords} results
+            </p>
+            <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+              <SelectTrigger className="w-[100px] h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-card">
+                <SelectItem value="10">10 / page</SelectItem>
+                <SelectItem value="25">25 / page</SelectItem>
+                <SelectItem value="50">50 / page</SelectItem>
+                <SelectItem value="100">100 / page</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" disabled>Previous</Button>
-            <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">1</Button>
-            <Button variant="outline" size="sm" disabled>Next</Button>
+            <Button variant="outline" size="sm" onClick={previousPage} disabled={currentPage === 1}>
+              Previous
+            </Button>
+            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+              let pageNum: number;
+              if (pagination.totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= pagination.totalPages - 2) {
+                pageNum = pagination.totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+              return (
+                <Button
+                  key={pageNum}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={currentPage === pageNum ? "bg-primary text-primary-foreground" : ""}
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+            <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === pagination.totalPages}>
+              Next
+            </Button>
           </div>
         </div>
       </div>

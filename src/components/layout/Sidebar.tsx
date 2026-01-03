@@ -29,6 +29,8 @@ import {
   FileBarChart,
   FileText,
   CreditCard,
+  Flame,
+  List
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRoles } from "@/hooks/useRoles";
@@ -83,6 +85,15 @@ const menuItems: MenuItem[] = [
   },
 
   {
+    label: "Karahi",
+    icon: Flame,
+    children: [
+      { label: "Karahi List", path: "/karahi/list", icon: List, permissionId: "karahi_list" },
+      { label: "Material Opening", path: "/karahi/material-opening", icon: Package, permissionId: "karahi_material_opening" },
+    ],
+  },
+
+  {
     label: "Setup",
     icon: Wrench,
     children: [
@@ -99,7 +110,8 @@ const menuItems: MenuItem[] = [
     icon: FileBarChart,
     children: [
       { label: "Purchase Report", path: "/reports/purchase", icon: FileText, permissionId: "report_purchase" },
-      { label: "Payment Report", path: "/reports/payment", icon: CreditCard, permissionId: "report_payment" },
+      { label: "Payment Report", path: "/reports/payment", icon: CreditCard ,permissionId: "report_payment" },
+      { label: "Account Report", path: "/account/report", icon: CreditCard },
     ],
   },
   {

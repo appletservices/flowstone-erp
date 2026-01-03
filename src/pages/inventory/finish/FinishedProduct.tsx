@@ -10,6 +10,7 @@ import {
   BookOpen,
   MoreHorizontal,
   Minus,
+  Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -45,18 +46,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { useBackendSearch } from "@/hooks/useBackendSearch";
+import { FilterDialog } from "@/components/filters/FilterDialog";
 
 interface FinishedProductItem {
   id: string;
   name: string;
   date: string;
-  openingQty: number;
-  openingCost: number;
-  totalQty: number;
+  opening_qty: string;
+  opening_cost: string;
+  total_qty: string;
   unit: string;
-  averageCost: number;
-  items: { inventoryId: string; inventoryName: string; quantity: number }[];
+  avg_cost: string;
 }
 
 interface ItemRow {
@@ -77,86 +81,13 @@ const inventoryItems = [
   { id: "8", name: "Denim Fabric", unit: "Meter" },
 ];
 
-const initialProducts: FinishedProductItem[] = [
-  {
-    id: "1",
-    name: "Premium Cotton Shirt",
-    date: "2024-01-15",
-    openingQty: 100,
-    openingCost: 450,
-    totalQty: 150,
-    unit: "Piece",
-    averageCost: 480,
-    items: [
-      { inventoryId: "1", inventoryName: "Cotton Fabric Premium", quantity: 2 },
-      { inventoryId: "7", inventoryName: "Cotton Thread White", quantity: 1 },
-    ],
-  },
-  {
-    id: "2",
-    name: "Silk Embroidered Kurta",
-    date: "2024-01-20",
-    openingQty: 50,
-    openingCost: 1200,
-    totalQty: 75,
-    unit: "Piece",
-    averageCost: 1350,
-    items: [
-      { inventoryId: "2", inventoryName: "Silk Thread Gold", quantity: 3 },
-      { inventoryId: "6", inventoryName: "Embroidery Thread", quantity: 5 },
-    ],
-  },
-  {
-    id: "3",
-    name: "Denim Jeans Classic",
-    date: "2024-02-01",
-    openingQty: 200,
-    openingCost: 650,
-    totalQty: 280,
-    unit: "Piece",
-    averageCost: 680,
-    items: [
-      { inventoryId: "8", inventoryName: "Denim Fabric", quantity: 1.5 },
-      { inventoryId: "7", inventoryName: "Cotton Thread White", quantity: 2 },
-    ],
-  },
-  {
-    id: "4",
-    name: "Wool Sweater",
-    date: "2024-02-10",
-    openingQty: 80,
-    openingCost: 850,
-    totalQty: 95,
-    unit: "Piece",
-    averageCost: 920,
-    items: [
-      { inventoryId: "4", inventoryName: "Wool Yarn", quantity: 0.5 },
-    ],
-  },
-  {
-    id: "5",
-    name: "Linen Summer Dress",
-    date: "2024-02-15",
-    openingQty: 60,
-    openingCost: 780,
-    totalQty: 85,
-    unit: "Piece",
-    averageCost: 820,
-    items: [
-      { inventoryId: "5", inventoryName: "Linen Fabric", quantity: 2.5 },
-      { inventoryId: "6", inventoryName: "Embroidery Thread", quantity: 2 },
-    ],
-  },
-];
-
 export default function FinishedProduct() {
   const navigate = useNavigate();
-  const [products, setProducts] = useState<FinishedProductItem[]>(initialProducts);
-  const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<FinishedProductItem | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<FinishedProductItem | null>(null);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -169,11 +100,29 @@ export default function FinishedProduct() {
     { id: "1", inventoryId: "", quantity: "" }
   ]);
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const {
+    data: products,
+    isLoading,
+    searchQuery,
+    setSearchQuery,
+    dateRange,
+    keyValues,
+    applyFilters,
+    hasActiveFilters,
+    refresh,
+    pagination,
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    nextPage,
+    previousPage,
+  } = useBackendSearch<FinishedProductItem>({
+    endpoint: "/inventory/finish/list",
+    pageSize: 10,
+  });
 
-  const totalValue = products.reduce((acc, p) => acc + p.totalQty * p.averageCost, 0);
+  const totalValue = products.reduce((acc, p) => acc + parseFloat(p.total_qty || "0") * parseFloat(p.avg_cost || "0"), 0);
   const totalProducts = products.length;
 
   const addItemRow = () => {
@@ -207,46 +156,9 @@ export default function FinishedProduct() {
       return;
     }
 
-    const items = validItems.map(row => {
-      const inv = inventoryItems.find(i => i.id === row.inventoryId);
-      return {
-        inventoryId: row.inventoryId,
-        inventoryName: inv?.name || "",
-        quantity: parseFloat(row.quantity) || 0,
-      };
-    });
-
-    if (editingProduct) {
-      setProducts(products.map(p => 
-        p.id === editingProduct.id 
-          ? {
-              ...p,
-              name: formData.name,
-              date: formData.date,
-              openingQty: parseFloat(formData.openingQty) || 0,
-              openingCost: parseFloat(formData.openingCost) || 0,
-              items,
-            }
-          : p
-      ));
-      toast.success("Product updated successfully");
-    } else {
-      const newProduct: FinishedProductItem = {
-        id: Date.now().toString(),
-        name: formData.name,
-        date: formData.date,
-        openingQty: parseFloat(formData.openingQty) || 0,
-        openingCost: parseFloat(formData.openingCost) || 0,
-        totalQty: parseFloat(formData.openingQty) || 0,
-        unit: "Piece",
-        averageCost: parseFloat(formData.openingCost) || 0,
-        items,
-      };
-      setProducts([...products, newProduct]);
-      toast.success("Product added successfully");
-    }
-
+    toast.success(editingProduct ? "Product updated successfully" : "Product added successfully");
     resetForm();
+    refresh();
   };
 
   const resetForm = () => {
@@ -266,25 +178,18 @@ export default function FinishedProduct() {
     setFormData({
       name: product.name,
       date: product.date,
-      openingQty: product.openingQty.toString(),
-      openingCost: product.openingCost.toString(),
+      openingQty: product.opening_qty,
+      openingCost: product.opening_cost,
     });
-    setItemRows(
-      product.items.map((item, idx) => ({
-        id: idx.toString(),
-        inventoryId: item.inventoryId,
-        quantity: item.quantity.toString(),
-      }))
-    );
     setDialogOpen(true);
   };
 
   const handleDelete = () => {
     if (!productToDelete) return;
-    setProducts(products.filter(p => p.id !== productToDelete.id));
     setDeleteDialogOpen(false);
     setProductToDelete(null);
     toast.success("Product deleted successfully");
+    refresh();
   };
 
   const openDeleteDialog = (product: FinishedProductItem) => {
@@ -433,7 +338,7 @@ export default function FinishedProduct() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Products</p>
-              <p className="text-2xl font-bold">{totalProducts}</p>
+              <p className="text-2xl font-bold">{pagination.totalRecords}</p>
             </div>
           </div>
         </div>
@@ -456,7 +361,7 @@ export default function FinishedProduct() {
             <div>
               <p className="text-sm text-muted-foreground">Low Stock Products</p>
               <p className="text-2xl font-bold">
-                {products.filter(p => p.totalQty < p.openingQty * 0.2).length}
+                {products.filter(p => parseFloat(p.total_qty || "0") < parseFloat(p.opening_qty || "0") * 0.2).length}
               </p>
             </div>
           </div>
@@ -464,24 +369,32 @@ export default function FinishedProduct() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search products by name..." 
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <Button variant="outline" className="gap-2">
-          <Filter className="w-4 h-4" />
-          Filter
-        </Button>
-      </div>
-
-      {/* Products Table */}
       <div className="bg-card rounded-xl border border-border">
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          <h3 className="font-semibold">All Products</h3>
+          <div className="flex items-center gap-4">
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input 
+                placeholder="Search products..." 
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn("gap-2", hasActiveFilters && "border-primary text-primary")}
+              onClick={() => setFilterDialogOpen(true)}
+            >
+              <Filter className="w-4 h-4" />
+              Filter
+              {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
+            </Button>
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="data-table">
             <thead>
@@ -496,15 +409,15 @@ export default function FinishedProduct() {
               </tr>
             </thead>
             <tbody>
-              {filteredProducts.map((product) => (
+              {products.map((product) => (
                 <tr key={product.id} className="animate-fade-in">
                   <td className="font-medium">{product.name}</td>
-                  <td className="text-right">{product.openingQty.toLocaleString()}</td>
-                  <td className="text-right font-medium">{product.totalQty.toLocaleString()}</td>
+                  <td className="text-right">{parseFloat(product.opening_qty || "0").toLocaleString()}</td>
+                  <td className="text-right font-medium">{parseFloat(product.total_qty || "0").toLocaleString()}</td>
                   <td>{product.unit}</td>
-                  <td className="text-right">₹{product.averageCost.toLocaleString()}</td>
+                  <td className="text-right">₹{parseFloat(product.avg_cost || "0").toLocaleString()}</td>
                   <td className="text-right font-semibold">
-                    ₹{(product.totalQty * product.averageCost).toLocaleString("en-IN")}
+                    ₹{(parseFloat(product.total_qty || "0") * parseFloat(product.avg_cost || "0")).toLocaleString("en-IN")}
                   </td>
                   <td>
                     <DropdownMenu>
@@ -535,28 +448,79 @@ export default function FinishedProduct() {
                   </td>
                 </tr>
               ))}
+              {!isLoading && products.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground">No products found</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Pagination */}
         <div className="p-4 border-t border-border flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {filteredProducts.length} of {products.length} products
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-muted-foreground">
+              Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, pagination.totalRecords)} of {pagination.totalRecords} products
+            </p>
+            <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+              <SelectTrigger className="w-[100px] h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-card">
+                <SelectItem value="10">10 / page</SelectItem>
+                <SelectItem value="25">25 / page</SelectItem>
+                <SelectItem value="50">50 / page</SelectItem>
+                <SelectItem value="100">100 / page</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" disabled>
+            <Button variant="outline" size="sm" onClick={previousPage} disabled={currentPage === 1}>
               Previous
             </Button>
-            <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">
-              1
-            </Button>
-            <Button variant="outline" size="sm">
+            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+              let pageNum: number;
+              if (pagination.totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= pagination.totalPages - 2) {
+                pageNum = pagination.totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+              return (
+                <Button
+                  key={pageNum}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={currentPage === pageNum ? "bg-primary text-primary-foreground" : ""}
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+            <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === pagination.totalPages}>
               Next
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Filter Dialog */}
+      <FilterDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        onApply={applyFilters}
+        showDateRange={false}
+        filterFields={[
+          { key: "unit", label: "Unit", placeholder: "e.g. Piece" },
+        ]}
+        initialDateRange={dateRange}
+        initialKeyValues={keyValues}
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
