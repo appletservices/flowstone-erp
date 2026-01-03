@@ -107,11 +107,7 @@ export default function KataeProduct() {
   );
 
   // Dynamic Summary Calculations
-  const totalValue = items.reduce(
-    (acc, item) => acc + parseFloat(item.total_qty) * parseFloat(item.avg_cost),
-    0
-  );
-  const totalItems = items.length;
+
 
   const handleSubmit = () => {
     if (!formData.name || !formData.product) {
@@ -207,43 +203,6 @@ export default function KataeProduct() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-card rounded-xl border border-border p-5">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-primary/10">
-              <Scissors className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Items</p>
-              <p className="text-2xl font-bold">{totalItems}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-card rounded-xl border border-border p-5">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-emerald-500/10">
-              <Scissors className="w-6 h-6 text-emerald-500" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Value</p>
-              <p className="text-2xl font-bold">Rs. {totalValue.toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-card rounded-xl border border-border p-5">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-amber-500/10">
-              <Scissors className="w-6 h-6 text-amber-500" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Low Stock Items</p>
-              <p className="text-2xl font-bold">
-                {items.filter(i => parseFloat(i.total_qty) < 50).length}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Filters */}
       <div className="flex items-center gap-4">

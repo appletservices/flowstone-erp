@@ -168,11 +168,7 @@ export default function RawInventory() {
     setDeleteDialogOpen(false);
     refresh();
   };
-
-  const totalValue = items.reduce((acc, item) => acc + (parseFloat(item.total_qty || "0") * parseFloat(item.avg_cost || "0")), 0);
-  const totalItems = items.length;
-  const lowStockCount = items.filter(i => parseFloat(i.total_qty || "0") < parseFloat(i.opening_qty || "0") * 0.2).length;
-
+  
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -266,41 +262,6 @@ export default function RawInventory() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-muted">
-              <Box className="w-6 h-6 text-foreground" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Items</p>
-              <p className="text-2xl font-bold">{totalItems}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-success/10">
-              <Box className="w-6 h-6 text-success" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Value</p>
-              <p className="text-2xl font-bold">₹{totalValue.toLocaleString("en-IN")}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-warning/10">
-              <Box className="w-6 h-6 text-warning" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Low Stock Items</p>
-              <p className="text-2xl font-bold">{lowStockCount}</p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Inventory Table with Search/Filter in Header */}
       <div className="bg-card rounded-xl border border-border">

@@ -147,11 +147,7 @@ export default function DesignInventory() {
     fetchDesignItems();
   }, [searchQuery]);
 
-  const totalItems = recordsTotal;
-  const totalValue = designItems.reduce(
-    (acc, item) => acc + parseFloat(item.total_qty || "0") * parseFloat(item.avg_cost || "0"),
-    0
-  );
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -358,43 +354,6 @@ export default function DesignInventory() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-muted">
-              <Palette className="w-6 h-6 text-foreground" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Designs</p>
-              <p className="text-2xl font-bold">{totalItems}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-success/10">
-              <Palette className="w-6 h-6 text-success" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Product Types</p>
-              <p className="text-2xl font-bold">
-                {new Set(designItems.map((d) => d.product_id)).size}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-warning/10">
-              <Palette className="w-6 h-6 text-warning" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Value</p>
-              <p className="text-2xl font-bold">Rs. {totalValue.toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Table */}
       <div className="bg-card rounded-xl border border-border">

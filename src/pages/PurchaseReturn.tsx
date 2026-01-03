@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   RotateCcw,
@@ -9,8 +9,8 @@ import {
   FileText,
   CheckCircle,
   Clock,
-  XCircle,
   Eye,
+  Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -21,92 +21,67 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
-interface PurchaseReturn {
-  id: string;
-  returnNumber: string;
-  vendor: string;
-  vendorType: "karahi" | "katae";
-  items: number;
-  totalAmount: string;
-  status: "pending" | "approved" | "completed" | "cancelled";
+// Updated Interface to match your API response
+interface PurchaseReturnData {
+  id: number;
   date: string;
-  tCharges: string;
+  type: string;
+  t_charges: string;
+  grand_total: string;
+  vendor: string;
+  vendor_type: string;
+  reference_no: string;
+  items: number;
 }
 
-const purchaseReturns: PurchaseReturn[] = [
-  {
-    id: "1",
-    returnNumber: "PR-2024-001",
-    vendor: "ABC Textiles",
-    vendorType: "karahi",
-    items: 3,
-    totalAmount: "₹45,000",
-    status: "completed",
-    date: "Dec 24, 2024",
-    tCharges: "₹1,200",
-  },
-  {
-    id: "2",
-    returnNumber: "PR-2024-002",
-    vendor: "XYZ Suppliers",
-    vendorType: "katae",
-    items: 2,
-    totalAmount: "₹22,000",
-    status: "approved",
-    date: "Dec 23, 2024",
-    tCharges: "₹600",
-  },
-  {
-    id: "3",
-    returnNumber: "PR-2024-003",
-    vendor: "Raju Karahi Works",
-    vendorType: "karahi",
-    items: 4,
-    totalAmount: "₹78,000",
-    status: "pending",
-    date: "Dec 22, 2024",
-    tCharges: "₹2,100",
-  },
-  {
-    id: "4",
-    returnNumber: "PR-2024-004",
-    vendor: "Shyam Katae Services",
-    vendorType: "katae",
-    items: 1,
-    totalAmount: "₹12,000",
-    status: "cancelled",
-    date: "Dec 21, 2024",
-    tCharges: "₹400",
-  },
-  {
-    id: "5",
-    returnNumber: "PR-2024-005",
-    vendor: "Krishna Karahi",
-    vendorType: "karahi",
-    items: 2,
-    totalAmount: "₹35,500",
-    status: "completed",
-    date: "Dec 20, 2024",
-    tCharges: "₹900",
-  },
-];
-
-const statusConfig = {
-  pending: { label: "Pending", icon: Clock, class: "chip-warning" },
-  approved: { label: "Approved", icon: CheckCircle, class: "chip-primary" },
-  completed: { label: "Completed", icon: CheckCircle, class: "chip-success" },
-  cancelled: { label: "Cancelled", icon: XCircle, class: "chip-danger" },
-};
+interface ApiResponse {
+  data: PurchaseReturnData[];
+  recordsTotal: number;
+  recordsFiltered: number;
+}
 
 export default function PurchaseReturn() {
   const navigate = useNavigate();
-  const stats = {
-    total: purchaseReturns.length,
-    pending: purchaseReturns.filter((pr) => pr.status === "pending").length,
-    approved: purchaseReturns.filter((pr) => pr.status === "approved").length,
-    completed: purchaseReturns.filter((pr) => pr.status === "completed").length,
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<PurchaseReturnData[]>([]);
+  const [stats, setStats] = useState({
+    total: 0,
+    pending: 12, // Placeholder values as per your requirement
+    approved: 8,
+    completed: 45,
+  });
+
+  const fetchPurchaseReturns = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/purchase/return/list`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch");
+
+      const result: ApiResponse = await response.json();
+      setData(result.data);
+      setStats((prev) => ({
+        ...prev,
+        total: result.recordsTotal,
+      }));
+    } catch (error) {
+      toast.error("Error loading purchase returns");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchPurchaseReturns();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -114,9 +89,7 @@ export default function PurchaseReturn() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Purchase Returns</h1>
-          <p className="text-muted-foreground">
-            Manage purchase returns and refunds
-          </p>
+          <p className="text-muted-foreground">Manage purchase returns and refunds</p>
         </div>
         <Button className="gap-2" onClick={() => navigate("/purchase-return/new")}>
           <Plus className="w-4 h-4" />
@@ -189,55 +162,57 @@ export default function PurchaseReturn() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Return Number</th>
-                <th>Vendor</th>
-                <th>Items</th>
-                <th>Total Amount</th>
-                <th>Status</th>
-                <th>T-Charges</th>
-                <th>Date</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {purchaseReturns.map((pr) => {
-                const StatusIcon = statusConfig[pr.status].icon;
-                return (
+          {loading ? (
+            <div className="flex items-center justify-center p-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Return Number</th>
+                  <th>Vendor</th>
+                  <th>Items</th>
+                  <th>Total Amount</th>
+                  <th>T-Charges</th>
+                  <th>Date</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((pr) => (
                   <tr key={pr.id} className="animate-fade-in">
                     <td>
                       <span className="font-mono text-sm font-medium text-primary">
-                        {pr.returnNumber}
+                        {pr.reference_no}
                       </span>
                     </td>
                     <td>
                       <div>
                         <p className="font-medium">{pr.vendor}</p>
-                        <span className={cn(
-                          "chip text-xs",
-                          pr.vendorType === "karahi" ? "chip-primary" : "chip-secondary"
-                        )}>
-                          {pr.vendorType === "karahi" ? "Karahi" : "Katae"}
+                        <span
+                          className={cn(
+                            "chip text-[10px] px-2 py-0.5",
+                            pr.vendor_type.toLowerCase().includes("karahi")
+                              ? "chip-primary"
+                              : "chip-secondary"
+                          )}
+                        >
+                          {pr.vendor_type}
                         </span>
                       </div>
                     </td>
                     <td>{pr.items} items</td>
-                    <td className="font-semibold">{pr.totalAmount}</td>
-                    <td>
-                      <span className={cn("chip flex items-center gap-1.5 w-fit", statusConfig[pr.status].class)}>
-                        <StatusIcon className="w-3.5 h-3.5" />
-                        {statusConfig[pr.status].label}
-                      </span>
+                    <td className="font-semibold">
+                      ₹{Number(pr.grand_total).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </td>
-                    <td>{pr.tCharges}</td>
+                    <td>₹{Number(pr.t_charges).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                     <td className="text-muted-foreground">{pr.date}</td>
                     <td>
                       <div className="flex items-center gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-8 w-8"
                           onClick={() => navigate(`/purchase-return/${pr.id}`)}
                         >
@@ -250,26 +225,27 @@ export default function PurchaseReturn() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="bg-card">
-                            <DropdownMenuItem onClick={() => navigate(`/purchase-return/${pr.id}`)}>View Details</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => navigate(`/purchase-return/${pr.id}/edit`)}>Edit Return</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => navigate(`/purchase-return/${pr.id}`)}>
+                              View Details
+                            </DropdownMenuItem>
                             <DropdownMenuItem>Print Return</DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
-                              Cancel Return
+                            <DropdownMenuItem className="text-primary">
+                              Restore 
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         <div className="p-4 border-t border-border flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing 1-5 of 12 returns
+            Showing {data.length} of {stats.total} returns
           </p>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" disabled>

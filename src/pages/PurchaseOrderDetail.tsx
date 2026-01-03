@@ -115,7 +115,7 @@ export default function PurchaseOrderDetail() {
             <div>
             <p className="text-sm text-muted-foreground">Vendor Type</p>
             <p className="text-sm font-bold capitalize capitalize chip text-[10px] px-2 py-0.5 chip-primary">{info.vendorcat}</p>
-          </div>~
+          </div>
           <div>
             <p className="text-sm text-muted-foreground">Vendor</p>
             <p className="text-sm font-bold">{info.vendor}</p>

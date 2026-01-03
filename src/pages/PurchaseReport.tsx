@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,93 +19,96 @@ import {
   TableRow,
   TableFooter,
 } from "@/components/ui/table";
-import { FileText, Filter } from "lucide-react";
+import { FileText, Filter, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
-// Mock vendors data
-const vendors = [
-  { id: "1", name: "ABC Suppliers" },
-  { id: "2", name: "XYZ Trading" },
-  { id: "3", name: "Global Materials" },
-  { id: "4", name: "Quality Fabrics" },
-];
+interface Vendor {
+  id: string;
+  name: string;
+}
 
-// Mock items data (vendor-wise)
-const items: { [vendorId: string]: { id: string; name: string }[] } = {
-  "1": [
-    { id: "1", name: "Raw Cotton" },
-    { id: "2", name: "Polyester Thread" },
-  ],
-  "2": [
-    { id: "3", name: "Silk Fabric" },
-    { id: "4", name: "Wool Yarn" },
-  ],
-  "3": [
-    { id: "5", name: "Linen Material" },
-    { id: "6", name: "Denim Fabric" },
-  ],
-  "4": [
-    { id: "7", name: "Cotton Blend" },
-    { id: "8", name: "Synthetic Fiber" },
-  ],
-};
+interface InventoryItem {
+  id: string;
+  name: string;
+}
 
-// Mock purchase data
-const purchaseData = [
-  { id: "1", referenceNo: "PO-2024-001", date: "2024-01-15", vendorId: "1", vendor: "ABC Suppliers", productId: "1", product: "Raw Cotton", quantity: 100, unitPrice: 50, amount: 5000 },
-  { id: "2", referenceNo: "PO-2024-002", date: "2024-01-18", vendorId: "1", vendor: "ABC Suppliers", productId: "2", product: "Polyester Thread", quantity: 200, unitPrice: 25, amount: 5000 },
-  { id: "3", referenceNo: "PO-2024-003", date: "2024-01-20", vendorId: "2", vendor: "XYZ Trading", productId: "3", product: "Silk Fabric", quantity: 50, unitPrice: 150, amount: 7500 },
-  { id: "4", referenceNo: "PO-2024-004", date: "2024-01-22", vendorId: "2", vendor: "XYZ Trading", productId: "4", product: "Wool Yarn", quantity: 75, unitPrice: 80, amount: 6000 },
-  { id: "5", referenceNo: "PO-2024-005", date: "2024-01-25", vendorId: "3", vendor: "Global Materials", productId: "5", product: "Linen Material", quantity: 120, unitPrice: 65, amount: 7800 },
-  { id: "6", referenceNo: "PO-2024-006", date: "2024-02-01", vendorId: "3", vendor: "Global Materials", productId: "6", product: "Denim Fabric", quantity: 80, unitPrice: 90, amount: 7200 },
-  { id: "7", referenceNo: "PO-2024-007", date: "2024-02-05", vendorId: "4", vendor: "Quality Fabrics", productId: "7", product: "Cotton Blend", quantity: 150, unitPrice: 45, amount: 6750 },
-  { id: "8", referenceNo: "PO-2024-008", date: "2024-02-10", vendorId: "4", vendor: "Quality Fabrics", productId: "8", product: "Synthetic Fiber", quantity: 90, unitPrice: 55, amount: 4950 },
-];
+interface PurchaseReportRecord {
+  track_id: number;
+  tdate: string;
+  unitprice: string;
+  amount: string;
+  quantity: string;
+  vendor: string;
+  product: string;
+}
 
 export default function PurchaseReport() {
-  const [selectedVendor, setSelectedVendor] = useState<string>("");
-  const [selectedItem, setSelectedItem] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [items, setItems] = useState<InventoryItem[]>([]);
+  const [filteredData, setFilteredData] = useState<PurchaseReportRecord[]>([]);
+
+  // Filter States
+  const [selectedVendor, setSelectedVendor] = useState<string>("all");
+  const [selectedItem, setSelectedItem] = useState<string>("all");
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
-  const [filteredData, setFilteredData] = useState(purchaseData);
 
-  // Get items based on selected vendor
-  const availableItems = useMemo(() => {
-    if (!selectedVendor) return [];
-    return items[selectedVendor] || [];
-  }, [selectedVendor]);
-
-  // Reset item selection when vendor changes
-  const handleVendorChange = (value: string) => {
-    setSelectedVendor(value);
-    setSelectedItem("");
+  const token = localStorage.getItem("auth_token");
+  const headers = {
+    "Authorization": `Bearer ${token}`,
+    "Content-Type": "application/json",
   };
 
-  // Handle filter
-  const handleFilter = () => {
-    let result = [...purchaseData];
+  // Fetch Dropdown Data
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        const [vendorRes, itemRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_URL}/contacts/vendors/all-dropdown`, { headers }),
+          fetch(`${import.meta.env.VITE_API_URL}/inventory/dropdown`, { headers })
+        ]);
 
-    if (selectedVendor) {
-      result = result.filter((item) => item.vendorId === selectedVendor);
+        if (vendorRes.ok) setVendors(await vendorRes.json());
+        if (itemRes.ok) setItems(await itemRes.json());
+      } catch (error) {
+        toast.error("Failed to load filter options");
+      }
+    };
+    fetchInitialData();
+  }, []);
+
+  // Handle Filter API Call
+  const handleFilter = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        vendor: selectedVendor,
+        item: selectedItem,
+        fromDate: fromDate,
+        toDate: toDate,
+      });
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/reports/purchase?${params.toString()}`,
+        { headers }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch report");
+
+      const data = await response.json();
+      setFilteredData(data);
+    } catch (error) {
+      toast.error("Error generating report");
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-
-    if (selectedItem) {
-      result = result.filter((item) => item.productId === selectedItem);
-    }
-
-    if (fromDate) {
-      result = result.filter((item) => item.date >= fromDate);
-    }
-
-    if (toDate) {
-      result = result.filter((item) => item.date <= toDate);
-    }
-
-    setFilteredData(result);
   };
 
   // Calculate totals
-  const totalQuantity = filteredData.reduce((sum, item) => sum + item.quantity, 0);
-  const totalAmount = filteredData.reduce((sum, item) => sum + item.amount, 0);
+  const totalQuantity = filteredData.reduce((sum, item) => sum + parseFloat(item.quantity || "0"), 0);
+  const totalAmount = filteredData.reduce((sum, item) => sum + parseFloat(item.amount || "0"), 0);
 
   return (
     <div className="space-y-6">
@@ -114,7 +117,7 @@ export default function PurchaseReport() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Purchase Report</h1>
           <p className="text-muted-foreground mt-1">
-            Filter and view purchase transactions
+            Filter and view purchase transactions from the system
           </p>
         </div>
         <FileText className="h-8 w-8 text-primary" />
@@ -127,47 +130,36 @@ export default function PurchaseReport() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-            {/* Vendor Selection */}
             <div className="space-y-2">
               <Label htmlFor="vendor">Vendor</Label>
-              <Select value={selectedVendor} onValueChange={handleVendorChange}>
+              <Select value={selectedVendor} onValueChange={setSelectedVendor}>
                 <SelectTrigger id="vendor">
                   <SelectValue placeholder="Select vendor" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Vendors</SelectItem>
-                  {vendors.map((vendor) => (
-                    <SelectItem key={vendor.id} value={vendor.id}>
-                      {vendor.name}
-                    </SelectItem>
+                  <SelectItem value="0">All Vendors</SelectItem>
+                  {vendors.map((v) => (
+                    <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Item Selection (filtered by vendor) */}
             <div className="space-y-2">
               <Label htmlFor="item">Item</Label>
-              <Select
-                value={selectedItem}
-                onValueChange={setSelectedItem}
-                disabled={!selectedVendor || selectedVendor === "all"}
-              >
+              <Select value={selectedItem} onValueChange={setSelectedItem}>
                 <SelectTrigger id="item">
                   <SelectValue placeholder="Select item" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Items</SelectItem>
-                  {availableItems.map((item) => (
-                    <SelectItem key={item.id} value={item.id}>
-                      {item.name}
-                    </SelectItem>
+                  <SelectItem value="0">All Items</SelectItem>
+                  {items.map((i) => (
+                    <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* From Date */}
             <div className="space-y-2">
               <Label htmlFor="fromDate">From Date</Label>
               <Input
@@ -178,7 +170,6 @@ export default function PurchaseReport() {
               />
             </div>
 
-            {/* To Date */}
             <div className="space-y-2">
               <Label htmlFor="toDate">To Date</Label>
               <Input
@@ -189,9 +180,8 @@ export default function PurchaseReport() {
               />
             </div>
 
-            {/* Filter Button */}
-            <Button onClick={handleFilter} className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
+            <Button onClick={handleFilter} disabled={loading} className="flex items-center gap-2">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Filter className="h-4 w-4" />}
               Filter
             </Button>
           </div>
@@ -208,7 +198,6 @@ export default function PurchaseReport() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Reference No</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Vendor</TableHead>
                   <TableHead>Product</TableHead>
@@ -220,20 +209,21 @@ export default function PurchaseReport() {
               <TableBody>
                 {filteredData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      No purchase records found
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      {loading ? "Loading records..." : "No purchase records found"}
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredData.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.referenceNo}</TableCell>
-                      <TableCell>{item.date}</TableCell>
+                    <TableRow key={item.track_id}>
+                      <TableCell>{item.tdate}</TableCell>
                       <TableCell>{item.vendor}</TableCell>
-                      <TableCell>{item.product}</TableCell>
-                      <TableCell className="text-right">{item.quantity.toLocaleString()}</TableCell>
-                      <TableCell className="text-right">₹{item.unitPrice.toLocaleString()}</TableCell>
-                      <TableCell className="text-right">₹{item.amount.toLocaleString()}</TableCell>
+                      <TableCell className="font-medium">{item.product}</TableCell>
+                      <TableCell className="text-right">{parseFloat(item.quantity).toLocaleString()}</TableCell>
+                      <TableCell className="text-right">₹{parseFloat(item.unitprice).toLocaleString()}</TableCell>
+                      <TableCell className="text-right font-semibold">
+                        ₹{parseFloat(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -241,10 +231,12 @@ export default function PurchaseReport() {
               {filteredData.length > 0 && (
                 <TableFooter>
                   <TableRow className="bg-muted/50 font-semibold">
-                    <TableCell colSpan={4} className="text-right">Total</TableCell>
+                    <TableCell colSpan={3} className="text-right">Grand Total</TableCell>
                     <TableCell className="text-right">{totalQuantity.toLocaleString()}</TableCell>
                     <TableCell></TableCell>
-                    <TableCell className="text-right">₹{totalAmount.toLocaleString()}</TableCell>
+                    <TableCell className="text-right text-primary">
+                      ₹{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </TableCell>
                   </TableRow>
                 </TableFooter>
               )}

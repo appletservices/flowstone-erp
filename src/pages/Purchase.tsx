@@ -33,6 +33,7 @@ interface PurchaseOrder {
   grand_total: string;
   vendor: string;
   vendor_type: string;
+  reference_no: string;
   items: number;
 }
 
@@ -181,6 +182,7 @@ export default function Purchase() {
             <table className="data-table">
               <thead>
                 <tr>
+                  <th>Reference</th>
                   <th>Vendor</th>
                   <th>Items</th>
                   <th>Total Amount</th>
@@ -193,12 +195,13 @@ export default function Purchase() {
                 {data.map((po) => {
                   return (
                     <tr key={po.id} className="animate-fade-in">
+                      <td className="font-mono text-sm font-medium text-primary">{po.reference_no} </td>
                       <td>
                         <div>
                           <p className="font-medium">{po.vendor}</p>
                           <span className={cn(
                             "chip text-[10px] px-2 py-0.5",
-                            po.vendor_type.toLowerCase().includes("local") ? "chip-primary" : "chip-secondary"
+                            po.vendor_type.toLowerCase().includes("local") ? "chip-secondary" : "chip-secondary"
                           )}>
                             {po.vendor_type}
                           </span>
@@ -229,7 +232,6 @@ export default function Purchase() {
                             <DropdownMenuContent align="end" className="bg-card">
                               <DropdownMenuItem onClick={() => navigate(`/inventory/purchase/${po.id}`)}>View Details</DropdownMenuItem>
                               <DropdownMenuItem onClick={() => navigate(`/inventory/purchase/${po.id}/edit`)}>Edit Order</DropdownMenuItem>
-                              <DropdownMenuItem>Create GRN</DropdownMenuItem>
                               <DropdownMenuItem>Print PO</DropdownMenuItem>
                               <DropdownMenuItem className="text-destructive">
                                 Cancel Order

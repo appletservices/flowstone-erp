@@ -16,7 +16,7 @@ import Inventory from "@/pages/Inventory";
 import RawInventory from "@/pages/inventory/raw/RawInventory";
 import DesignInventory from "@/pages/inventory/design/DesignInventory";
 import KataeProduct from "@/pages/inventory/katae/KataeProduct";
-import FinishInventory from "@/pages/inventory/finish/FinishInventory";
+import FinishInventory from "@/pages/inventory/finish/FinishedProduct";
 import Vendors from "@/pages/Vendors";
 import Purchase from "@/pages/Purchase";
 import PurchaseOrderDetail from "@/pages/PurchaseOrderDetail";
@@ -73,7 +73,7 @@ const App = () => (
                 <Route path="/inventory" element={<PermissionGuard permissionId="inventory_overview"><Inventory /></PermissionGuard>} />
                 <Route path="/inventory/raw" element={<PermissionGuard permissionId="inventory_raw"><RawInventory /></PermissionGuard>} />
                 <Route path="/inventory/design" element={<PermissionGuard permissionId="inventory_design"><DesignInventory /></PermissionGuard>} />
-                <Route path="/inventory/finish" element={<PermissionGuard permissionId="inventory_finish"><FinishInventory /></PermissionGuard>} />
+                <Route path="/inventory/finish" element={<PermissionGuard permissionId="inventory_finished"><FinishInventory /></PermissionGuard>} />
                  <Route path="/inventory/katae" element={<PermissionGuard permissionId="inventory_katae"><KataeProduct /></PermissionGuard>} />
                 {/* <Route path="/inventory/:category" element={<PermissionGuard permissionId="inventory_overview"><Inventory /></PermissionGuard>} /> */}
                 <Route path="/vendors" element={<Vendors />} />

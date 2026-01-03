@@ -276,7 +276,15 @@ export default function PurchaseOrderForm() {
                     </Select>
                   </td>
                   <td className="p-4"><Input readOnly value={item.unit} placeholder="Unit" className="w-[100px] bg-muted" /></td>
-                  <td className="p-4"><Input readOnly value={item.conversion} placeholder="Conv" className="w-[100px] bg-muted" /></td>
+                <td className="p-4">
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    value={item.conversion}
+                    onChange={(e) => handleItemChange(item.id, "conversion", e.target.value)}
+                    className="min-w-[100px]"
+                  />
+                </td>
                   <td className="p-4"><Input type="number" placeholder="0" value={item.quantity} onChange={(e) => handleItemChange(item.id, "quantity", e.target.value)} className="w-[100px]" /></td>
                   <td className="p-4"><Input type="number" placeholder="0" value={item.perUnitCost} onChange={(e) => handleItemChange(item.id, "perUnitCost", e.target.value)} className="w-[100px]" /></td>
                   <td className="p-4 font-medium">₹{item.amount || "0.00"}</td>

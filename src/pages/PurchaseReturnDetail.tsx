@@ -1,61 +1,79 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Printer, Edit, FileText } from "lucide-react";
+import { ArrowLeft, Printer, Edit, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 interface ReturnItem {
-  id: string;
   item: string;
   unit: string;
-  unitPrice: string;
-  quantity: number;
-  convertedQty: string;
+  unitprice: string;
+  quantity: string;
+  conversted_qty: string;
   amount: string;
 }
 
-const sampleReturnItems: ReturnItem[] = [
-  {
-    id: "1",
-    item: "Cotton Fabric - Blue",
-    unit: "Meter",
-    unitPrice: "₹250",
-    quantity: 50,
-    convertedQty: "50 m",
-    amount: "₹12,500",
-  },
-  {
-    id: "2",
-    item: "Silk Thread - Gold",
-    unit: "Spool",
-    unitPrice: "₹150",
-    quantity: 25,
-    convertedQty: "25 pcs",
-    amount: "₹3,750",
-  },
-  {
-    id: "3",
-    item: "Embroidery Beads",
-    unit: "Packet",
-    unitPrice: "₹80",
-    quantity: 100,
-    convertedQty: "100 pkt",
-    amount: "₹8,000",
-  },
-];
+interface ReturnInfo {
+  vendor: string;
+  vendorcat: string;
+  purchase_date: string;
+  total_items: number;
+  t_charges: string;
+  grand_total: string;
+  reference_no?: string;
+}
 
-const returnDetails = {
-  returnNumber: "PR-2024-001",
-  vendor: "ABC Textiles",
-  vendorType: "karahi",
-  date: "Dec 24, 2024",
-  status: "completed",
-  totalAmount: "₹45,000",
-  tCharges: "₹1,200",
-};
+interface ApiResponse {
+  info: ReturnInfo;
+  data: ReturnItem[];
+}
 
 export default function PurchaseReturnDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [orderData, setOrderData] = useState<ApiResponse | null>(null);
+
+  useEffect(() => {
+    const fetchDetails = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("auth_token");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/purchase/return/detail/${id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch return details");
+
+        const result: ApiResponse = await response.json();
+        setOrderData(result);
+      } catch (error) {
+        console.error(error);
+        toast.error("Could not load return details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) fetchDetails();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex h-[400px] items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!orderData) return <div className="p-8 text-center">Return not found.</div>;
+
+  const { info, data } = orderData;
 
   return (
     <div className="space-y-6">
@@ -67,7 +85,7 @@ export default function PurchaseReturnDetail() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-foreground">
-              Return Details - {returnDetails.returnNumber}
+              Return Details - {info.reference_no || `PR-${id}`}
             </h1>
             <p className="text-muted-foreground">
               View purchase return details and items
@@ -92,37 +110,37 @@ export default function PurchaseReturnDetail() {
           <FileText className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-semibold">Return Summary</h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           <div>
             <p className="text-sm text-muted-foreground">Vendor</p>
-            <p className="font-medium">{returnDetails.vendor}</p>
+            <p className="font-medium">{info.vendor}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Vendor Type</p>
-            <p className="font-medium capitalize">{returnDetails.vendorType}</p>
+            <p className="font-medium capitalize">{info.vendorcat}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Date</p>
-            <p className="font-medium">{returnDetails.date}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Status</p>
-            <p className="font-medium capitalize">{returnDetails.status}</p>
+            <p className="font-medium">{info.purchase_date}</p>
           </div>
         </div>
         <Separator className="my-4" />
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           <div>
-            <p className="text-sm text-muted-foreground">Total Amount</p>
-            <p className="text-xl font-bold text-primary">{returnDetails.totalAmount}</p>
-          </div>
-          <div>
             <p className="text-sm text-muted-foreground">T-Charges</p>
-            <p className="text-xl font-bold">{returnDetails.tCharges}</p>
+            <p className="text-xl font-bold">
+              ₹{parseFloat(info.t_charges).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Total Items</p>
-            <p className="text-xl font-bold">{sampleReturnItems.length}</p>
+            <p className="text-xl font-bold">{info.total_items}</p>
+          </div>
+           <div>
+            <p className="text-sm text-muted-foreground">Total Amount</p>
+            <p className="text-xl font-bold text-primary">
+              ₹{parseFloat(info.grand_total).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </p>
           </div>
         </div>
       </div>
@@ -146,14 +164,16 @@ export default function PurchaseReturnDetail() {
               </tr>
             </thead>
             <tbody>
-              {sampleReturnItems.map((item) => (
-                <tr key={item.id} className="animate-fade-in">
+              {data.map((item, index) => (
+                <tr key={index} className="animate-fade-in">
                   <td className="font-medium">{item.item}</td>
                   <td>{item.unit}</td>
-                  <td>{item.unitPrice}</td>
-                  <td>{item.quantity}</td>
-                  <td>{item.convertedQty}</td>
-                  <td className="font-semibold">{item.amount}</td>
+                  <td>₹{parseFloat(item.unitprice).toFixed(2)}</td>
+                  <td>{parseFloat(item.quantity)}</td>
+                  <td>{parseFloat(item.conversted_qty).toFixed(2)}</td>
+                  <td className="font-semibold">
+                    ₹{parseFloat(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -163,7 +183,7 @@ export default function PurchaseReturnDetail() {
         {/* Pagination */}
         <div className="p-4 border-t border-border flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing 1-{sampleReturnItems.length} of {sampleReturnItems.length} items
+            Showing 1-{data.length} of {info.total_items} items
           </p>
           <div className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-primary"></span>
