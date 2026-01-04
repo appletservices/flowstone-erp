@@ -213,6 +213,14 @@ export default function DesignInventory() {
     return products.find((p) => p.id === productId)?.name || String(productId);
   };
 
+  if (isLoading && designItems.length === 0) {
+        return (
+          <div className="flex h-[60vh] items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        );
+  }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -367,6 +375,7 @@ export default function DesignInventory() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+             {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
             <Button 
               variant="outline" 
               size="sm" 
@@ -434,6 +443,11 @@ export default function DesignInventory() {
                   </td>
                 </tr>
               ))}
+               {!isLoading && designItems.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground">No items found</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
