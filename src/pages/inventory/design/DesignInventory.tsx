@@ -122,7 +122,9 @@ export default function DesignInventory() {
           },
         });
         const result = await response.json();
-        if (result.data) {
+        if (Array.isArray(result)) {
+          setProducts(result);
+        } else if (result.data) {
           setProducts(result.data);
         }
       } catch (error) {
