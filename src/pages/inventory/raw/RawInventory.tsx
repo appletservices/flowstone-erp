@@ -176,6 +176,14 @@ export default function RawInventory() {
     setDeleteDialogOpen(false);
     refresh();
   };
+
+   if (isLoading && items.length === 0) {
+      return (
+        <div className="flex h-[60vh] items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      );
+    }
   
   return (
     <div className="space-y-6">
