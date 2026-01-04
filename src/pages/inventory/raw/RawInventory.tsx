@@ -128,7 +128,7 @@ export default function RawInventory() {
         }),
       });
 
-      const result = await response.json();
+      const result = await response.json(); //response from api
       
       if (response.ok) {
         toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
