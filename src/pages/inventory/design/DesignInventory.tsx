@@ -43,7 +43,7 @@ import { toast } from "sonner";
 import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
 
-const API_URL = "https://crm.dripcot.com/api";
+const url_ = new URL(`${import.meta.env.VITE_API_URL}`);
 
 interface DesignItem {
   id: number;
@@ -115,7 +115,7 @@ export default function DesignInventory() {
     const fetchProducts = async () => {
       try {
         const token = localStorage.getItem("auth_token");
-        const response = await fetch(`${API_URL}/inventory/type/inventory`, {
+        const response = await fetch(`${url_}/inventory/type/inventory`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -148,8 +148,8 @@ export default function DesignInventory() {
     try {
       const token = localStorage.getItem("auth_token");
       const endpoint = isEditing 
-        ? `${API_URL}/inventory/design/update`
-        : `${API_URL}/inventory/design/store`;
+        ? `${url_}/inventory/design/update`
+        : `${url_}/inventory/design/store`;
 
       const payload = {
         ...(isEditing && { id: formData.id }),
