@@ -98,7 +98,7 @@ const KarahiMaterialOpening = () => {
         <p className="text-muted-foreground">Add opening balance for karahi materials</p>
       </div>
 
-      <div className="bg-card rounded-lg border p-6 max-w-2xl">
+      <div className="bg-card rounded-lg border p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Date */}

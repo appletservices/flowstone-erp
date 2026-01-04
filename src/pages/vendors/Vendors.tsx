@@ -80,7 +80,7 @@ interface ApiItem {
   status: string;
 }
 
-export default function ContactVendors() {
+export default function Vendors() {
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [vendorToDelete, setVendorToDelete] = useState<Vendor | null>(null);
