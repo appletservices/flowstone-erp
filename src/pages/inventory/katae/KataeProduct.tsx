@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Scissors,
   Search,
   Filter,
   Plus,
@@ -48,8 +47,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useBackendSearch } from "@/hooks/useBackendSearch";
+import { useBackendSearch } from "@/components/filters/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
+
+const url_ = new URL(`${import.meta.env.VITE_API_URL}`);
 
 interface KataeItem {
   id: number;
@@ -62,15 +63,27 @@ interface KataeItem {
   unit: string;
 }
 
-const products = [
-  "Silk Saree",
-  "Cotton Saree",
-  "Embroidered Suit",
-  "Designer Lehenga",
-  "Printed Dupatta",
-  "Woolen Shawl",
-  "Linen Kurta",
-];
+interface ProductOption {
+  id: number;
+  name: string;
+}
+
+interface FormData {
+  id?: number;
+  name: string;
+  product_id: string;
+  date: string;
+  opening_qty: string;
+  opening_cost: string;
+}
+
+const emptyFormData: FormData = {
+  name: "",
+  product_id: "",
+  date: "",
+  opening_qty: "",
+  opening_cost: "",
+};
 
 export default function KataeProduct() {
   const navigate = useNavigate();
@@ -79,14 +92,9 @@ export default function KataeProduct() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<KataeItem | null>(null);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    product: "",
-    date: "",
-    openingBalance: "",
-    openingCost: "",
-    quantity: "",
-  });
+  const [formData, setFormData] = useState<FormData>(emptyFormData);
+  const [products, setProducts] = useState<ProductOption[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     data: items,
@@ -98,37 +106,81 @@ export default function KataeProduct() {
     applyFilters,
     hasActiveFilters,
     refresh,
-    pagination,
-    currentPage,
-    setCurrentPage,
-    pageSize,
-    setPageSize,
-    nextPage,
-    previousPage,
   } = useBackendSearch<KataeItem>({
     endpoint: "/inventory/katae/list",
-    pageSize: 10,
   });
 
-  const handleSubmit = () => {
-    if (!formData.name || !formData.product) {
+  // Fetch products for dropdown
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const token = localStorage.getItem("auth_token");
+        const response = await fetch(`${url_}/inventory/type/inventory`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const result = await response.json();
+        if (response.ok) {
+          const productData = Array.isArray(result) ? result : result.data || [];
+          setProducts(productData);
+        }
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!formData.name || !formData.product_id) {
       toast.error("Please fill in required fields");
       return;
     }
-    toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
-    resetForm();
-    refresh();
+
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem("auth_token");
+      const endpoint = editingItem 
+        ? `${url_}/inventory/katae/update`
+        : `${url_}/inventory/katae/store`;
+
+      const payload = {
+        ...(editingItem && { id: formData.id }),
+        name: formData.name,
+        product_id: formData.product_id,
+        date: formData.date,
+        opening_qty: formData.opening_qty,
+        opening_cost: formData.opening_cost,
+      };
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
+        resetForm();
+        refresh();
+      } else {
+        const error = await response.json();
+        toast.error(error.message || "Failed to save item");
+      }
+    } catch (error) {
+      toast.error("An error occurred while saving");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetForm = () => {
-    setFormData({
-      name: "",
-      product: "",
-      date: "",
-      openingBalance: "",
-      openingCost: "",
-      quantity: "",
-    });
+    setFormData(emptyFormData);
     setEditingItem(null);
     setDialogOpen(false);
   };
@@ -136,22 +188,42 @@ export default function KataeProduct() {
   const handleEdit = (item: KataeItem) => {
     setEditingItem(item);
     setFormData({
+      id: item.id,
       name: item.name,
-      product: products[0],
+      product_id: "",
       date: "",
-      openingBalance: item.opening_cost,
-      openingCost: item.avg_cost,
-      quantity: item.total_qty,
+      opening_qty: item.opening_qty,
+      opening_cost: item.opening_cost,
     });
     setDialogOpen(true);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!itemToDelete) return;
-    setDeleteDialogOpen(false);
-    setItemToDelete(null);
-    toast.success("Item deleted successfully");
-    refresh();
+    
+    try {
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`${url_}/inventory/katae/delete`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: itemToDelete.id }),
+      });
+
+      if (response.ok) {
+        toast.success("Item deleted successfully");
+        refresh();
+      } else {
+        toast.error("Failed to delete item");
+      }
+    } catch (error) {
+      toast.error("An error occurred while deleting");
+    } finally {
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    }
   };
 
   return (
@@ -184,19 +256,49 @@ export default function KataeProduct() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Product *</Label>
-                  <Select onValueChange={(v) => setFormData({ ...formData, product: v })}>
+                  <Select 
+                    value={formData.product_id} 
+                    onValueChange={(v) => setFormData({ ...formData, product_id: v })}
+                  >
                     <SelectTrigger><SelectValue placeholder="Select product" /></SelectTrigger>
                     <SelectContent className="bg-card">
-                      {products.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                      {products.map((p) => (
+                        <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Date *</Label>
-                  <Input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
+                  <Label>Date</Label>
+                  <Input 
+                    type="date" 
+                    value={formData.date} 
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })} 
+                  />
                 </div>
               </div>
-              <Button onClick={handleSubmit} className="w-full">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Opening Qty</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={formData.opening_qty}
+                    onChange={(e) => setFormData({ ...formData, opening_qty: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Opening Cost</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={formData.opening_cost}
+                    onChange={(e) => setFormData({ ...formData, opening_cost: e.target.value })}
+                  />
+                </div>
+              </div>
+              <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {editingItem ? "Update Item" : "Add Item"}
               </Button>
             </div>
@@ -276,55 +378,11 @@ export default function KataeProduct() {
           </table>
         </div>
 
-        {/* Pagination Footer */}
-        <div className="p-4 border-t border-border flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <p className="text-sm text-muted-foreground">
-              Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, pagination.totalRecords)} of {pagination.totalRecords} results
-            </p>
-            <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
-              <SelectTrigger className="w-[100px] h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-card">
-                <SelectItem value="10">10 / page</SelectItem>
-                <SelectItem value="25">25 / page</SelectItem>
-                <SelectItem value="50">50 / page</SelectItem>
-                <SelectItem value="100">100 / page</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={previousPage} disabled={currentPage === 1}>
-              Previous
-            </Button>
-            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-              let pageNum: number;
-              if (pagination.totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= pagination.totalPages - 2) {
-                pageNum = pagination.totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-              return (
-                <Button
-                  key={pageNum}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={currentPage === pageNum ? "bg-primary text-primary-foreground" : ""}
-                >
-                  {pageNum}
-                </Button>
-              );
-            })}
-            <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === pagination.totalPages}>
-              Next
-            </Button>
-          </div>
+        {/* Simple results count */}
+        <div className="p-4 border-t border-border">
+          <p className="text-sm text-muted-foreground">
+            Showing {items.length} results
+          </p>
         </div>
       </div>
 
