@@ -64,6 +64,7 @@ interface ProductOption {
 interface FormData {
   id?: number;
   name: string;
+  code: string;
   product_id: string;
   opening_qty: string;
   per_unit_cost: string;
@@ -72,6 +73,7 @@ interface FormData {
 
 const emptyFormData: FormData = {
   name: "",
+  code: "",
   product_id: "",
   opening_qty: "",
   per_unit_cost: "",
@@ -150,6 +152,7 @@ export default function DesignInventory() {
       const payload = {
         ...(isEditing && { id: formData.id }),
         name: formData.name,
+        code: formData.code,
         product_id: formData.product_id,
         opening_qty: formData.opening_qty || "0",
         per_unit_cost: formData.per_unit_cost || "0",
@@ -188,6 +191,7 @@ export default function DesignInventory() {
     setFormData({
       id: item.id,
       name: item.name,
+      code: (item as any).code || "",
       product_id: String(item.product_id),
       opening_qty: item.opening_qty,
       per_unit_cost: item.avg_cost,
@@ -239,6 +243,17 @@ export default function DesignInventory() {
                   placeholder="Enter design name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+              </div>
+
+              {/* Code */}
+              <div className="space-y-2">
+                <Label htmlFor="code">Code</Label>
+                <Input
+                  id="code"
+                  placeholder="Enter design code"
+                  value={formData.code}
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                 />
               </div>
 
