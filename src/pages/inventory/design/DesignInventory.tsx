@@ -115,7 +115,7 @@ export default function DesignInventory() {
     const fetchProducts = async () => {
       try {
         const token = localStorage.getItem("auth_token");
-        const response = await fetch(`${API_URL}/inventory/raw/dropdown`, {
+        const response = await fetch(`${API_URL}/inventory/type/inventory`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
