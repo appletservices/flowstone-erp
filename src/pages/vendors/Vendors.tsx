@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User,
@@ -80,6 +80,11 @@ interface ApiItem {
   status: string;
 }
 
+interface AccountType {
+  account_code: string;
+  name: string;
+}
+
 export default function Vendors() {
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -87,6 +92,7 @@ export default function Vendors() {
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const [accountTypes, setAccountTypes] = useState<{ value: string; label: string }[]>([]);
 
   const {
     data: rawData,
@@ -102,6 +108,33 @@ export default function Vendors() {
   } = useBackendSearch<ApiItem>({
     endpoint: "/contacts/vendors/list",
   });
+
+  // Fetch account types from API
+  useEffect(() => {
+    const fetchAccountTypes = async () => {
+      try {
+        const token = localStorage.getItem("auth_token");
+        const response = await fetch("https://crm.dripcot.com/api/contacts/vendors/accounts", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        if (data.success && data.accounts) {
+          setAccountTypes(
+            data.accounts.map((acc: AccountType) => ({
+              value: acc.name,
+              label: acc.name,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch account types:", error);
+      }
+    };
+    fetchAccountTypes();
+  }, []);
 
   const vendors: Vendor[] = rawData.map((item) => ({
     id: item.id.toString(),
@@ -120,9 +153,34 @@ export default function Vendors() {
     date: new Date(),
   }));
 
-  const handleAddVendor = async () => {
-    toast.success("Vendor added successfully");
-    refresh();
+  const handleAddVendor = async (formData: any) => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch("https://crm.dripcot.com/api/contacts/vendors/save", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          type: formData.accountType,
+          phone: formData.phone,
+          cnic: formData.cnic,
+          address: formData.address,
+          balance_type: formData.balanceType,
+          opening_amount: formData.openingAmount || "0",
+        }),
+      });
+      
+      if (!response.ok) throw new Error("Failed to save vendor");
+      
+      toast.success("Vendor added successfully");
+      refresh();
+    } catch (error) {
+      toast.error("Failed to add vendor");
+      console.error(error);
+    }
   };
 
   const handleEditVendor = async () => {
@@ -165,13 +223,9 @@ export default function Vendors() {
           <p className="text-muted-foreground">Manage customer receivables and payments</p>
         </div>
         <ContactFormDialog
-          trigger={<Button className="gap-2"><Plus className="w-4 h-4" /> Add Customer</Button>}
+          trigger={<Button className="gap-2"><Plus className="w-4 h-4" /> Add Vendor</Button>}
           title="Add Vendor"
-          accountTypes={[
-            { value: "LOCAL CUSTOMERS ACCOUNTS", label: "LOCAL CUSTOMERS" },
-            { value: "EXPORT CUSTOMERS ACCOUNTS", label: "EXPORT CUSTOMERS" },
-            { value: "OTHER RECEIVEABLE ACCOUNTS", label: "OTHER RECEIVEABLE" },
-          ]}
+          accountTypes={accountTypes}
           onSubmit={handleAddVendor}
         />
       </div>
@@ -334,13 +388,7 @@ export default function Vendors() {
       {editingVendor && (
         <ContactFormDialog
           title="Edit Vendor"
-          accountTypes={[
-            { value: "EMBROIDERY VENDORS", label: "Embroidery Vendor" },
-            { value: "SALAI VENDORS KARKHANA", label: "Salai Karkhana" },
-            { value: "SALAI VENDORS OUTSIDE", label: "Salai Outside" },
-            { value: "TAKAI VENDORS", label: "Takai Vendor" },
-            { value: "OTHER PAYABLES", label: "Other Payable" },
-          ]}
+          accountTypes={accountTypes}
           onSubmit={handleEditVendor}
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
