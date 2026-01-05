@@ -54,6 +54,9 @@ import KarahiList from "@/pages/karahi/KarahiList";
 import KarahiIssueMaterial from "@/pages/karahi/KarahiIssueMaterial";
 import KarahiLedger from "@/pages/karahi/KarahiLedger";
 import KarahiMaterialOpening from "@/pages/karahi/KarahiMaterialOpening";
+import KarahiDesignReceive from "@/pages/KarahiDesignReceive";
+import KarahiDesignReceiveLedger from "@/pages/KarahiDesignReceiveLedger";
+import KarahiDesignReceiveForm from "@/pages/KarahiDesignReceiveForm";
 
 
 const queryClient = new QueryClient();
@@ -121,12 +124,46 @@ const App = () => (
                 <Route path="/karahi/issue-material" element={<PermissionGuard><KarahiIssueMaterial /></PermissionGuard>}/>                
                 <Route path="/karahi/ledger/:id" element={<PermissionGuard><KarahiLedger /></PermissionGuard>}/>
                 <Route path="/karahi/material-opening" element={<PermissionGuard permissionId="karahi_material_opening"><KarahiMaterialOpening /></PermissionGuard>}/>
+                <Route
+                  path="/karahi/design-receive"
+                  element={
+                    <PermissionGuard>
+                      <KarahiDesignReceive />
+                    </PermissionGuard>
+                  }
+                />
+                <Route
+                  path="/karahi/design-receive/new"
+                  element={
+                    <PermissionGuard>
+                      <KarahiDesignReceiveForm />
+                    </PermissionGuard>
+                  }
+                />
+                <Route
+                  path="/karahi/design-receive/edit/:id"
+                  element={
+                    <PermissionGuard>
+                      <KarahiDesignReceiveForm />
+                    </PermissionGuard>
+                  }
+                />
+                <Route
+                  path="/karahi/design-receive-ledger/:id"
+                  element={
+                    <PermissionGuard>
+                      <KarahiDesignReceiveLedger />
+                    </PermissionGuard>
+                  }
+                />
 
                 <Route path="/reports/purchase" element={<PermissionGuard permissionId="report_purchase"><PurchaseReport /></PermissionGuard>} />
                 <Route path="/reports/payment" element={<PermissionGuard permissionId="report_payment" ><PaymentReport /></PermissionGuard>} />
                 <Route path="/account/report" element={<PermissionGuard ><AccountLedger /></PermissionGuard>} />
                 <Route path="/reports/katae/issue" element={<PermissionGuard permissionId="report_katae_issue"><KataeIssueReport /></PermissionGuard>}/>
                 <Route path="/reports/katae/receive" element={<PermissionGuard permissionId="report_katae_receive"><KataeReceiveReport /></PermissionGuard>} />
+
+                
 
               </Route>
 

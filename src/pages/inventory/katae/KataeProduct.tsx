@@ -163,15 +163,18 @@ export default function KataeProduct() {
         },
         body: JSON.stringify(payload),
       });
-
-      if (response.ok) {
+      const result = await response.json();
+       if (response.ok && result.success !== false) {
         toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
         resetForm();
         refresh();
       } else {
         const error = await response.json();
-        toast.error(error.message || "Failed to save item");
+        toast.error(result.message || "Failed to save item");
       }
+
+
+
     } catch (error) {
       toast.error("An error occurred while saving");
     } finally {

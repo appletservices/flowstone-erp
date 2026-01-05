@@ -115,7 +115,6 @@ export default function Vendors() {
       try {
         const token = localStorage.getItem("auth_token");
         const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/vendors/subaccount`, {
-
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -154,7 +153,7 @@ export default function Vendors() {
     date: new Date(),
   }));
 
-  const handleAddVendor = async (formData: any): Promise<{ success: boolean; message?: string }> => {
+  const handleAddVendor = async (formData: any) => {
     try {
       const token = localStorage.getItem("auth_token");
       const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/vendors/store`, {
@@ -165,67 +164,29 @@ export default function Vendors() {
         },
         body: JSON.stringify({
           name: formData.name,
-          sub: formData.accountType,
+          type: formData.accountType,
           phone: formData.phone,
           cnic: formData.cnic,
           address: formData.address,
-          opening_balance_type: formData.balanceType,
-          opening_balance: formData.openingAmount || "0",
+          balance_type: formData.balanceType,
+          opening_amount: formData.openingAmount || "0",
         }),
       });
       
-      const data = await response.json();
-      
-      if (!data.success) {
-        return { success: false, message: data.message };
-      }
+      if (!response.ok) throw new Error("Failed to save vendor");
       
       toast.success("Vendor added successfully");
       refresh();
-      return { success: true };
     } catch (error) {
+      toast.error("Failed to add vendor");
       console.error(error);
-      return { success: false, message: "Failed to add vendor" };
     }
   };
 
-  const handleEditVendor = async (formData: any): Promise<{ success: boolean; message?: string }> => {
-    if (!editingVendor) return { success: false, message: "No vendor selected" };
-    
-    try {
-      const token = localStorage.getItem("auth_token");
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/vendors/update`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: editingVendor.id,
-          name: formData.name,
-          sub: formData.accountType,
-          phone: formData.phone,
-          cnic: formData.cnic,
-          address: formData.address,
-          opening_balance_type: formData.balanceType,
-          opening_balance: formData.openingAmount || "0",
-        }),
-      });
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        return { success: false, message: data.message };
-      }
-      
-      toast.success("Vendor updated successfully");
-      setEditDialogOpen(false);
-      refresh();
-      return { success: true };
-    } catch (error) {
-      console.error(error);
-      return { success: false, message: "Failed to update vendor" };
-    }
+  const handleEditVendor = async () => {
+    setEditDialogOpen(false);
+    toast.success("Vendor updated successfully");
+    refresh();
   };
 
   const handleDeleteVendor = async () => {
@@ -235,40 +196,9 @@ export default function Vendors() {
     refresh();
   };
 
-  const [isLoadingEditData, setIsLoadingEditData] = useState(false);
-
-  const openEditDialog = async (vendor: Vendor) => {
+  const openEditDialog = (vendor: Vendor) => {
     setEditingVendor(vendor);
-    setIsLoadingEditData(true);
     setEditDialogOpen(true);
-    
-    try {
-      const token = localStorage.getItem("auth_token");
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/vendors/edit/${vendor.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await response.json();
-      
-      setEditingVendor({
-        ...vendor,
-        name: data.name,
-        phone: data.phone,
-        address: data.address,
-        code: data.cnic,
-        balanceType: data.opening_balance_type?.toLowerCase() as "credit" | "debit",
-        openingAmount: data.opening_balance,
-        type: data.sub,
-        date: data.tdate ? new Date(data.tdate) : new Date(),
-      });
-    } catch (error) {
-      console.error("Failed to fetch vendor details:", error);
-      toast.error("Failed to load vendor details");
-    } finally {
-      setIsLoadingEditData(false);
-    }
   };
 
   const openDeleteDialog = (vendor: Vendor) => {
@@ -462,7 +392,6 @@ export default function Vendors() {
           onSubmit={handleEditVendor}
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
-          isLoading={isLoadingEditData}
           defaultValues={{
             accountType: editingVendor.type,
             name: editingVendor.name,

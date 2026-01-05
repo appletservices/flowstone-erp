@@ -90,6 +90,7 @@ const menuItems: MenuItem[] = [
     children: [
       { label: "Karahi List", path: "/karahi/list", icon: List, permissionId: "karahi_list" },
       { label: "Material Opening", path: "/karahi/material-opening", icon: Package, permissionId: "karahi_material_opening" },
+      { label: "Design Receive", path: "/karahi/design-receive", icon: Palette },
     ],
   },
 

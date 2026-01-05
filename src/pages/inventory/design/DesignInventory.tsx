@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   Filter,
   Plus,
+  Pencil,
   MoreHorizontal,
-  Palette,
+  Trash2,
+  BookOpen,
   CalendarIcon,
   Loader2,
 } from "lucide-react";
@@ -81,6 +84,7 @@ const emptyFormData: FormData = {
 };
 
 export default function DesignInventory() {
+   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>(emptyFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -211,9 +215,9 @@ export default function DesignInventory() {
     }
   };
 
-  const getProductName = (productId: number) => {
-    return products.find((p) => p.id === productId)?.name || String(productId);
-  };
+  // const getProductName = (productId: number) => {
+  //   return products.find((p) => p.id === productId)?.name || String(productId);
+  // };
 
   if (isLoading && designItems.length === 0) {
         return (
@@ -417,7 +421,7 @@ export default function DesignInventory() {
                   <td className="font-medium">{item.name}</td>
                   <td>
                     <span className="text-sm capitalize">
-                      {item.product_name || getProductName(item.product_id)}
+                      {item.product_name}
                     </span>
                   </td>
                   <td className="text-muted-foreground">{parseFloat(item.opening_qty).toLocaleString()}</td>
@@ -436,10 +440,13 @@ export default function DesignInventory() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-card">
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEdit(item)}>Edit Design</DropdownMenuItem>
-                        <DropdownMenuItem>Update Stock</DropdownMenuItem>
-                        <DropdownMenuItem>Delete</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEdit(item)}>
+                            <Pencil className="w-4 h-4 mr-2" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/ledger/inventory/${item.id}`)}>
+                              <BookOpen className="w-4 h-4 mr-2" /> View Ledger
+                          </DropdownMenuItem>
+                        <DropdownMenuItem> <Trash2 className="w-4 h-4 mr-2" />Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </td>
