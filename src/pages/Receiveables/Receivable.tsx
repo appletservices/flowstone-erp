@@ -120,15 +120,17 @@ export default function Receivable() {
     date: new Date(),
   }));
 
-  const handleAddVendor = async () => {
+  const handleAddVendor = async (): Promise<{ success: boolean; message?: string }> => {
     toast.success("Customer added successfully");
     refresh();
+    return { success: true };
   };
 
-  const handleEditVendor = async () => {
+  const handleEditVendor = async (): Promise<{ success: boolean; message?: string }> => {
     setEditDialogOpen(false);
     toast.success("Customer updated successfully");
     refresh();
+    return { success: true };
   };
 
   const handleDeleteVendor = async () => {
