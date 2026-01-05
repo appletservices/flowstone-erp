@@ -114,7 +114,8 @@ export default function Vendors() {
     const fetchAccountTypes = async () => {
       try {
         const token = localStorage.getItem("auth_token");
-        const response = await fetch("https://crm.dripcot.com/api/contacts/vendors/accounts", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/vendors/subaccount`, {
+
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -156,7 +157,7 @@ export default function Vendors() {
   const handleAddVendor = async (formData: any) => {
     try {
       const token = localStorage.getItem("auth_token");
-      const response = await fetch("https://crm.dripcot.com/api/contacts/vendors/save", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/vendors/store`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
