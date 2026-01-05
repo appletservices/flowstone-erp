@@ -105,13 +105,15 @@ const menuItems: MenuItem[] = [
   { label: "Purchase", icon: ShoppingCart, path: "/inventory/purchase", permissionId: "purchase" },
   { label: "Purchase Return", icon: RotateCcw, path: "/purchase-return", permissionId: "purchase_return" },
   { label: "Sales", icon: Receipt, path: "/sales", permissionId: "sales" },
-   {
+  {
     label: "Reports",
     icon: FileBarChart,
     children: [
       { label: "Purchase Report", path: "/reports/purchase", icon: FileText, permissionId: "report_purchase" },
       { label: "Payment Report", path: "/reports/payment", icon: CreditCard ,permissionId: "report_payment" },
       { label: "Account Report", path: "/account/report", icon: CreditCard },
+      { label: "Katae Issue Report", path: "/reports/katae/issue", icon: Send, permissionId: "report_katae_issue" },
+      { label: "Katae Receive Report", path: "/reports/katae/receive", icon: RotateCcw, permissionId: "report_katae_receive" },
     ],
   },
   {

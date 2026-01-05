@@ -52,6 +52,9 @@ export const ALL_MODULES: Module[] = [
 
   { id: "report_purchase", label: "Purchase Report", path: "/reports/purchase", category: "Reports" },
   { id: "report_payment", label: "Payment Report", path: "/reports/payment", category: "Reports" },
+  
+  { id: "report_katae_issue", label: "Katae Issue Report", path: "/reports/katae/issue", category: "Reports" },
+  { id: "report_katae_receive", label: "Katae Receive Report", path: "/reports/katae/receive", category: "Reports" },
 
   { id: "settings", label: "Settings", path: "/settings", category: "Admin" },
   { id: "role_management", label: "Role Management", path: "/settings/roles", category: "Admin" },

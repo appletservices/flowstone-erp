@@ -42,9 +42,12 @@ import KataeIssuedMaterial from "@/pages/katae/KataeIssuedMaterial";
 import PurchaseReturn from "@/pages/purchase/PurchaseReturn";
 import PurchaseReturnForm from "@/pages/purchase/PurchaseReturnForm";
 import PurchaseReturnDetail from "@/pages/purchase/PurchaseReturnDetail";
+
 import PurchaseReport from "@/pages/reports/PurchaseReport";
 import PaymentReport from "@/pages/reports/PaymentReport";
 import AccountLedger from "@/pages/reports/AccountLedger";
+import KataeIssueReport from "@/pages/KataeIssueReport";
+import KataeReceiveReport from "@/pages/KataeReceiveReport";
 
 
 import KarahiList from "@/pages/karahi/KarahiList";
@@ -122,6 +125,9 @@ const App = () => (
                 <Route path="/reports/purchase" element={<PermissionGuard permissionId="report_purchase"><PurchaseReport /></PermissionGuard>} />
                 <Route path="/reports/payment" element={<PermissionGuard permissionId="report_payment" ><PaymentReport /></PermissionGuard>} />
                 <Route path="/account/report" element={<PermissionGuard ><AccountLedger /></PermissionGuard>} />
+                <Route path="/reports/katae/issue" element={<PermissionGuard permissionId="report_katae_issue"><KataeIssueReport /></PermissionGuard>}/>
+                <Route path="/reports/katae/receive" element={<PermissionGuard permissionId="report_katae_receive"><KataeReceiveReport /></PermissionGuard>} />
+
               </Route>
 
               {/* 404 */}
