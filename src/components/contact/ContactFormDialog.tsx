@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -27,12 +27,13 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ContactFormDialogProps {
   trigger?: React.ReactNode;
   title: string;
   accountTypes: { value: string; label: string }[];
-  onSubmit?: (data: ContactFormData) => void;
+  onSubmit?: (data: ContactFormData) => Promise<{ success: boolean; message?: string }> | void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   defaultValues?: Partial<ContactFormData>;
@@ -78,27 +79,51 @@ export function ContactFormDialog({
   const [formData, setFormData] = useState<ContactFormData>(
     defaultValues ? { ...emptyFormData, ...defaultValues } : emptyFormData
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => {
     if (defaultValues && open) {
       setFormData({ ...emptyFormData, ...defaultValues });
     }
+    if (open) {
+      setErrors([]);
+    }
   }, [defaultValues, open]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors([]);
     
     if (!formData.accountType || !formData.name || !formData.phone) {
       toast.error("Please fill in required fields");
       return;
     }
 
-    onSubmit?.(formData);
-    if (!defaultValues) {
-      toast.success(`${title} added successfully`);
+    setIsSubmitting(true);
+    try {
+      const result = await onSubmit?.(formData);
+      
+      if (result && !result.success) {
+        // Parse error message - split by newlines and filter empty lines
+        const errorMessages = result.message
+          ?.split('\n')
+          .map(msg => msg.trim())
+          .filter(msg => msg.length > 0) || ["An error occurred"];
+        setErrors(errorMessages);
+        return;
+      }
+      
+      if (!defaultValues) {
+        toast.success(`${title} added successfully`);
+      }
+      setOpen(false);
+      setFormData(emptyFormData);
+    } catch (error) {
+      setErrors(["An unexpected error occurred"]);
+    } finally {
+      setIsSubmitting(false);
     }
-    setOpen(false);
-    setFormData(emptyFormData);
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -116,6 +141,17 @@ export function ContactFormDialog({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          {errors.length > 0 && (
+            <Alert variant="destructive">
+              <AlertDescription>
+                <ul className="list-disc list-inside space-y-1">
+                  {errors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="grid grid-cols-2 gap-4">
             {/* Account Type */}
             <div className="space-y-2">
@@ -251,10 +287,13 @@ export function ContactFormDialog({
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit">{defaultValues ? "Update" : "Save"}</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {defaultValues ? "Update" : "Save"}
+            </Button>
           </div>
         </form>
       </DialogContent>

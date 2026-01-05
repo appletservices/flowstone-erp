@@ -125,7 +125,7 @@ export default function Vendors() {
         if (data.success && data.accounts) {
           setAccountTypes(
             data.accounts.map((acc: AccountType) => ({
-              value: acc.name,
+              value: acc.account_code,
               label: acc.name,
             }))
           );
@@ -154,10 +154,10 @@ export default function Vendors() {
     date: new Date(),
   }));
 
-  const handleAddVendor = async (formData: any) => {
+  const handleAddVendor = async (formData: any): Promise<{ success: boolean; message?: string }> => {
     try {
       const token = localStorage.getItem("auth_token");
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/vendors/store`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/vendors/store`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -165,29 +165,35 @@ export default function Vendors() {
         },
         body: JSON.stringify({
           name: formData.name,
-          type: formData.accountType,
+          sub: formData.accountType,
           phone: formData.phone,
           cnic: formData.cnic,
           address: formData.address,
-          balance_type: formData.balanceType,
-          opening_amount: formData.openingAmount || "0",
+          opening_balance_type: formData.balanceType,
+          opening_balance: formData.openingAmount || "0",
         }),
       });
       
-      if (!response.ok) throw new Error("Failed to save vendor");
+      const data = await response.json();
+      
+      if (!data.success) {
+        return { success: false, message: data.message };
+      }
       
       toast.success("Vendor added successfully");
       refresh();
+      return { success: true };
     } catch (error) {
-      toast.error("Failed to add vendor");
       console.error(error);
+      return { success: false, message: "Failed to add vendor" };
     }
   };
 
-  const handleEditVendor = async () => {
+  const handleEditVendor = async (): Promise<{ success: boolean; message?: string }> => {
     setEditDialogOpen(false);
     toast.success("Vendor updated successfully");
     refresh();
+    return { success: true };
   };
 
   const handleDeleteVendor = async () => {
