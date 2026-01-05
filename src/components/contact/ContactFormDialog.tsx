@@ -37,6 +37,7 @@ interface ContactFormDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   defaultValues?: Partial<ContactFormData>;
+  isLoading?: boolean;
 }
 
 export interface ContactFormData {
@@ -69,6 +70,7 @@ export function ContactFormDialog({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
   defaultValues,
+  isLoading: externalLoading = false,
 }: ContactFormDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   
@@ -140,6 +142,11 @@ export function ContactFormDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
+        {externalLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           {errors.length > 0 && (
             <Alert variant="destructive">
@@ -296,6 +303,7 @@ export function ContactFormDialog({
             </Button>
           </div>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   );
