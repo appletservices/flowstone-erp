@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 import {
   User,
   Search,
@@ -14,6 +15,8 @@ import {
   BookOpen,
   CreditCard,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContactFormDialog } from "@/components/contact/ContactFormDialog";
@@ -89,10 +92,11 @@ export default function Vendors() {
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [vendorToDelete, setVendorToDelete] = useState<Vendor | null>(null);
-  const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
+  const [editingVendor, setEditingVendor] = useState<any>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [accountTypes, setAccountTypes] = useState<{ value: string; label: string }[]>([]);
+  const [isLoadingEditData, setIsLoadingEditData] = useState(false);
 
   const {
     data: rawData,
@@ -105,8 +109,14 @@ export default function Vendors() {
     hasActiveFilters,
     summary,
     refresh,
+    pagination,
+    currentPage,
+    setCurrentPage,
+    nextPage,
+    previousPage,
   } = useBackendSearch<ApiItem>({
     endpoint: "/contacts/vendors/list",
+    pageSize: 12,
   });
 
   // Fetch account types from API
@@ -164,29 +174,69 @@ export default function Vendors() {
         },
         body: JSON.stringify({
           name: formData.name,
-          type: formData.accountType,
+          sub: formData.accountType,
           phone: formData.phone,
           cnic: formData.cnic,
           address: formData.address,
-          balance_type: formData.balanceType,
-          opening_amount: formData.openingAmount || "0",
+          opening_balance_type: formData.balanceType,
+          opening_balance: formData.openingAmount || "0",
+          tdate: formData.date ? format(formData.date, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
         }),
       });
       
-      if (!response.ok) throw new Error("Failed to save vendor");
+      const result = await response.json();
+      if (!result.success) {
+        return { success: false, message: result.message };
+      }
       
       toast.success("Vendor added successfully");
       refresh();
+      return { success: true };
     } catch (error) {
       toast.error("Failed to add vendor");
       console.error(error);
+      return { success: false, message: "Failed to add vendor" };
     }
   };
 
-  const handleEditVendor = async () => {
-    setEditDialogOpen(false);
-    toast.success("Vendor updated successfully");
-    refresh();
+  const handleEditVendor = async (formData: any) => {
+    if (!editingVendor) return { success: false, message: "No vendor selected" };
+    
+    try {
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/vendors/update`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: editingVendor.id,
+          name: formData.name,
+          sub: formData.accountType,
+          phone: formData.phone,
+          cnic: formData.cnic,
+          address: formData.address,
+          opening_balance_type: formData.balanceType,
+          opening_balance: formData.openingAmount || "0",
+          tdate: formData.date ? format(formData.date, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+        }),
+      });
+      
+      const result = await response.json();
+      if (!result.success) {
+        return { success: false, message: result.message };
+      }
+      
+      toast.success("Vendor updated successfully");
+      setEditDialogOpen(false);
+      refresh();
+      return { success: true };
+    } catch (error) {
+      toast.error("Failed to update vendor");
+      console.error(error);
+      return { success: false, message: "Failed to update vendor" };
+    }
   };
 
   const handleDeleteVendor = async () => {
@@ -196,9 +246,38 @@ export default function Vendors() {
     refresh();
   };
 
-  const openEditDialog = (vendor: Vendor) => {
-    setEditingVendor(vendor);
+  const openEditDialog = async (vendor: Vendor) => {
+    setIsLoadingEditData(true);
     setEditDialogOpen(true);
+    
+    try {
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/vendors/edit/${vendor.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      
+      const data = await response.json();
+      setEditingVendor({
+        id: vendor.id,
+        accountType: data.sub,
+        name: data.name,
+        date: data.tdate ? new Date(data.tdate) : new Date(),
+        phone: data.phone,
+        cnic: data.cnic,
+        balanceType: data.opening_balance_type?.toLowerCase() || "credit",
+        openingAmount: data.opening_balance || "0",
+        address: data.address,
+      });
+    } catch (error) {
+      console.error("Failed to fetch vendor:", error);
+      toast.error("Failed to fetch vendor details");
+      setEditDialogOpen(false);
+    } finally {
+      setIsLoadingEditData(false);
+    }
   };
 
   const openDeleteDialog = (vendor: Vendor) => {
@@ -370,6 +449,62 @@ export default function Vendors() {
         )}
       </div>
 
+      {/* Pagination Controls */}
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-border pt-4">
+          <p className="text-sm text-muted-foreground">
+            Showing {((currentPage - 1) * pagination.pageSize) + 1} to {Math.min(currentPage * pagination.pageSize, pagination.totalRecords)} of {pagination.totalRecords} vendors
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={previousPage}
+              disabled={currentPage === 1}
+              className="gap-1"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Previous
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                let pageNum: number;
+                if (pagination.totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= pagination.totalPages - 2) {
+                  pageNum = pagination.totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(pageNum)}
+                    className="w-8 h-8 p-0"
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={nextPage}
+              disabled={currentPage === pagination.totalPages}
+              className="gap-1"
+            >
+              Next
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Filter Dialog */}
       <FilterDialog
         open={filterDialogOpen}
@@ -385,25 +520,24 @@ export default function Vendors() {
       />
 
       {/* Edit Dialog */}
-      {editingVendor && (
-        <ContactFormDialog
-          title="Edit Vendor"
-          accountTypes={accountTypes}
-          onSubmit={handleEditVendor}
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
-          defaultValues={{
-            accountType: editingVendor.type,
-            name: editingVendor.name,
-            date: editingVendor.date,
-            phone: editingVendor.phone,
-            cnic: editingVendor.code,
-            balanceType: editingVendor.balanceType,
-            openingAmount: editingVendor.openingAmount,
-            address: editingVendor.address,
-          }}
-        />
-      )}
+      <ContactFormDialog
+        title="Edit Vendor"
+        accountTypes={accountTypes}
+        onSubmit={handleEditVendor}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        isLoading={isLoadingEditData}
+        defaultValues={editingVendor ? {
+          accountType: editingVendor.accountType,
+          name: editingVendor.name,
+          date: editingVendor.date,
+          phone: editingVendor.phone,
+          cnic: editingVendor.cnic,
+          balanceType: editingVendor.balanceType,
+          openingAmount: editingVendor.openingAmount,
+          address: editingVendor.address,
+        } : undefined}
+      />
 
       {/* Delete Confirmation */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

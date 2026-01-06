@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -32,10 +32,11 @@ interface ContactFormDialogProps {
   trigger?: React.ReactNode;
   title: string;
   accountTypes: { value: string; label: string }[];
-  onSubmit?: (data: ContactFormData) => void;
+  onSubmit?: (data: ContactFormData) => Promise<{ success: boolean; message?: string }> | void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   defaultValues?: Partial<ContactFormData>;
+  isLoading?: boolean;
 }
 
 export interface ContactFormData {
@@ -68,8 +69,11 @@ export function ContactFormDialog({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
   defaultValues,
+  isLoading: externalLoading = false,
 }: ContactFormDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
@@ -85,20 +89,36 @@ export function ContactFormDialog({
     }
   }, [defaultValues, open]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (open) {
+      setApiError(null);
+    }
+  }, [open]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setApiError(null);
     
     if (!formData.accountType || !formData.name || !formData.phone) {
       toast.error("Please fill in required fields");
       return;
     }
 
-    onSubmit?.(formData);
-    if (!defaultValues) {
-      toast.success(`${title} added successfully`);
+    setIsSubmitting(true);
+    try {
+      const result = await onSubmit?.(formData);
+      if (result && !result.success) {
+        setApiError(result.message || "An error occurred");
+        return;
+      }
+      setOpen(false);
+      setFormData(emptyFormData);
+    } catch (error) {
+      console.error(error);
+      setApiError("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
     }
-    setOpen(false);
-    setFormData(emptyFormData);
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -115,7 +135,17 @@ export function ContactFormDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
+        {externalLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          {apiError && (
+            <div className="bg-destructive/10 border border-destructive/30 text-destructive p-3 rounded-md text-sm whitespace-pre-line">
+              {apiError}
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-4">
             {/* Account Type */}
             <div className="space-y-2">
@@ -251,12 +281,16 @@ export function ContactFormDialog({
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit">{defaultValues ? "Update" : "Save"}</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {defaultValues ? "Update" : "Save"}
+            </Button>
           </div>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   );
