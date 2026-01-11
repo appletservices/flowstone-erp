@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 import {
   User,
   Search,
@@ -14,6 +15,8 @@ import {
   BookOpen,
   CreditCard,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContactFormDialog } from "@/components/contact/ContactFormDialog";
@@ -38,19 +41,50 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useBackendSearch } from "@/components/filters/useBackendSearch";
+import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
 import { Badge } from "@/components/ui/badge";
 
-const getTypeStyles = (type: string) => {
-  const t = type.toUpperCase();
-  if (t.includes("LOCAL")) return "bg-blue-100 text-blue-600";
-  if (t.includes("EXPORT")) return "bg-purple-100 text-purple-600";
-  if (t.includes("OTHER")) return "bg-orange-100 text-orange-600";
-  return "bg-primary/10 text-primary";
+// Color palette for customer types - each type gets a unique color
+const customerTypeColorPalette = [
+  { bg: "bg-blue-100", text: "text-blue-600" },
+  { bg: "bg-purple-100", text: "text-purple-600" },
+  { bg: "bg-orange-100", text: "text-orange-600" },
+  { bg: "bg-emerald-100", text: "text-emerald-600" },
+  { bg: "bg-pink-100", text: "text-pink-600" },
+  { bg: "bg-cyan-100", text: "text-cyan-600" },
+  { bg: "bg-amber-100", text: "text-amber-600" },
+  { bg: "bg-rose-100", text: "text-rose-600" },
+  { bg: "bg-indigo-100", text: "text-indigo-600" },
+  { bg: "bg-teal-100", text: "text-teal-600" },
+  { bg: "bg-lime-100", text: "text-lime-600" },
+  { bg: "bg-sky-100", text: "text-sky-600" },
+];
+
+// Cache for consistent color assignment
+const typeColorCache: Record<string, { bg: string; text: string }> = {};
+let colorIndex = 0;
+
+const getTypeColor = (type: string) => {
+  const normalizedType = type.toUpperCase().trim();
+  if (!typeColorCache[normalizedType]) {
+    typeColorCache[normalizedType] = customerTypeColorPalette[colorIndex % customerTypeColorPalette.length];
+    colorIndex++;
+  }
+  return typeColorCache[normalizedType];
 };
 
-interface Vendor {
+const getTypeStyles = (type: string) => {
+  const colors = getTypeColor(type);
+  return `${colors.bg} ${colors.text}`;
+};
+
+const getTypeIconStyles = (type: string) => {
+  const colors = getTypeColor(type);
+  return `${colors.bg} ${colors.text}`;
+};
+
+interface Customer {
   id: string;
   name: string;
   type: string;
@@ -80,13 +114,20 @@ interface ApiItem {
   status: string;
 }
 
+interface AccountType {
+  account_code: string;
+  name: string;
+}
+
 export default function Receivable() {
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [vendorToDelete, setVendorToDelete] = useState<Vendor | null>(null);
-  const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
+  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+  const [editingCustomer, setEditingCustomer] = useState<any>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const [accountTypes, setAccountTypes] = useState<{ value: string; label: string }[]>([]);
+  const [isLoadingEditData, setIsLoadingEditData] = useState(false);
 
   const {
     data: rawData,
@@ -99,11 +140,44 @@ export default function Receivable() {
     hasActiveFilters,
     summary,
     refresh,
+    pagination,
+    currentPage,
+    setCurrentPage,
+    nextPage,
+    previousPage,
   } = useBackendSearch<ApiItem>({
     endpoint: "/contacts/receiveables/list",
+    pageSize: 12,
   });
 
-  const vendors: Vendor[] = rawData.map((item) => ({
+  // Fetch account types from API
+  useEffect(() => {
+    const fetchAccountTypes = async () => {
+      try {
+        const token = localStorage.getItem("auth_token");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/receiveables/subaccount`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        if (data.success && data.accounts) {
+          setAccountTypes(
+            data.accounts.map((acc: AccountType) => ({
+              value: acc.account_code,
+              label: acc.name,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch account types:", error);
+      }
+    };
+    fetchAccountTypes();
+  }, []);
+
+  const customers: Customer[] = rawData.map((item) => ({
     id: item.id.toString(),
     name: item.name,
     type: item.type,
@@ -120,37 +194,129 @@ export default function Receivable() {
     date: new Date(),
   }));
 
-  const handleAddVendor = async (): Promise<{ success: boolean; message?: string }> => {
-    toast.success("Customer added successfully");
-    refresh();
-    return { success: true };
+  const handleAddCustomer = async (formData: any) => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/receiveables/store`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          sub: formData.accountType,
+          phone: formData.phone,
+          cnic: formData.cnic,
+          address: formData.address,
+          opening_balance_type: formData.balanceType,
+          opening_balance: formData.openingAmount || "0",
+          tdate: formData.date ? format(formData.date, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+        }),
+      });
+      
+      const result = await response.json();
+      if (!result.success) {
+        return { success: false, message: result.message };
+      }
+      
+      toast.success("Customer added successfully");
+      refresh();
+      return { success: true };
+    } catch (error) {
+      toast.error("Failed to add customer");
+      console.error(error);
+      return { success: false, message: "Failed to add customer" };
+    }
   };
 
-  const handleEditVendor = async (): Promise<{ success: boolean; message?: string }> => {
-    setEditDialogOpen(false);
-    toast.success("Customer updated successfully");
-    refresh();
-    return { success: true };
+  const handleEditCustomer = async (formData: any) => {
+    if (!editingCustomer) return { success: false, message: "No customer selected" };
+    
+    try {
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/receiveables/update`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: editingCustomer.id,
+          name: formData.name,
+          sub: formData.accountType,
+          phone: formData.phone,
+          cnic: formData.cnic,
+          address: formData.address,
+          opening_balance_type: formData.balanceType,
+          opening_balance: formData.openingAmount || "0",
+          tdate: formData.date ? format(formData.date, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+        }),
+      });
+      
+      const result = await response.json();
+      if (!result.success) {
+        return { success: false, message: result.message };
+      }
+      
+      toast.success("Customer updated successfully");
+      setEditDialogOpen(false);
+      refresh();
+      return { success: true };
+    } catch (error) {
+      toast.error("Failed to update customer");
+      console.error(error);
+      return { success: false, message: "Failed to update customer" };
+    }
   };
 
-  const handleDeleteVendor = async () => {
-    if (!vendorToDelete) return;
+  const handleDeleteCustomer = async () => {
+    if (!customerToDelete) return;
     setDeleteDialogOpen(false);
     toast.success("Customer deleted successfully");
     refresh();
   };
 
-  const openEditDialog = (vendor: Vendor) => {
-    setEditingVendor(vendor);
+  const openEditDialog = async (customer: Customer) => {
+    setIsLoadingEditData(true);
     setEditDialogOpen(true);
+    
+    try {
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/receiveables/edit/${customer.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      
+      const data = await response.json();
+      setEditingCustomer({
+        id: customer.id,
+        accountType: data.sub,
+        name: data.name,
+        date: data.tdate ? new Date(data.tdate) : new Date(),
+        phone: data.phone,
+        cnic: data.cnic,
+        balanceType: data.opening_balance_type?.toLowerCase() || "credit",
+        openingAmount: data.opening_balance || "0",
+        address: data.address,
+      });
+    } catch (error) {
+      console.error("Failed to fetch customer:", error);
+      toast.error("Failed to fetch customer details");
+      setEditDialogOpen(false);
+    } finally {
+      setIsLoadingEditData(false);
+    }
   };
 
-  const openDeleteDialog = (vendor: Vendor) => {
-    setVendorToDelete(vendor);
+  const openDeleteDialog = (customer: Customer) => {
+    setCustomerToDelete(customer);
     setDeleteDialogOpen(true);
   };
 
-  if (isLoading && vendors.length === 0) {
+  if (isLoading && customers.length === 0) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -169,12 +335,8 @@ export default function Receivable() {
         <ContactFormDialog
           trigger={<Button className="gap-2"><Plus className="w-4 h-4" /> Add Customer</Button>}
           title="Add Customer"
-          accountTypes={[
-            { value: "LOCAL CUSTOMERS ACCOUNTS", label: "LOCAL CUSTOMERS" },
-            { value: "EXPORT CUSTOMERS ACCOUNTS", label: "EXPORT CUSTOMERS" },
-            { value: "OTHER RECEIVEABLE ACCOUNTS", label: "OTHER RECEIVEABLE" },
-          ]}
-          onSubmit={handleAddVendor}
+          accountTypes={accountTypes}
+          onSubmit={handleAddCustomer}
         />
       </div>
 
@@ -187,7 +349,7 @@ export default function Receivable() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Customers</p>
-              <p className="text-2xl font-bold">{summary?.total_contacts || vendors.length}</p>
+              <p className="text-2xl font-bold">{summary?.total_contacts || 0}</p>
             </div>
           </div>
         </div>
@@ -195,7 +357,7 @@ export default function Receivable() {
         {summary?.contacts_type_wise?.map((item: { type: string; total: number }) => (
           <div key={item.type} className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <div className="flex items-center gap-3">
-              <div className={cn("p-3 rounded-xl", getTypeStyles(item.type))}>
+              <div className={cn("p-3 rounded-xl", getTypeIconStyles(item.type))}>
                 <User className="w-6 h-6" />
               </div>
               <div>
@@ -248,20 +410,20 @@ export default function Receivable() {
 
       {/* Customer Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {vendors.map((vendor) => (
-          <div key={vendor.id} className="bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow animate-fade-in">
+        {customers.map((customer) => (
+          <div key={customer.id} className="bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow animate-fade-in">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
-                  <AvatarFallback className={cn("font-semibold", getTypeStyles(vendor.type))}>
-                    {vendor.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                  <AvatarFallback className={cn("font-semibold", getTypeStyles(customer.type))}>
+                    {customer.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-semibold">{vendor.name}</h3>
+                  <h3 className="font-semibold">{customer.name}</h3>
                   <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <span className={cn("chip text-[10px] border-none font-medium", getTypeStyles(vendor.type))}>
-                      {vendor.type}
+                    <span className={cn("chip text-[10px] border-none font-medium", getTypeStyles(customer.type))}>
+                      {customer.type}
                     </span>
                   </div>
                 </div>
@@ -271,52 +433,108 @@ export default function Receivable() {
                   <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="w-4 h-4" /></Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-card">
-                  <DropdownMenuItem onClick={() => openEditDialog(vendor)}><Pencil className="w-4 h-4 mr-2" /> Edit</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate(`/contacts/ledger/receiveable/${vendor.id}`)}><BookOpen className="w-4 h-4 mr-2" /> View Ledger</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openEditDialog(customer)}><Pencil className="w-4 h-4 mr-2" /> Edit</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate(`/contacts/ledger/receiveable/${customer.id}`)}><BookOpen className="w-4 h-4 mr-2" /> View Ledger</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => openDeleteDialog(vendor)} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" /> Delete</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openDeleteDialog(customer)} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" /> Delete</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
 
             <div className="space-y-2 mb-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Phone className="w-4 h-4" /> <span>{vendor.phone}</span>
+                <Phone className="w-4 h-4" /> <span>{customer.phone}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Mail className="w-4 h-4" /> <span className="truncate">{vendor.email || "N/A"}</span>
+                <Mail className="w-4 h-4" /> <span className="truncate">{customer.email || "N/A"}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="w-4 h-4" /> <span className="truncate">{vendor.address}</span>
+                <MapPin className="w-4 h-4" /> <span className="truncate">{customer.address}</span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
               <div>
                 <p className="text-xs text-muted-foreground">Total Transactions</p>
-                <p className="font-semibold">{vendor.totalTransactions}</p>
+                <p className="font-semibold">{customer.totalTransactions}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Pending Amount</p>
-                <p className={cn("font-semibold", vendor.pendingAmount !== "₹0" && "text-warning")}>
-                  {vendor.pendingAmount}
+                <p className={cn("font-semibold", customer.pendingAmount !== "₹0" && "text-warning")}>
+                  {customer.pendingAmount}
                 </p>
               </div>
             </div>
 
             <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Code: {vendor.code}</span>
-              <Button variant="ghost" size="sm" className="text-primary h-7 px-2" onClick={() => navigate(`/contacts/ledger/receiveable/${vendor.id}`)}>View Ledger</Button>
+              <span className="text-xs text-muted-foreground">Code: {customer.code}</span>
+              <Button variant="ghost" size="sm" className="text-primary h-7 px-2" onClick={() => navigate(`/contacts/ledger/receiveable/${customer.id}`)}>View Ledger</Button>
             </div>
           </div>
         ))}
 
-        {!isLoading && vendors.length === 0 && (
+        {!isLoading && customers.length === 0 && (
           <div className="col-span-full text-center py-12 text-muted-foreground">
             No customers found
           </div>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-border pt-4">
+          <p className="text-sm text-muted-foreground">
+            Showing {((currentPage - 1) * pagination.pageSize) + 1} to {Math.min(currentPage * pagination.pageSize, pagination.totalRecords)} of {pagination.totalRecords} customers
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={previousPage}
+              disabled={currentPage === 1}
+              className="gap-1"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Previous
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                let pageNum: number;
+                if (pagination.totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= pagination.totalPages - 2) {
+                  pageNum = pagination.totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(pageNum)}
+                    className="w-8 h-8 p-0"
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={nextPage}
+              disabled={currentPage === pagination.totalPages}
+              className="gap-1"
+            >
+              Next
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Filter Dialog */}
       <FilterDialog
@@ -333,40 +551,26 @@ export default function Receivable() {
       />
 
       {/* Edit Dialog */}
-      {editingVendor && (
-        <ContactFormDialog
-          title="Edit Customer"
-          accountTypes={[
-            { value: "LOCAL CUSTOMERS ACCOUNTS", label: "LOCAL CUSTOMERS" },
-            { value: "EXPORT CUSTOMERS ACCOUNTS", label: "EXPORT CUSTOMERS" },
-            { value: "OTHER RECEIVEABLE ACCOUNTS", label: "OTHER RECEIVEABLE" },
-          ]}
-          onSubmit={handleEditVendor}
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
-          defaultValues={{
-            accountType: editingVendor.type,
-            name: editingVendor.name,
-            date: editingVendor.date,
-            phone: editingVendor.phone,
-            cnic: editingVendor.code,
-            balanceType: editingVendor.balanceType,
-            openingAmount: editingVendor.openingAmount,
-            address: editingVendor.address,
-          }}
-        />
-      )}
+      <ContactFormDialog
+        title="Edit Customer"
+        accountTypes={accountTypes}
+        onSubmit={handleEditCustomer}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        defaultValues={editingCustomer}
+        isLoading={isLoadingEditData}
+      />
 
       {/* Delete Confirmation */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="bg-card">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Customer</AlertDialogTitle>
-            <AlertDialogDescription>Are you sure you want to delete "{vendorToDelete?.name}"? This action cannot be undone.</AlertDialogDescription>
+            <AlertDialogDescription>Are you sure you want to delete "{customerToDelete?.name}"? This action cannot be undone.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteVendor} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteCustomer} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
