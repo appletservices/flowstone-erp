@@ -45,27 +45,43 @@ import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
 import { Badge } from "@/components/ui/badge";
 
-// Color mapping for vendor types - consistent colors for summary cards and list badges
-const vendorTypeColors: Record<string, { bg: string; text: string; iconBg: string }> = {
-  "SALAI VENDOR": { bg: "bg-blue-100", text: "text-blue-600", iconBg: "bg-blue-100 text-blue-600" },
-  "KARAHI VENDOR": { bg: "bg-purple-100", text: "text-purple-600", iconBg: "bg-purple-100 text-purple-600" },
-  "KATAE VENDOR": { bg: "bg-orange-100", text: "text-orange-600", iconBg: "bg-orange-100 text-orange-600" },
-  "DESIGN VENDOR": { bg: "bg-emerald-100", text: "text-emerald-600", iconBg: "bg-emerald-100 text-emerald-600" },
-  "FINISHING VENDOR": { bg: "bg-pink-100", text: "text-pink-600", iconBg: "bg-pink-100 text-pink-600" },
-  "RAW MATERIAL": { bg: "bg-cyan-100", text: "text-cyan-600", iconBg: "bg-cyan-100 text-cyan-600" },
-  "OTHER VENDORS": { bg: "bg-amber-100", text: "text-amber-600", iconBg: "bg-amber-100 text-amber-600" },
+// Color palette for vendor types - each type gets a unique color
+const vendorTypeColorPalette = [
+  { bg: "bg-blue-100", text: "text-blue-600" },
+  { bg: "bg-purple-100", text: "text-purple-600" },
+  { bg: "bg-orange-100", text: "text-orange-600" },
+  { bg: "bg-emerald-100", text: "text-emerald-600" },
+  { bg: "bg-pink-100", text: "text-pink-600" },
+  { bg: "bg-cyan-100", text: "text-cyan-600" },
+  { bg: "bg-amber-100", text: "text-amber-600" },
+  { bg: "bg-rose-100", text: "text-rose-600" },
+  { bg: "bg-indigo-100", text: "text-indigo-600" },
+  { bg: "bg-teal-100", text: "text-teal-600" },
+  { bg: "bg-lime-100", text: "text-lime-600" },
+  { bg: "bg-sky-100", text: "text-sky-600" },
+];
+
+// Cache for consistent color assignment
+const typeColorCache: Record<string, { bg: string; text: string }> = {};
+let colorIndex = 0;
+
+const getTypeColor = (type: string) => {
+  const normalizedType = type.toUpperCase().trim();
+  if (!typeColorCache[normalizedType]) {
+    typeColorCache[normalizedType] = vendorTypeColorPalette[colorIndex % vendorTypeColorPalette.length];
+    colorIndex++;
+  }
+  return typeColorCache[normalizedType];
 };
 
 const getTypeStyles = (type: string) => {
-  const normalizedType = type.toUpperCase().replace("VENDORS", "VENDOR").trim();
-  const colors = vendorTypeColors[normalizedType] || vendorTypeColors["OTHER VENDORS"] || { bg: "bg-primary/10", text: "text-primary", iconBg: "bg-primary/10 text-primary" };
+  const colors = getTypeColor(type);
   return `${colors.bg} ${colors.text}`;
 };
 
 const getTypeIconStyles = (type: string) => {
-  const normalizedType = type.toUpperCase().replace("VENDORS", "VENDOR").trim();
-  const colors = vendorTypeColors[normalizedType] || vendorTypeColors["OTHER VENDORS"] || { bg: "bg-primary/10", text: "text-primary", iconBg: "bg-primary/10 text-primary" };
-  return colors.iconBg;
+  const colors = getTypeColor(type);
+  return `${colors.bg} ${colors.text}`;
 };
 
 interface Vendor {
