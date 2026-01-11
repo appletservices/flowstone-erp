@@ -45,12 +45,27 @@ import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
 import { Badge } from "@/components/ui/badge";
 
+// Color mapping for vendor types - consistent colors for summary cards and list badges
+const vendorTypeColors: Record<string, { bg: string; text: string; iconBg: string }> = {
+  "SALAI VENDOR": { bg: "bg-blue-100", text: "text-blue-600", iconBg: "bg-blue-100 text-blue-600" },
+  "KARAHI VENDOR": { bg: "bg-purple-100", text: "text-purple-600", iconBg: "bg-purple-100 text-purple-600" },
+  "KATAE VENDOR": { bg: "bg-orange-100", text: "text-orange-600", iconBg: "bg-orange-100 text-orange-600" },
+  "DESIGN VENDOR": { bg: "bg-emerald-100", text: "text-emerald-600", iconBg: "bg-emerald-100 text-emerald-600" },
+  "FINISHING VENDOR": { bg: "bg-pink-100", text: "text-pink-600", iconBg: "bg-pink-100 text-pink-600" },
+  "RAW MATERIAL": { bg: "bg-cyan-100", text: "text-cyan-600", iconBg: "bg-cyan-100 text-cyan-600" },
+  "OTHER VENDORS": { bg: "bg-amber-100", text: "text-amber-600", iconBg: "bg-amber-100 text-amber-600" },
+};
+
 const getTypeStyles = (type: string) => {
-  const t = type.toUpperCase();
-  if (t.includes("Local")) return "bg-blue-100 text-blue-600";
-  if (t.includes("Export")) return "bg-purple-100 text-purple-600";
-  if (t.includes("Other")) return "bg-orange-100 text-orange-600";
-  return "bg-primary/10 text-primary";
+  const normalizedType = type.toUpperCase().replace("VENDORS", "VENDOR").trim();
+  const colors = vendorTypeColors[normalizedType] || vendorTypeColors["OTHER VENDORS"] || { bg: "bg-primary/10", text: "text-primary", iconBg: "bg-primary/10 text-primary" };
+  return `${colors.bg} ${colors.text}`;
+};
+
+const getTypeIconStyles = (type: string) => {
+  const normalizedType = type.toUpperCase().replace("VENDORS", "VENDOR").trim();
+  const colors = vendorTypeColors[normalizedType] || vendorTypeColors["OTHER VENDORS"] || { bg: "bg-primary/10", text: "text-primary", iconBg: "bg-primary/10 text-primary" };
+  return colors.iconBg;
 };
 
 interface Vendor {
@@ -326,7 +341,7 @@ export default function Vendors() {
         {summary?.contacts_type_wise?.map((item: { type: string; total: number }) => (
           <div key={item.type} className="bg-card rounded-xl border border-border p-5 animate-fade-in">
             <div className="flex items-center gap-3">
-              <div className={cn("p-3 rounded-xl", getTypeStyles(item.type))}>
+              <div className={cn("p-3 rounded-xl", getTypeIconStyles(item.type))}>
                 <User className="w-6 h-6" />
               </div>
               <div>
