@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -69,17 +69,11 @@ interface ItemRow {
   quantity: string;
 }
 
-// Sample inventory items for selection
-const inventoryItems = [
-  { id: "1", name: "Cotton Fabric Premium", unit: "Meter" },
-  { id: "2", name: "Silk Thread Gold", unit: "Spool" },
-  { id: "3", name: "Polyester Blend", unit: "Meter" },
-  { id: "4", name: "Wool Yarn", unit: "Kilogram" },
-  { id: "5", name: "Linen Fabric", unit: "Meter" },
-  { id: "6", name: "Embroidery Thread", unit: "Spool" },
-  { id: "7", name: "Cotton Thread White", unit: "Spool" },
-  { id: "8", name: "Denim Fabric", unit: "Meter" },
-];
+interface InventoryOption {
+  id: number;
+  name: string;
+  unit?: string;
+}
 
 export default function FinishedProduct() {
   const navigate = useNavigate();
@@ -88,10 +82,13 @@ export default function FinishedProduct() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<FinishedProductItem | null>(null);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const [inventoryItems, setInventoryItems] = useState<InventoryOption[]>([]);
+  const [isLoadingInventory, setIsLoadingInventory] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
-    date: "",
+    date: new Date().toISOString().split('T')[0],
     openingQty: "",
     openingCost: "",
   });
@@ -99,6 +96,25 @@ export default function FinishedProduct() {
   const [itemRows, setItemRows] = useState<ItemRow[]>([
     { id: "1", inventoryId: "", quantity: "" }
   ]);
+
+  // Fetch inventory items for dropdown
+  useEffect(() => {
+    const fetchInventoryItems = async () => {
+      setIsLoadingInventory(true);
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/dropdown`);
+        const result = await response.json();
+        if (result.status && result.data) {
+          setInventoryItems(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching inventory items:", error);
+      } finally {
+        setIsLoadingInventory(false);
+      }
+    };
+    fetchInventoryItems();
+  }, []);
 
   const {
     data: products,
@@ -144,7 +160,7 @@ export default function FinishedProduct() {
     ));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.name || !formData.date || !formData.openingQty || !formData.openingCost) {
       toast.error("Please fill in all required fields");
       return;
@@ -156,15 +172,46 @@ export default function FinishedProduct() {
       return;
     }
 
-    toast.success(editingProduct ? "Product updated successfully" : "Product added successfully");
-    resetForm();
-    refresh();
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        name: formData.name,
+        date: formData.date,
+        opening_qty: formData.openingQty,
+        opening_cost: formData.openingCost,
+        items: validItems.map(item => ({
+          inventory_id: item.inventoryId,
+          quantity: item.quantity,
+        })),
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/finish/store`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+      
+      if (result.status || result.success) {
+        toast.success(editingProduct ? "Product updated successfully" : "Product added successfully");
+        resetForm();
+        refresh();
+      } else {
+        toast.error(result.message || "Failed to save product");
+      }
+    } catch (error) {
+      console.error("Error saving product:", error);
+      toast.error("Failed to save product");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetForm = () => {
     setFormData({
       name: "",
-      date: "",
+      date: new Date().toISOString().split('T')[0],
       openingQty: "",
       openingCost: "",
     });
@@ -289,11 +336,17 @@ export default function FinishedProduct() {
                             <SelectValue placeholder="Select inventory item" />
                           </SelectTrigger>
                           <SelectContent className="bg-card">
-                            {inventoryItems.map((item) => (
-                              <SelectItem key={item.id} value={item.id}>
-                                {item.name} ({item.unit})
-                              </SelectItem>
-                            ))}
+                            {isLoadingInventory ? (
+                              <div className="flex items-center justify-center p-2">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              </div>
+                            ) : (
+                              inventoryItems.map((item) => (
+                                <SelectItem key={item.id} value={String(item.id)}>
+                                  {item.name} {item.unit ? `(${item.unit})` : ''}
+                                </SelectItem>
+                              ))
+                            )}
                           </SelectContent>
                         </Select>
                       </div>
@@ -321,7 +374,8 @@ export default function FinishedProduct() {
                 </div>
               </div>
 
-              <Button onClick={handleSubmit} className="w-full">
+              <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {editingProduct ? "Update Product" : "Add Product"}
               </Button>
             </div>
