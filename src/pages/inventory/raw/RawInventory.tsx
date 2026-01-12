@@ -141,19 +141,28 @@ export default function RawInventory() {
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem("auth_token");
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/raw/store`, {
+      
+      // Select endpoint based on whether we are editing or creating
+      const endpoint = editingItem 
+        ? `${import.meta.env.VITE_API_URL}/inventory/raw/update` 
+        : `${import.meta.env.VITE_API_URL}/inventory/raw/store`;
+
+      const bodyPayload = {
+        name: formData.name,
+        unit_id: formData.unit_id,
+        date: formData.date,
+        opening_qty: formData.opening_qty,
+        per_unit_cost: formData.per_unit_cost || "0",
+        ...(editingItem && { id: editingItem.id }) // Include ID only if updating
+      };
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          name: formData.name,
-          unit_id: formData.unit_id,
-          date: formData.date,
-          opening_qty: formData.opening_qty,
-          per_unit_cost: formData.per_unit_cost || "0",
-        }),
+        body: JSON.stringify(bodyPayload),
       });
 
       const result = await response.json();
@@ -167,9 +176,40 @@ export default function RawInventory() {
       }
     } catch (error) {
       console.error("Submit error:", error);
-      toast.error("Failed to save item");
+      toast.error("An error occurred while saving the item");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/raw/delete`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id: itemToDelete.id }),
+      });
+
+      const result = await response.json();
+
+      if (result.status || response.ok) {
+        toast.success("Item deleted successfully");
+        refresh();
+      } else {
+        toast.error(result.message || "Failed to delete item");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("Failed to delete item");
+    } finally {
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
     }
   };
 
@@ -187,7 +227,6 @@ export default function RawInventory() {
 
   const handleEdit = (item: RawInventoryItem) => {
     setEditingItem(item);
-    // Find unit id from units list by name
     const unitMatch = units.find(u => u.name === item.unit);
     setFormData({
       name: item.name,
@@ -199,23 +238,16 @@ export default function RawInventory() {
     setDialogOpen(true);
   };
 
-  const handleDelete = () => {
-    toast.success("Item deleted successfully");
-    setDeleteDialogOpen(false);
-    refresh();
-  };
-
-   if (isLoading && items.length === 0) {
-      return (
-        <div className="flex h-[60vh] items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      );
-    }
+  if (isLoading && items.length === 0) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Raw Inventory</h1>
@@ -303,27 +335,23 @@ export default function RawInventory() {
         </Dialog>
       </div>
 
-      {/* Summary Cards */}
-
-      {/* Inventory Table with Search/Filter in Header */}
       <div className="bg-card rounded-xl border border-border">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold">All Items</h3>
           <div className="flex items-center gap-4">
-                <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
-                <SelectTrigger className="w-[100px] h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-card">
-                  <SelectItem value="10">10 / page</SelectItem>
-                  <SelectItem value="25">25 / page</SelectItem>
-                  <SelectItem value="50">50 / page</SelectItem>
-                  <SelectItem value="100">100 / page</SelectItem>
-                </SelectContent>
-              </Select>
+            <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+              <SelectTrigger className="w-[100px] h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-card">
+                <SelectItem value="10">10 / page</SelectItem>
+                <SelectItem value="25">25 / page</SelectItem>
+                <SelectItem value="50">50 / page</SelectItem>
+                <SelectItem value="100">100 / page</SelectItem>
+              </SelectContent>
+            </Select>
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              
               <Input 
                 placeholder="Search items..." 
                 className="pl-10"
@@ -402,29 +430,16 @@ export default function RawInventory() {
           </table>
         </div>
 
-        {/* Pagination Footer */}
         <div className="p-4 border-t border-border flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <p className="text-sm text-muted-foreground">
-              Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, pagination.totalRecords)} of {pagination.totalRecords} results
-            </p>
-        
-          </div>
+          <p className="text-sm text-muted-foreground">
+            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, pagination.totalRecords)} of {pagination.totalRecords} results
+          </p>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={previousPage} disabled={currentPage === 1}>
               Previous
             </Button>
             {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-              let pageNum: number;
-              if (pagination.totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= pagination.totalPages - 2) {
-                pageNum = pagination.totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
+              let pageNum = pagination.totalPages <= 5 ? i + 1 : (currentPage <= 3 ? i + 1 : (currentPage >= pagination.totalPages - 2 ? pagination.totalPages - 4 + i : currentPage - 2 + i));
               return (
                 <Button
                   key={pageNum}
@@ -444,7 +459,6 @@ export default function RawInventory() {
         </div>
       </div>
 
-      {/* Filter Dialog */}
       <FilterDialog
         open={filterDialogOpen}
         onOpenChange={setFilterDialogOpen}
@@ -458,7 +472,6 @@ export default function RawInventory() {
         initialKeyValues={keyValues}
       />
 
-      {/* Delete Confirmation */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="bg-card">
           <AlertDialogHeader>

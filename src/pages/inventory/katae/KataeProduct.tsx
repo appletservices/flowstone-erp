@@ -75,7 +75,7 @@ interface FormData {
   date: string;
   opening_qty: string;
   opening_cost: string;
-  product_qty: string; // Added field
+  product_qty: string;
 }
 
 const emptyFormData: FormData = {
@@ -84,7 +84,7 @@ const emptyFormData: FormData = {
   date: "",
   opening_qty: "",
   opening_cost: "",
-  product_qty: "", // Added field
+  product_qty: "",
 };
 
 export default function KataeProduct() {
@@ -112,6 +112,7 @@ export default function KataeProduct() {
     endpoint: "/inventory/katae/list",
   });
 
+  // Fetch product dropdowns
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -154,7 +155,7 @@ export default function KataeProduct() {
         date: formData.date,
         opening_qty: formData.opening_qty,
         opening_cost: formData.opening_cost,
-        product_qty: formData.product_qty, // Passed into payload
+        product_qty: formData.product_qty,
       };
 
       const response = await fetch(endpoint, {
@@ -187,18 +188,45 @@ export default function KataeProduct() {
     setDialogOpen(false);
   };
 
-  const handleEdit = (item: KataeItem) => {
-    setEditingItem(item);
-    setFormData({
-      id: item.id,
-      name: item.name,
-      product_id: "",
-      date: "",
-      opening_qty: item.opening_qty,
-      opening_cost: item.opening_cost,
-      product_qty: "", // Load existing if available in your KataeItem type
-    });
-    setDialogOpen(true);
+  const handleEdit = async (item: KataeItem) => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`${url_}/inventory/katae/edit/${item.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await response.json();
+
+      if (response.ok && result.length > 0) {
+        const detail = result[0];
+        
+        // Convert DD-MM-YYYY to YYYY-MM-DD for the date input
+        let formattedDate = "";
+        if (detail.tdate) {
+          const [day, month, year] = detail.tdate.split("-");
+          formattedDate = `${year}-${month}-${day}`;
+        }
+
+        setEditingItem(item);
+        setFormData({
+          id: item.id,
+          name: detail.name,
+          product_id: String(detail.product_id),
+          date: formattedDate,
+          opening_qty: detail.opening_qty,
+          opening_cost: detail.opening_cost,
+          product_qty: detail.product_qty,
+        });
+        setDialogOpen(true);
+      } else {
+        toast.error("Failed to fetch item details");
+      }
+    } catch (error) {
+      console.error("Edit fetch error:", error);
+      toast.error("An error occurred while fetching details");
+    }
   };
 
   const handleDelete = async () => {
@@ -235,9 +263,9 @@ export default function KataeProduct() {
           <h1 className="text-2xl font-bold text-foreground">Katae Product</h1>
           <p className="text-muted-foreground">Manage katae products and stock levels</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) resetForm(); }}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
+            <Button className="gap-2" onClick={() => setDialogOpen(true)}>
               <Plus className="w-4 h-4" /> Add Item
             </Button>
           </DialogTrigger>
@@ -247,15 +275,15 @@ export default function KataeProduct() {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Name *</Label>
-                <Input
-                  placeholder="Enter item name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-              </div>
-               <div className="space-y-2">
+                <div className="space-y-2">
+                  <Label>Name *</Label>
+                  <Input
+                    placeholder="Enter item name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label>Date</Label>
                   <Input 
                     type="date" 
@@ -263,7 +291,8 @@ export default function KataeProduct() {
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })} 
                   />
                 </div>
-                </div>
+              </div>
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Product *</Label>
@@ -279,19 +308,16 @@ export default function KataeProduct() {
                     </SelectContent>
                   </Select>
                 </div>
-                 <div className="space-y-2">
-                <Label>Product Qty</Label>
-                <Input
-                  type="number"
-                  placeholder="Enter product quantity"
-                  value={formData.product_qty}
-                  onChange={(e) => setFormData({ ...formData, product_qty: e.target.value })}
-                />
+                <div className="space-y-2">
+                  <Label>Product Qty</Label>
+                  <Input
+                    type="number"
+                    placeholder="Enter product quantity"
+                    value={formData.product_qty}
+                    onChange={(e) => setFormData({ ...formData, product_qty: e.target.value })}
+                  />
+                </div>
               </div>
-              </div>
-
-              {/* Added product_qty Input Field */}
-            
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
