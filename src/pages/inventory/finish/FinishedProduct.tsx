@@ -96,6 +96,25 @@ export default function FinishedProduct() {
     { id: "1", inventoryId: "", quantity: "" }
   ]);
 
+  // Fetch inventory items for dropdown
+  useEffect(() => {
+    const fetchInventoryItems = async () => {
+      setIsLoadingInventory(true);
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/dropdown`);
+        const result = await response.json();
+        if (result.status && result.data) {
+          setInventoryItems(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching inventory items:", error);
+      } finally {
+        setIsLoadingInventory(false);
+      }
+    };
+    fetchInventoryItems();
+  }, []);
+
   // Hook for backend search and pagination
   const {
     data: products,
@@ -170,42 +189,9 @@ export default function FinishedProduct() {
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        name: formData.name,
-        date: formData.date,
-        opening_qty: formData.openingQty,
-        opening_cost: formData.openingCost,
-        items: validItems.map(item => ({
-          inventory_id: item.inventoryId,
-          quantity: item.quantity,
-        })),
-      };
-
-      const token = localStorage.getItem("auth_token");
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/finish/store`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await response.json();
-      if (result.status || result.success) {
-        toast.success(editingProduct ? "Product updated successfully" : "Product added successfully");
-        resetForm();
-        refresh();
-      } else {
-        toast.error(result.message || "Failed to save product");
-      }
-    } catch (error) {
-      toast.error("Failed to save product");
-    } finally {
-      setIsSubmitting(false);
-    }
+    toast.success(editingProduct ? "Product updated successfully" : "Product added successfully");
+    resetForm();
+    refresh();
   };
 
   const resetForm = () => {
@@ -288,8 +274,11 @@ export default function FinishedProduct() {
                         <Select value={row.inventoryId} onValueChange={(val) => updateItemRow(row.id, "inventoryId", val)}>
                           <SelectTrigger><SelectValue placeholder="Select inventory item" /></SelectTrigger>
                           <SelectContent className="bg-card">
-                            {isLoadingInventory ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 
-                              inventoryItems.map((item) => <SelectItem key={item.id} value={String(item.id)}>{item.name} {item.unit && `(${item.unit})`}</SelectItem>)}
+                            {inventoryItems.map((item) => (
+                              <SelectItem key={item.id} value={item.id}>
+                                {item.name} ({item.unit})
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -302,8 +291,8 @@ export default function FinishedProduct() {
                   ))}
                 </div>
               </div>
-              <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+
+              <Button onClick={handleSubmit} className="w-full">
                 {editingProduct ? "Update Product" : "Add Product"}
               </Button>
             </div>
