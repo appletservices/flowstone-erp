@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,114 +16,98 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, ArrowLeft, Save } from "lucide-react";
+import { CalendarIcon, ArrowLeft, Save, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-const vendors = [
-  { id: "1", name: "Vendor A" },
-  { id: "2", name: "Vendor B" },
-  { id: "3", name: "Vendor C" },
-  { id: "4", name: "Vendor D" },
-];
+const url_ = new URL(`${import.meta.env.VITE_API_URL}`);
 
-const products: Record<string, { id: string; name: string }[]> = {
-  "1": [
-    { id: "1", name: "Karahi Item A1" },
-    { id: "2", name: "Karahi Item A2" },
-  ],
-  "2": [
-    { id: "3", name: "Karahi Item B1" },
-    { id: "4", name: "Karahi Item B2" },
-  ],
-  "3": [
-    { id: "5", name: "Karahi Item C1" },
-    { id: "6", name: "Karahi Item C2" },
-  ],
-  "4": [
-    { id: "7", name: "Karahi Item D1" },
-    { id: "8", name: "Karahi Item D2" },
-  ],
-};
+interface DropdownItem {
+  id: number | string;
+  name: string;
+}
 
 export default function KarahiIssueMaterial() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [date, setDate] = useState<Date>(new Date());
   const [selectedVendor, setSelectedVendor] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
-  const [quantity, setQuantity] = useState<number>(0);
+  const [quantity, setQuantity] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [vendors, setVendors] = useState<DropdownItem[]>([]);
+  const [products, setProducts] = useState<DropdownItem[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
-  const availableProducts = selectedVendor ? products[selectedVendor] || [] : [];
+  // Fetch Vendors and Products on Mount
+  useEffect(() => {
+    const fetchData = async () => {
+      const token = localStorage.getItem("auth_token");
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
 
-  const handleVendorChange = (vendorId: string) => {
-    setSelectedVendor(vendorId);
-    setSelectedProduct("");
-  };
+      try {
+        const [vendorRes, productRes] = await Promise.all([
+          fetch(`${url_}/contacts/vendors/embroidery`, { headers }),
+          fetch(`${url_}/inventory/dropdown`, { headers }),
+        ]);
+
+        const vendorsData = await vendorRes.json();
+        const productsData = await productRes.json();
+
+        setVendors(Array.isArray(vendorsData) ? vendorsData : vendorsData.data || []);
+        setProducts(Array.isArray(productsData) ? productsData : productsData.data || []);
+      } catch (error) {
+        console.error("Error loading dropdown data:", error);
+        toast.error("Failed to load vendors or products");
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleSubmit = async () => {
-    if (!selectedVendor) {
-      toast({
-        title: "Error",
-        description: "Please select a vendor",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!selectedProduct) {
-      toast({
-        title: "Error",
-        description: "Please select a product",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (quantity <= 0) {
-      toast({
-        title: "Error",
-        description: "Please enter a valid quantity",
-        variant: "destructive",
-      });
+    if (!selectedVendor || !selectedProduct || !quantity || Number(quantity) <= 0) {
+      toast.error("Please fill all required fields correctly");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const vendor = vendors.find((v) => v.id === selectedVendor);
-      const product = availableProducts.find((p) => p.id === selectedProduct);
-
+      const token = localStorage.getItem("auth_token");
+      
       const payload = {
         date: format(date, "yyyy-MM-dd"),
         vendor_id: selectedVendor,
-        vendor_name: vendor?.name || "",
         product_id: selectedProduct,
-        product_name: product?.name || "",
-        quantity,
+        quantity: quantity,
       };
 
-      const { error } = await supabase.functions.invoke("karahi-issue-material", {
-        body: payload,
+      const response = await fetch(`${url_}/karahi/issue/store`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
 
-      if (error) throw error;
+      const result = await response.json();
 
-      toast({
-        title: "Success",
-        description: "Karahi material issued successfully",
-      });
-      navigate("/karahi/list");
+      if (response.ok && result.success !== false) {
+        toast.success("Karahi material issued successfully");
+        navigate("/karahi/list");
+      } else {
+        toast.error(result.message || "Failed to issue material");
+      }
     } catch (error) {
       console.error("Error issuing material:", error);
-      toast({
-        title: "Error",
-        description: "Failed to issue material",
-        variant: "destructive",
-      });
+      toast.error("An error occurred while saving");
     } finally {
       setIsSubmitting(false);
     }
@@ -138,17 +122,15 @@ export default function KarahiIssueMaterial() {
           </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Issue Karahi Material</h1>
-            <p className="text-muted-foreground">
-              Issue materials to karahi vendor
-            </p>
+            <p className="text-muted-foreground">Issue materials to karahi vendor</p>
           </div>
         </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-6 space-y-6 ">
+      <div className="rounded-lg border border-border bg-card p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label>Date</Label>
+            <Label>Date *</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -174,12 +156,12 @@ export default function KarahiIssueMaterial() {
           </div>
 
           <div className="space-y-2">
-            <Label>Quantity</Label>
+            <Label>Quantity *</Label>
             <Input
               type="number"
               min="0"
-              value={quantity || ""}
-              onChange={(e) => setQuantity(Number(e.target.value))}
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
               placeholder="Enter quantity"
             />
           </div>
@@ -187,14 +169,14 @@ export default function KarahiIssueMaterial() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label>Vendor</Label>
-            <Select value={selectedVendor} onValueChange={handleVendorChange}>
+            <Label>Vendor *</Label>
+            <Select value={selectedVendor} onValueChange={setSelectedVendor}>
               <SelectTrigger>
-                <SelectValue placeholder="Select vendor" />
+                <SelectValue placeholder={isLoadingData ? "Loading..." : "Select vendor"} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card">
                 {vendors.map((vendor) => (
-                  <SelectItem key={vendor.id} value={vendor.id}>
+                  <SelectItem key={vendor.id} value={String(vendor.id)}>
                     {vendor.name}
                   </SelectItem>
                 ))}
@@ -203,18 +185,14 @@ export default function KarahiIssueMaterial() {
           </div>
 
           <div className="space-y-2">
-            <Label>Product</Label>
-            <Select 
-              value={selectedProduct} 
-              onValueChange={setSelectedProduct}
-              disabled={!selectedVendor}
-            >
+            <Label>Product *</Label>
+            <Select value={selectedProduct} onValueChange={setSelectedProduct}>
               <SelectTrigger>
-                <SelectValue placeholder={selectedVendor ? "Select product" : "Select vendor first"} />
+                <SelectValue placeholder={isLoadingData ? "Loading..." : "Select product"} />
               </SelectTrigger>
-              <SelectContent>
-                {availableProducts.map((product) => (
-                  <SelectItem key={product.id} value={product.id}>
+              <SelectContent className="bg-card">
+                {products.map((product) => (
+                  <SelectItem key={product.id} value={String(product.id)}>
                     {product.name}
                   </SelectItem>
                 ))}
@@ -227,8 +205,12 @@ export default function KarahiIssueMaterial() {
           <Button variant="outline" onClick={() => navigate("/karahi/list")}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            <Save className="mr-2 h-4 w-4" />
+          <Button onClick={handleSubmit} disabled={isSubmitting || isLoadingData}>
+            {isSubmitting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
             {isSubmitting ? "Submitting..." : "Submit"}
           </Button>
         </div>

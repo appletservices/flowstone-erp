@@ -75,6 +75,7 @@ interface FormData {
   date: string;
   opening_qty: string;
   opening_cost: string;
+  product_qty: string; // Added field
 }
 
 const emptyFormData: FormData = {
@@ -83,6 +84,7 @@ const emptyFormData: FormData = {
   date: "",
   opening_qty: "",
   opening_cost: "",
+  product_qty: "", // Added field
 };
 
 export default function KataeProduct() {
@@ -110,7 +112,6 @@ export default function KataeProduct() {
     endpoint: "/inventory/katae/list",
   });
 
-  // Fetch products for dropdown
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -153,6 +154,7 @@ export default function KataeProduct() {
         date: formData.date,
         opening_qty: formData.opening_qty,
         opening_cost: formData.opening_cost,
+        product_qty: formData.product_qty, // Passed into payload
       };
 
       const response = await fetch(endpoint, {
@@ -163,18 +165,15 @@ export default function KataeProduct() {
         },
         body: JSON.stringify(payload),
       });
+      
       const result = await response.json();
-       if (response.ok && result.success !== false) {
+      if (response.ok && result.success !== false) {
         toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
         resetForm();
         refresh();
       } else {
-        const error = await response.json();
         toast.error(result.message || "Failed to save item");
       }
-
-
-
     } catch (error) {
       toast.error("An error occurred while saving");
     } finally {
@@ -197,13 +196,13 @@ export default function KataeProduct() {
       date: "",
       opening_qty: item.opening_qty,
       opening_cost: item.opening_cost,
+      product_qty: "", // Load existing if available in your KataeItem type
     });
     setDialogOpen(true);
   };
 
   const handleDelete = async () => {
     if (!itemToDelete) return;
-    
     try {
       const token = localStorage.getItem("auth_token");
       const response = await fetch(`${url_}/inventory/katae/delete`, {
@@ -231,7 +230,6 @@ export default function KataeProduct() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Katae Product</h1>
@@ -248,6 +246,7 @@ export default function KataeProduct() {
               <DialogTitle>{editingItem ? "Edit Item" : "Add New Item"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Name *</Label>
                 <Input
@@ -256,6 +255,15 @@ export default function KataeProduct() {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </div>
+               <div className="space-y-2">
+                  <Label>Date</Label>
+                  <Input 
+                    type="date" 
+                    value={formData.date} 
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })} 
+                  />
+                </div>
+                </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Product *</Label>
@@ -271,15 +279,20 @@ export default function KataeProduct() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label>Date</Label>
-                  <Input 
-                    type="date" 
-                    value={formData.date} 
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })} 
-                  />
-                </div>
+                 <div className="space-y-2">
+                <Label>Product Qty</Label>
+                <Input
+                  type="number"
+                  placeholder="Enter product quantity"
+                  value={formData.product_qty}
+                  onChange={(e) => setFormData({ ...formData, product_qty: e.target.value })}
+                />
               </div>
+              </div>
+
+              {/* Added product_qty Input Field */}
+            
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Opening Qty</Label>
@@ -309,7 +322,6 @@ export default function KataeProduct() {
         </Dialog>
       </div>
 
-      {/* Table with Search/Filter in Header */}
       <div className="bg-card rounded-xl border border-border">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold">All Items</h3>
@@ -380,8 +392,6 @@ export default function KataeProduct() {
             </tbody>
           </table>
         </div>
-
-        {/* Simple results count */}
         <div className="p-4 border-t border-border">
           <p className="text-sm text-muted-foreground">
             Showing {items.length} results
@@ -389,15 +399,12 @@ export default function KataeProduct() {
         </div>
       </div>
 
-      {/* Filter Dialog */}
       <FilterDialog
         open={filterDialogOpen}
         onOpenChange={setFilterDialogOpen}
         onApply={applyFilters}
         showDateRange={false}
-        filterFields={[
-          { key: "unit", label: "Unit", placeholder: "e.g. Pcs, Meter" },
-        ]}
+        filterFields={[{ key: "unit", label: "Unit", placeholder: "e.g. Pcs, Meter" }]}
         initialDateRange={dateRange}
         initialKeyValues={keyValues}
       />
