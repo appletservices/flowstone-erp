@@ -373,6 +373,17 @@ export default function FinishedProduct() {
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold">All Products</h3>
           <div className="flex items-center gap-4">
+               <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+                            <SelectTrigger className="w-[100px] h-8">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-card">
+                              <SelectItem value="10">10 / page</SelectItem>
+                              <SelectItem value="25">25 / page</SelectItem>
+                              <SelectItem value="50">50 / page</SelectItem>
+                              <SelectItem value="100">100 / page</SelectItem>
+                            </SelectContent>
+                          </Select>
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input 
@@ -463,17 +474,6 @@ export default function FinishedProduct() {
             <p className="text-sm text-muted-foreground">
               Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, pagination.totalRecords)} of {pagination.totalRecords} products
             </p>
-            <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
-              <SelectTrigger className="w-[100px] h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-card">
-                <SelectItem value="10">10 / page</SelectItem>
-                <SelectItem value="25">25 / page</SelectItem>
-                <SelectItem value="50">50 / page</SelectItem>
-                <SelectItem value="100">100 / page</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={previousPage} disabled={currentPage === 1}>

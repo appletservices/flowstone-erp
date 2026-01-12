@@ -162,14 +162,6 @@ export default function Inventory() {
           <h1 className="text-2xl font-bold text-foreground">Inventory Management</h1>
           <p className="text-muted-foreground">Track and manage all inventory categories and stock levels</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="gap-2">
-            <Package className="w-4 h-4" /> Stock Report
-          </Button>
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" /> Add Item
-          </Button>
-        </div>
       </div>
 
       {/* Category Cards - Dynamic Summary */}
@@ -197,6 +189,17 @@ export default function Inventory() {
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold">All Inventory Items</h3>
           <div className="flex items-center gap-4">
+                <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+                <SelectTrigger className="w-[100px] h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card">
+                  <SelectItem value="10">10 / page</SelectItem>
+                  <SelectItem value="25">25 / page</SelectItem>
+                  <SelectItem value="50">50 / page</SelectItem>
+                  <SelectItem value="100">100 / page</SelectItem>
+                </SelectContent>
+              </Select>
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -284,18 +287,7 @@ export default function Inventory() {
               Showing {data.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0} to {Math.min(currentPage * pageSize, recordsTotal)} of {recordsTotal} items
             </p>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Per page:</span>
-              <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-                <SelectTrigger className="w-[70px] h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="25">25</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                  <SelectItem value="100">100</SelectItem>
-                </SelectContent>
-              </Select>
+             
             </div>
           </div>
           <div className="flex items-center gap-1">
