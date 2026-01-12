@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -10,6 +10,7 @@ import {
   BookOpen,
   MoreHorizontal,
   Loader2,
+  Calendar,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -61,7 +62,10 @@ interface RawInventoryItem {
   avg_cost: string;
 }
 
-const units = ["Meter", "Feet", "Kilogram", "Gram", "Piece", "Dozen", "Spool", "MTR (36)", "GHz (36)"];
+interface UnitOption {
+  id: number;
+  name: string;
+}
 
 export default function RawInventory() {
   const navigate = useNavigate();
@@ -71,15 +75,40 @@ export default function RawInventory() {
   const [itemToDelete, setItemToDelete] = useState<RawInventoryItem | null>(null);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [units, setUnits] = useState<UnitOption[]>([]);
+  const [isLoadingUnits, setIsLoadingUnits] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
-    openingQty: "",
-    totalQty: "",
-    convertedQty: "",
-    unit: "",
-    averageCost: "",
+    unit_id: "",
+    date: new Date().toISOString().split('T')[0],
+    opening_qty: "",
+    per_unit_cost: "",
   });
+
+  // Fetch units from API
+  useEffect(() => {
+    const fetchUnits = async () => {
+      setIsLoadingUnits(true);
+      try {
+        const token = localStorage.getItem("auth_token");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/setup/units-dropdown`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const result = await response.json();
+        if (result.status && result.data) {
+          setUnits(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch units:", error);
+      } finally {
+        setIsLoadingUnits(false);
+      }
+    };
+    fetchUnits();
+  }, []);
 
   const {
     data: items,
@@ -104,7 +133,7 @@ export default function RawInventory() {
   });
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.unit || !formData.openingQty) {
+    if (!formData.name || !formData.unit_id || !formData.opening_qty || !formData.date) {
       toast.error("Please fill in required fields");
       return;
     }
@@ -120,17 +149,16 @@ export default function RawInventory() {
         },
         body: JSON.stringify({
           name: formData.name,
-          opening_qty: formData.openingQty,
-          total_qty: formData.totalQty || formData.openingQty,
-          converted_qty: formData.convertedQty || "0",
-          unit: formData.unit,
-          avg_cost: formData.averageCost || "0",
+          unit_id: formData.unit_id,
+          date: formData.date,
+          opening_qty: formData.opening_qty,
+          per_unit_cost: formData.per_unit_cost || "0",
         }),
       });
 
-      const result = await response.json(); //response from api
+      const result = await response.json();
       
-      if (response.ok) {
+      if (result.status || response.ok) {
         toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
         resetForm();
         refresh();
@@ -148,11 +176,10 @@ export default function RawInventory() {
   const resetForm = () => {
     setFormData({
       name: "",
-      openingQty: "",
-      totalQty: "",
-      convertedQty: "",
-      unit: "",
-      averageCost: "",
+      unit_id: "",
+      date: new Date().toISOString().split('T')[0],
+      opening_qty: "",
+      per_unit_cost: "",
     });
     setEditingItem(null);
     setDialogOpen(false);
@@ -160,13 +187,14 @@ export default function RawInventory() {
 
   const handleEdit = (item: RawInventoryItem) => {
     setEditingItem(item);
+    // Find unit id from units list by name
+    const unitMatch = units.find(u => u.name === item.unit);
     setFormData({
       name: item.name,
-      openingQty: item.opening_qty,
-      totalQty: item.total_qty,
-      convertedQty: item.converted_qty,
-      unit: item.unit,
-      averageCost: item.avg_cost,
+      unit_id: unitMatch ? String(unitMatch.id) : "",
+      date: new Date().toISOString().split('T')[0],
+      opening_qty: item.opening_qty,
+      per_unit_cost: item.avg_cost,
     });
     setDialogOpen(true);
   };
@@ -218,55 +246,53 @@ export default function RawInventory() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Opening Qty *</Label>
-                  <Input
-                    type="number"
-                    value={formData.openingQty}
-                    onChange={(e) => setFormData({ ...formData, openingQty: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Total Qty</Label>
-                  <Input
-                    type="number"
-                    value={formData.totalQty}
-                    onChange={(e) => setFormData({ ...formData, totalQty: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Converted Qty</Label>
-                  <Input
-                    type="number"
-                    value={formData.convertedQty}
-                    onChange={(e) => setFormData({ ...formData, convertedQty: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
                   <Label>Unit *</Label>
                   <Select
-                    value={formData.unit}
-                    onValueChange={(value) => setFormData({ ...formData, unit: value })}
+                    value={formData.unit_id}
+                    onValueChange={(value) => setFormData({ ...formData, unit_id: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select unit" />
+                      <SelectValue placeholder={isLoadingUnits ? "Loading..." : "Select unit"} />
                     </SelectTrigger>
                     <SelectContent className="bg-card">
                       {units.map((unit) => (
-                        <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                        <SelectItem key={unit.id} value={String(unit.id)}>{unit.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label>Date *</Label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      type="date"
+                      className="pl-10"
+                      value={formData.date}
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Average Cost (₹)</Label>
-                <Input
-                  type="number"
-                  value={formData.averageCost}
-                  onChange={(e) => setFormData({ ...formData, averageCost: e.target.value })}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Opening Qty *</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={formData.opening_qty}
+                    onChange={(e) => setFormData({ ...formData, opening_qty: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Per Unit Cost (₹)</Label>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    value={formData.per_unit_cost}
+                    onChange={(e) => setFormData({ ...formData, per_unit_cost: e.target.value })}
+                  />
+                </div>
               </div>
               <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
