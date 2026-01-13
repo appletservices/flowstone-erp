@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 
 import { AuthProvider } from "@/hooks/useAuth";
 import { RolesProvider } from "@/hooks/useRoles";
@@ -64,117 +65,121 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AuthProvider>
-        <RolesProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <AppearanceProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <RolesProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
 
-            <Routes>
-              {/* Public Route */}
-              <Route path="/auth" element={<Auth />} />
+              <Routes>
+                {/* Public Route */}
+                <Route path="/auth" element={<Auth />} />
 
-              {/* Protected Routes */}
-              <Route
-                element={
-                  <ProtectedRoute>
-                    <AppLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route path="/" element={<PermissionGuard permissionId="dashboard"><Dashboard /></PermissionGuard>} />
-                <Route path="/accounts" element={<PermissionGuard permissionId="accounts"><ChartOfAccounts /></PermissionGuard>} />
-                <Route path="/inventory" element={<PermissionGuard permissionId="inventory_overview"><Inventory /></PermissionGuard>} />
-                <Route path="/inventory/raw" element={<PermissionGuard permissionId="inventory_raw"><RawInventory /></PermissionGuard>} />
-                <Route path="/inventory/design" element={<PermissionGuard permissionId="inventory_design"><DesignInventory /></PermissionGuard>} />
-                <Route path="/inventory/finish" element={<PermissionGuard permissionId="inventory_finished"><FinishInventory /></PermissionGuard>} />
-                 <Route path="/inventory/katae" element={<PermissionGuard permissionId="inventory_katae"><KataeProduct /></PermissionGuard>} />
-                {/* <Route path="/inventory/:category" element={<PermissionGuard permissionId="inventory_overview"><Inventory /></PermissionGuard>} /> */}
-                <Route path="/vendors" element={<Vendors />} />
-                <Route path="/inventory/purchase" element={<PermissionGuard permissionId="purchase"><Purchase /></PermissionGuard>} />
-                <Route path="/inventory/purchase/new" element={<PermissionGuard permissionId="purchase"><PurchaseOrderForm /></PermissionGuard>} />
-                <Route path="/inventory/purchase/:id/edit" element={<PermissionGuard permissionId="purchase"><PurchaseOrderForm /></PermissionGuard>} />
-                <Route path="/inventory/purchase/:id" element={<PermissionGuard permissionId="purchase"><PurchaseOrderDetail /></PermissionGuard>} />
-
-                <Route path="/purchase-return" element={<PermissionGuard permissionId="purchase_return"><PurchaseReturn /></PermissionGuard>} />
-                <Route path="/purchase-return/new" element={<PermissionGuard permissionId="purchase_return"><PurchaseReturnForm /></PermissionGuard>} />
-                <Route path="/purchase-return/:id/edit" element={<PermissionGuard permissionId="purchase_return"><PurchaseReturnForm /></PermissionGuard>} />
-                <Route path="/purchase-return/:id" element={<PermissionGuard permissionId="purchase_return"><PurchaseReturnDetail /></PermissionGuard>} />
-
-                <Route path="/sales" element={<PermissionGuard permissionId="sales"><Sales /></PermissionGuard>} />
-                <Route path="/settings" element={<PermissionGuard permissionId="settings"><Settings /></PermissionGuard>} />
-                <Route path="/settings/roles" element={<PermissionGuard permissionId="role_management"><RoleManagement /></PermissionGuard>} />
-                 <Route path="/settings/security" element={<PermissionGuard permissionId="security"><Security /></PermissionGuard>} />
-                <Route path="/setup/units" element={<PermissionGuard permissionId="setup_units"><Units /></PermissionGuard>} />
-                <Route path="/setup/machines" element={<PermissionGuard permissionId="setup_machines"><Machines /></PermissionGuard>} />
+                {/* Protected Routes */}
                 <Route
-                  path="/setup/expense-categories"
-                  element={<PermissionGuard permissionId="setup_expense"><ExpenseCategories /></PermissionGuard>}
-                />
-                <Route path="/contact/receivable" element={<PermissionGuard permissionId="contact_receivable"><Receivable /></PermissionGuard>} />
-                <Route path="/contact/vendors" element={<PermissionGuard permissionId="contact_vendors"><ContactVendors /></PermissionGuard>} />
-                <Route path="/contact/others" element={<PermissionGuard permissionId="contact_others"><Others /></PermissionGuard>} />
-                <Route path="/ledger/inventory/:id" element={<Ledger />} />
-                <Route path="/contacts/ledger/vendor/:id" element={<VLedger />} />
-                <Route path="/contacts/ledger/receiveable/:id" element={<RcLedger />} />
-                <Route path="/katae/issued" element={<PermissionGuard permissionId="katae_issued"><IssuedKatae /></PermissionGuard>} />
-                <Route path="/katae/issued-material/:id" element={<KataeIssuedMaterial />} />
-
-                <Route path="/karahi/list" element={<PermissionGuard><KarahiList /></PermissionGuard>}/>
-                <Route path="/karahi/issue-material" element={<PermissionGuard><KarahiIssueMaterial /></PermissionGuard>}/>                
-                <Route path="/karahi/issued-ledger/:v/:p" element={<PermissionGuard><KarahiLedger /></PermissionGuard>}/>
-                <Route path="/karahi/material-opening" element={<PermissionGuard permissionId="karahi_material_opening"><KarahiMaterialOpening /></PermissionGuard>}/>
-                <Route
-                  path="/karahi/design-receive"
                   element={
-                    <PermissionGuard>
-                      <KarahiDesignReceive />
-                    </PermissionGuard>
+                    <ProtectedRoute>
+                      <AppLayout />
+                    </ProtectedRoute>
                   }
-                />
-                <Route
-                  path="/karahi/design-receive/new"
-                  element={
-                    <PermissionGuard>
-                      <KarahiDesignReceiveForm />
-                    </PermissionGuard>
-                  }
-                />
-                <Route
-                  path="/karahi/design-receive/edit/:id"
-                  element={
-                    <PermissionGuard>
-                      <KarahiDesignReceiveForm />
-                    </PermissionGuard>
-                  }
-                />
-                <Route
-                  path="/karahi/design-receive-ledger/:id"
-                  element={
-                    <PermissionGuard>
-                      <KarahiDesignReceiveLedger />
-                    </PermissionGuard>
-                  }
-                />
+                >
+                  <Route path="/" element={<PermissionGuard permissionId="dashboard"><Dashboard /></PermissionGuard>} />
+                  <Route path="/accounts" element={<PermissionGuard permissionId="accounts"><ChartOfAccounts /></PermissionGuard>} />
+                  <Route path="/inventory" element={<PermissionGuard permissionId="inventory_overview"><Inventory /></PermissionGuard>} />
+                  <Route path="/inventory/raw" element={<PermissionGuard permissionId="inventory_raw"><RawInventory /></PermissionGuard>} />
+                  <Route path="/inventory/design" element={<PermissionGuard permissionId="inventory_design"><DesignInventory /></PermissionGuard>} />
+                  <Route path="/inventory/finish" element={<PermissionGuard permissionId="inventory_finished"><FinishInventory /></PermissionGuard>} />
+                  <Route path="/inventory/katae" element={<PermissionGuard permissionId="inventory_katae"><KataeProduct /></PermissionGuard>} />
+                  {/* <Route path="/inventory/:category" element={<PermissionGuard permissionId="inventory_overview"><Inventory /></PermissionGuard>} /> */}
+                  <Route path="/vendors" element={<Vendors />} />
+                  <Route path="/inventory/purchase" element={<PermissionGuard permissionId="purchase"><Purchase /></PermissionGuard>} />
+                  <Route path="/inventory/purchase/new" element={<PermissionGuard permissionId="purchase"><PurchaseOrderForm /></PermissionGuard>} />
+                  <Route path="/inventory/purchase/:id/edit" element={<PermissionGuard permissionId="purchase"><PurchaseOrderForm /></PermissionGuard>} />
+                  <Route path="/inventory/purchase/:id" element={<PermissionGuard permissionId="purchase"><PurchaseOrderDetail /></PermissionGuard>} />
 
-                <Route path="/reports/purchase" element={<PermissionGuard permissionId="report_purchase"><PurchaseReport /></PermissionGuard>} />
-                <Route path="/reports/payment" element={<PermissionGuard permissionId="report_payment" ><PaymentReport /></PermissionGuard>} />
-                <Route path="/account/report" element={<PermissionGuard ><AccountLedger /></PermissionGuard>} />
-                <Route path="/reports/katae/issue" element={<PermissionGuard permissionId="report_katae_issue"><KataeIssueReport /></PermissionGuard>}/>
-                <Route path="/reports/katae/receive" element={<PermissionGuard permissionId="report_katae_receive"><KataeReceiveReport /></PermissionGuard>} />
+                  <Route path="/purchase-return" element={<PermissionGuard permissionId="purchase_return"><PurchaseReturn /></PermissionGuard>} />
+                  <Route path="/purchase-return/new" element={<PermissionGuard permissionId="purchase_return"><PurchaseReturnForm /></PermissionGuard>} />
+                  <Route path="/purchase-return/:id/edit" element={<PermissionGuard permissionId="purchase_return"><PurchaseReturnForm /></PermissionGuard>} />
+                  <Route path="/purchase-return/:id" element={<PermissionGuard permissionId="purchase_return"><PurchaseReturnDetail /></PermissionGuard>} />
 
-                
+                  <Route path="/sales" element={<PermissionGuard permissionId="sales"><Sales /></PermissionGuard>} />
+                  <Route path="/settings" element={<PermissionGuard permissionId="settings"><Settings /></PermissionGuard>} />
+                  <Route path="/settings/roles" element={<PermissionGuard permissionId="role_management"><RoleManagement /></PermissionGuard>} />
+                  <Route path="/settings/security" element={<PermissionGuard permissionId="security"><Security /></PermissionGuard>} />
+                  <Route path="/setup/units" element={<PermissionGuard permissionId="setup_units"><Units /></PermissionGuard>} />
+                  <Route path="/setup/machines" element={<PermissionGuard permissionId="setup_machines"><Machines /></PermissionGuard>} />
+                  <Route
+                    path="/setup/expense-categories"
+                    element={<PermissionGuard permissionId="setup_expense"><ExpenseCategories /></PermissionGuard>}
+                  />
+                  <Route path="/contact/receivable" element={<PermissionGuard permissionId="contact_receivable"><Receivable /></PermissionGuard>} />
+                  <Route path="/contact/vendors" element={<PermissionGuard permissionId="contact_vendors"><ContactVendors /></PermissionGuard>} />
+                  <Route path="/contact/others" element={<PermissionGuard permissionId="contact_others"><Others /></PermissionGuard>} />
+                  <Route path="/ledger/inventory/:id" element={<Ledger />} />
+                  <Route path="/contacts/ledger/vendor/:id" element={<VLedger />} />
+                  <Route path="/contacts/ledger/receiveable/:id" element={<RcLedger />} />
+                  <Route path="/katae/issued" element={<PermissionGuard permissionId="katae_issued"><IssuedKatae /></PermissionGuard>} />
+                  <Route path="/katae/issued-material/:id" element={<KataeIssuedMaterial />} />
 
-              </Route>
+                  <Route path="/karahi/list" element={<PermissionGuard><KarahiList /></PermissionGuard>}/>
+                  <Route path="/karahi/issue-material" element={<PermissionGuard><KarahiIssueMaterial /></PermissionGuard>}/>                
+                  <Route path="/karahi/issued-ledger/:v/:p" element={<PermissionGuard><KarahiLedger /></PermissionGuard>}/>
+                  <Route path="/karahi/material-opening" element={<PermissionGuard permissionId="karahi_material_opening"><KarahiMaterialOpening /></PermissionGuard>}/>
+                  <Route
+                    path="/karahi/design-receive"
+                    element={
+                      <PermissionGuard>
+                        <KarahiDesignReceive />
+                      </PermissionGuard>
+                    }
+                  />
+                  <Route
+                    path="/karahi/design-receive/new"
+                    element={
+                      <PermissionGuard>
+                        <KarahiDesignReceiveForm />
+                      </PermissionGuard>
+                    }
+                  />
+                  <Route
+                    path="/karahi/design-receive/edit/:id"
+                    element={
+                      <PermissionGuard>
+                        <KarahiDesignReceiveForm />
+                      </PermissionGuard>
+                    }
+                  />
+                  <Route
+                    path="/karahi/design-receive-ledger/:id"
+                    element={
+                      <PermissionGuard>
+                        <KarahiDesignReceiveLedger />
+                      </PermissionGuard>
+                    }
+                  />
 
-              {/* 404 */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </TooltipProvider>
-        </RolesProvider>
-      </AuthProvider>
-    </BrowserRouter>
+                  <Route path="/reports/purchase" element={<PermissionGuard permissionId="report_purchase"><PurchaseReport /></PermissionGuard>} />
+                  <Route path="/reports/payment" element={<PermissionGuard permissionId="report_payment" ><PaymentReport /></PermissionGuard>} />
+                  <Route path="/account/report" element={<PermissionGuard ><AccountLedger /></PermissionGuard>} />
+                  <Route path="/reports/katae/issue" element={<PermissionGuard permissionId="report_katae_issue"><KataeIssueReport /></PermissionGuard>}/>
+                  <Route path="/reports/katae/receive" element={<PermissionGuard permissionId="report_katae_receive"><KataeReceiveReport /></PermissionGuard>} />
+
+                  
+
+                </Route>
+
+                {/* 404 */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </TooltipProvider>
+          </RolesProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </AppearanceProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

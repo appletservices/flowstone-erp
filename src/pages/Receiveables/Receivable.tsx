@@ -370,19 +370,6 @@ export default function Receivable() {
           </div>
         ))}
 
-        <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-warning/10">
-              <CreditCard className="w-6 h-6 text-warning" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Receivable</p>
-              <p className="text-2xl font-bold">
-                ₹{Math.abs(parseFloat(summary?.total_payables || "0")).toLocaleString("en-IN")}
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Filters */}
