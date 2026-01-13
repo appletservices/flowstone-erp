@@ -162,7 +162,7 @@ export default function KarahiList() {
                       {parseFloat(item.available).toFixed(2)}
                     </td>
                     <td className="p-4 text-center">
-                      <Button variant="ghost" size="sm" onClick={() => navigate(`/karahi/issued-ledger/${item.vendor_id}-${item.product_id}`)}>
+                      <Button variant="ghost" size="sm" onClick={() => navigate(`/karahi/issued-ledger/${item.vendor_id}/${item.product_id}`)}>
                         <ArrowRight className="w-4 h-4" />
                       </Button>
                     </td>

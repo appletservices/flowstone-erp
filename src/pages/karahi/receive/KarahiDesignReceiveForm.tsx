@@ -22,30 +22,11 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-const suppliers = [
-  { value: "supplier-1", label: "Supplier A" },
-  { value: "supplier-2", label: "Supplier B" },
-  { value: "supplier-3", label: "Supplier C" },
-];
-
-const designs = [
-  { value: "design-1", label: "Design A" },
-  { value: "design-2", label: "Design B" },
-  { value: "design-3", label: "Design C" },
-  { value: "design-4", label: "Design D" },
-];
-
-const machines = [
-  { value: "machine-1", label: "Machine 1" },
-  { value: "machine-2", label: "Machine 2" },
-  { value: "machine-3", label: "Machine 3" },
-];
-
 interface LineItem {
   id: string;
-  design: string;
+  design_id: string;
   isMalaiInclude: string;
-  machine: string;
+  machine_id: string;
   noOfSheets: string;
   unitPrice: string;
   designQty: string;
@@ -54,59 +35,14 @@ interface LineItem {
 
 const createEmptyLineItem = (): LineItem => ({
   id: crypto.randomUUID(),
-  design: "",
+  design_id: "",
   isMalaiInclude: "yes",
-  machine: "",
+  machine_id: "",
   noOfSheets: "",
   unitPrice: "",
   designQty: "",
   total: 0,
 });
-
-// Mock data for editing - in real app this would come from API
-const mockEntries: Record<string, { supplier: string; date: string; invoiceNo: string; lineItems: Omit<LineItem, 'id' | 'total'>[] }> = {
-  "1": {
-    supplier: "supplier-1",
-    date: "2024-01-15",
-    invoiceNo: "INV-001",
-    lineItems: [
-      { design: "design-1", isMalaiInclude: "yes", machine: "machine-1", noOfSheets: "10", unitPrice: "500", designQty: "20" },
-      { design: "design-2", isMalaiInclude: "no", machine: "machine-2", noOfSheets: "5", unitPrice: "700", designQty: "15" },
-    ]
-  },
-  "2": {
-    supplier: "supplier-2",
-    date: "2024-01-18",
-    invoiceNo: "INV-002",
-    lineItems: [
-      { design: "design-3", isMalaiInclude: "yes", machine: "machine-1", noOfSheets: "8", unitPrice: "600", designQty: "25" },
-    ]
-  },
-  "3": {
-    supplier: "supplier-3",
-    date: "2024-01-20",
-    invoiceNo: "INV-003",
-    lineItems: [
-      { design: "design-1", isMalaiInclude: "yes", machine: "machine-3", noOfSheets: "12", unitPrice: "450", designQty: "30" },
-    ]
-  },
-  "4": {
-    supplier: "supplier-1",
-    date: "2024-01-22",
-    invoiceNo: "INV-004",
-    lineItems: [
-      { design: "design-4", isMalaiInclude: "no", machine: "machine-2", noOfSheets: "15", unitPrice: "550", designQty: "40" },
-    ]
-  },
-  "5": {
-    supplier: "supplier-2",
-    date: "2024-01-25",
-    invoiceNo: "INV-005",
-    lineItems: [
-      { design: "design-2", isMalaiInclude: "yes", machine: "machine-1", noOfSheets: "6", unitPrice: "800", designQty: "10" },
-    ]
-  },
-};
 
 export default function KarahiDesignReceiveForm() {
   const navigate = useNavigate();
@@ -118,24 +54,42 @@ export default function KarahiDesignReceiveForm() {
   const [invoiceNo, setInvoiceNo] = useState("");
   const [lineItems, setLineItems] = useState<LineItem[]>([createEmptyLineItem()]);
 
+  // Dropdown Data State
+  const [vendors, setVendors] = useState<any[]>([]);
+  const [designs, setDesigns] = useState<any[]>([]);
+  const [machines, setMachines] = useState<any[]>([]);
+
   useEffect(() => {
-    if (isEditMode && id && mockEntries[id]) {
-      const entry = mockEntries[id];
-      setSupplier(entry.supplier);
-      setDate(new Date(entry.date));
-      setInvoiceNo(entry.invoiceNo);
-      setLineItems(
-        entry.lineItems.map((item) => {
-          const lineItem: LineItem = {
-            id: crypto.randomUUID(),
-            ...item,
-            total: (parseFloat(item.designQty) || 0) * (parseFloat(item.unitPrice) || 0),
-          };
-          return lineItem;
-        })
-      );
-    }
-  }, [id, isEditMode]);
+    const fetchDropdowns = async () => {
+      const token = localStorage.getItem("auth_token");
+      const headers = { Authorization: `Bearer ${token}` };
+      const API_URL = import.meta.env.VITE_API_URL;
+
+      try {
+        const [vRes, dRes, mRes] = await Promise.all([
+            fetch(`${API_URL}/contacts/vendors/all-dropdown`, { headers }),
+          fetch(`${API_URL}/inventory/type/design`, { headers }),
+          fetch(`${API_URL}/setup/machine-dropdown`, { headers }),
+        ]);
+
+        const vData = await vRes.json();
+        const dData = await dRes.json();
+        const mData = await mRes.json();
+
+        // Mapping based on your provided API responses
+        setVendors(Array.isArray(vData) ? vData : vData.data || []);
+        setDesigns(Array.isArray(dData) ? dData : dData.data || []);
+        // Machine API has a "data" property wrapper
+        setMachines(mData.data || []);
+        
+      } catch (error) {
+        console.error("Dropdown fetch error:", error);
+        toast.error("Failed to load dropdown data");
+      }
+    };
+
+    fetchDropdowns();
+  }, []);
 
   const calculateTotal = (item: LineItem): number => {
     const qty = parseFloat(item.designQty) || 0;
@@ -161,32 +115,49 @@ export default function KarahiDesignReceiveForm() {
   };
 
   const removeLineItem = (id: string) => {
-    if (lineItems.length === 1) {
-      toast.error("At least one item is required");
-      return;
-    }
+    if (lineItems.length === 1) return;
     setLineItems((prev) => prev.filter((item) => item.id !== id));
   };
 
   const grandTotal = lineItems.reduce((sum, item) => sum + item.total, 0);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!supplier || !date || !invoiceNo) {
       toast.error("Please fill in all required fields");
       return;
     }
 
-    const hasValidItems = lineItems.some(
-      (item) => item.design && item.machine && item.designQty && item.unitPrice
-    );
+    try {
+      const token = localStorage.getItem("auth_token");
+      const payload = {
+        vendor_id: supplier,
+        date: format(date, "yyyy-MM-dd"),
+        invoice_no: invoiceNo,
+        items: lineItems.map(({ id, total, ...rest }) => ({
+            ...rest,
+            design_id: parseInt(rest.design_id),
+            machine_id: parseInt(rest.machine_id)
+        })),
+      };
 
-    if (!hasValidItems) {
-      toast.error("Please add at least one valid item");
-      return;
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/karahi/receive/design/store`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        toast.success("Design receive entry saved successfully");
+        navigate("/karahi/design-receive");
+      } else {
+        toast.error("Failed to save entry");
+      }
+    } catch (error) {
+      toast.error("An error occurred");
     }
-
-    toast.success(isEditMode ? "Design receive entry updated successfully" : "Design receive entry saved successfully");
-    navigate("/karahi/design-receive");
   };
 
   return (
@@ -206,7 +177,6 @@ export default function KarahiDesignReceiveForm() {
       </div>
 
       <div className="grid gap-6">
-        {/* Header Card */}
         <Card>
           <CardHeader>
             <CardTitle>Supplier Details</CardTitle>
@@ -219,10 +189,10 @@ export default function KarahiDesignReceiveForm() {
                   <SelectTrigger>
                     <SelectValue placeholder="Select supplier" />
                   </SelectTrigger>
-                  <SelectContent className="bg-card">
-                    {suppliers.map((s) => (
-                      <SelectItem key={s.value} value={s.value}>
-                        {s.label}
+                  <SelectContent className="bg-card max-h-60">
+                    {vendors.map((v) => (
+                      <SelectItem key={v.id} value={v.id.toString()}>
+                        {v.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -250,7 +220,6 @@ export default function KarahiDesignReceiveForm() {
                       selected={date}
                       onSelect={setDate}
                       initialFocus
-                      className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
@@ -268,7 +237,6 @@ export default function KarahiDesignReceiveForm() {
           </CardContent>
         </Card>
 
-        {/* Line Items Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Design Items</CardTitle>
@@ -297,16 +265,16 @@ export default function KarahiDesignReceiveForm() {
                     <tr key={item.id}>
                       <td>
                         <Select
-                          value={item.design}
-                          onValueChange={(value) => updateLineItem(item.id, "design", value)}
+                          value={item.design_id}
+                          onValueChange={(value) => updateLineItem(item.id, "design_id", value)}
                         >
-                          <SelectTrigger className="w-32">
+                          <SelectTrigger className="w-40">
                             <SelectValue placeholder="Select" />
                           </SelectTrigger>
                           <SelectContent className="bg-card">
                             {designs.map((d) => (
-                              <SelectItem key={d.value} value={d.value}>
-                                {d.label}
+                              <SelectItem key={d.id} value={d.id.toString()}>
+                                {d.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -328,16 +296,16 @@ export default function KarahiDesignReceiveForm() {
                       </td>
                       <td>
                         <Select
-                          value={item.machine}
-                          onValueChange={(value) => updateLineItem(item.id, "machine", value)}
+                          value={item.machine_id}
+                          onValueChange={(value) => updateLineItem(item.id, "machine_id", value)}
                         >
-                          <SelectTrigger className="w-32">
+                          <SelectTrigger className="w-40">
                             <SelectValue placeholder="Select" />
                           </SelectTrigger>
                           <SelectContent className="bg-card">
                             {machines.map((m) => (
-                              <SelectItem key={m.value} value={m.value}>
-                                {m.label}
+                              <SelectItem key={m.id} value={m.id.toString()}>
+                                {m.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -347,7 +315,6 @@ export default function KarahiDesignReceiveForm() {
                         <Input
                           type="number"
                           className="w-24"
-                          placeholder="0"
                           value={item.noOfSheets}
                           onChange={(e) => updateLineItem(item.id, "noOfSheets", e.target.value)}
                         />
@@ -356,7 +323,6 @@ export default function KarahiDesignReceiveForm() {
                         <Input
                           type="number"
                           className="w-24"
-                          placeholder="0"
                           value={item.unitPrice}
                           onChange={(e) => updateLineItem(item.id, "unitPrice", e.target.value)}
                         />
@@ -365,7 +331,6 @@ export default function KarahiDesignReceiveForm() {
                         <Input
                           type="number"
                           className="w-24"
-                          placeholder="0"
                           value={item.designQty}
                           onChange={(e) => updateLineItem(item.id, "designQty", e.target.value)}
                         />
@@ -377,7 +342,7 @@ export default function KarahiDesignReceiveForm() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          className="text-destructive"
                           onClick={() => removeLineItem(item.id)}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -388,9 +353,7 @@ export default function KarahiDesignReceiveForm() {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colSpan={6} className="text-right font-semibold">
-                      Grand Total:
-                    </td>
+                    <td colSpan={6} className="text-right font-semibold">Grand Total:</td>
                     <td className="text-right font-bold text-success">
                       Rs. {grandTotal.toLocaleString()}
                     </td>
@@ -402,12 +365,9 @@ export default function KarahiDesignReceiveForm() {
           </CardContent>
         </Card>
 
-        {/* Actions */}
         <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => navigate(-1)}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit}>Save</Button>
+          <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
+          <Button onClick={handleSubmit}>Save Entry</Button>
         </div>
       </div>
     </div>

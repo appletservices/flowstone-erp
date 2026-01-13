@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { AuthProvider } from "@/hooks/useAuth";
 import { RolesProvider } from "@/hooks/useRoles";
+import { AppearanceProvider } from "@/hooks/useAppearance";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PermissionGuard } from "@/components/layout/PermissionGuard";
@@ -50,13 +51,13 @@ import KataeIssueReport from "@/pages/KataeIssueReport";
 import KataeReceiveReport from "@/pages/KataeReceiveReport";
 
 
-import KarahiList from "@/pages/karahi/KarahiList";
-import KarahiIssueMaterial from "@/pages/karahi/KarahiIssueMaterial";
-import KarahiLedger from "@/pages/karahi/KarahiLedger";
-import KarahiMaterialOpening from "@/pages/karahi/KarahiMaterialOpening";
-import KarahiDesignReceive from "@/pages/KarahiDesignReceive";
-import KarahiDesignReceiveLedger from "@/pages/KarahiDesignReceiveLedger";
-import KarahiDesignReceiveForm from "@/pages/KarahiDesignReceiveForm";
+import KarahiList from "@/pages/karahi/issue/KarahiList";
+import KarahiIssueMaterial from "@/pages/karahi/issue/KarahiIssueMaterial";
+import KarahiLedger from "@/pages/karahi/issue/KarahiLedger";
+import KarahiMaterialOpening from "@/pages/karahi/issue/KarahiMaterialOpening";
+import KarahiDesignReceive from "@/pages/karahi/receive/KarahiDesignReceive";
+import KarahiDesignReceiveLedger from "@/pages/karahi/receive/KarahiDesignReceiveLedger";
+import KarahiDesignReceiveForm from "@/pages/karahi/receive/KarahiDesignReceiveForm";
 
 
 const queryClient = new QueryClient();
@@ -122,7 +123,7 @@ const App = () => (
 
                 <Route path="/karahi/list" element={<PermissionGuard><KarahiList /></PermissionGuard>}/>
                 <Route path="/karahi/issue-material" element={<PermissionGuard><KarahiIssueMaterial /></PermissionGuard>}/>                
-                <Route path="/karahi/ledger/:id" element={<PermissionGuard><KarahiLedger /></PermissionGuard>}/>
+                <Route path="/karahi/issued-ledger/:v/:p" element={<PermissionGuard><KarahiLedger /></PermissionGuard>}/>
                 <Route path="/karahi/material-opening" element={<PermissionGuard permissionId="karahi_material_opening"><KarahiMaterialOpening /></PermissionGuard>}/>
                 <Route
                   path="/karahi/design-receive"

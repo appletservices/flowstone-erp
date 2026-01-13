@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Settings as SettingsIcon,
   Building2,
@@ -8,12 +8,17 @@ import {
   Bell,
   Palette,
   ChevronRight,
+  Sun,
+  Moon,
+  Monitor,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 interface SettingsSection {
   id: string;
@@ -61,8 +66,110 @@ const sections: SettingsSection[] = [
   },
 ];
 
+// Theme color presets with light and dark mode values
+const themeColors = [
+  {
+    id: "blue",
+    name: "Blue",
+    preview: "bg-blue-600",
+    light: { primary: "234 89% 45%", ring: "234 89% 45%" },
+    dark: { primary: "234 89% 60%", ring: "234 89% 60%" },
+  },
+  {
+    id: "violet",
+    name: "Violet",
+    preview: "bg-violet-600",
+    light: { primary: "262 83% 58%", ring: "262 83% 58%" },
+    dark: { primary: "262 83% 68%", ring: "262 83% 68%" },
+  },
+  {
+    id: "rose",
+    name: "Rose",
+    preview: "bg-rose-600",
+    light: { primary: "346 77% 50%", ring: "346 77% 50%" },
+    dark: { primary: "346 77% 60%", ring: "346 77% 60%" },
+  },
+  {
+    id: "orange",
+    name: "Orange",
+    preview: "bg-orange-600",
+    light: { primary: "24 95% 50%", ring: "24 95% 50%" },
+    dark: { primary: "24 95% 55%", ring: "24 95% 55%" },
+  },
+  {
+    id: "green",
+    name: "Green",
+    preview: "bg-emerald-600",
+    light: { primary: "160 84% 39%", ring: "160 84% 39%" },
+    dark: { primary: "160 84% 45%", ring: "160 84% 45%" },
+  },
+  {
+    id: "cyan",
+    name: "Cyan",
+    preview: "bg-cyan-600",
+    light: { primary: "192 91% 36%", ring: "192 91% 36%" },
+    dark: { primary: "192 91% 45%", ring: "192 91% 45%" },
+  },
+];
+
 export default function Settings() {
   const [activeSection, setActiveSection] = useState("company");
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const [compactMode, setCompactMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('compactMode') === 'true';
+    }
+    return false;
+  });
+  const [accentColor, setAccentColor] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('accentColor') || 'blue';
+    }
+    return 'blue';
+  });
+
+  useEffect(() => {
+    setMounted(true);
+    // Apply saved accent color on mount
+    const savedColor = localStorage.getItem('accentColor') || 'blue';
+    applyAccentColor(savedColor);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('compactMode', compactMode.toString());
+    if (compactMode) {
+      document.documentElement.classList.add('compact-mode');
+    } else {
+      document.documentElement.classList.remove('compact-mode');
+    }
+  }, [compactMode]);
+
+  // Re-apply accent color when theme changes
+  useEffect(() => {
+    if (mounted) {
+      applyAccentColor(accentColor);
+    }
+  }, [resolvedTheme, mounted]);
+
+  const applyAccentColor = (colorId: string) => {
+    const colorConfig = themeColors.find(c => c.id === colorId);
+    if (!colorConfig) return;
+
+    const isDark = resolvedTheme === 'dark';
+    const colors = isDark ? colorConfig.dark : colorConfig.light;
+
+    document.documentElement.style.setProperty('--primary', colors.primary);
+    document.documentElement.style.setProperty('--ring', colors.ring);
+    document.documentElement.style.setProperty('--sidebar-primary', colors.primary);
+    document.documentElement.style.setProperty('--sidebar-ring', colors.ring);
+  };
+
+  const handleAccentColorChange = (colorId: string) => {
+    setAccentColor(colorId);
+    localStorage.setItem('accentColor', colorId);
+    applyAccentColor(colorId);
+  };
 
   return (
     <div className="space-y-6">
@@ -207,27 +314,90 @@ export default function Settings() {
                   <Label className="text-base">Theme</Label>
                   <p className="text-sm text-muted-foreground mb-3">Choose your preferred theme</p>
                   <div className="grid grid-cols-3 gap-4">
-                    <button className="p-4 rounded-lg border-2 border-primary bg-card flex flex-col items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-background border border-border" />
+                    <button 
+                      onClick={() => setTheme('light')}
+                      className={cn(
+                        "p-4 rounded-lg border-2 bg-card flex flex-col items-center gap-2 transition-colors",
+                        mounted && theme === 'light' ? "border-primary" : "border-border hover:border-muted-foreground"
+                      )}
+                    >
+                      <div className="w-10 h-10 rounded-full bg-amber-100 border border-amber-200 flex items-center justify-center">
+                        <Sun className="w-5 h-5 text-amber-600" />
+                      </div>
                       <span className="text-sm font-medium">Light</span>
                     </button>
-                    <button className="p-4 rounded-lg border border-border bg-card flex flex-col items-center gap-2 hover:border-muted-foreground transition-colors">
-                      <div className="w-8 h-8 rounded-full bg-foreground" />
+                    <button 
+                      onClick={() => setTheme('dark')}
+                      className={cn(
+                        "p-4 rounded-lg border-2 bg-card flex flex-col items-center gap-2 transition-colors",
+                        mounted && theme === 'dark' ? "border-primary" : "border-border hover:border-muted-foreground"
+                      )}
+                    >
+                      <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
+                        <Moon className="w-5 h-5 text-slate-300" />
+                      </div>
                       <span className="text-sm font-medium">Dark</span>
                     </button>
-                    <button className="p-4 rounded-lg border border-border bg-card flex flex-col items-center gap-2 hover:border-muted-foreground transition-colors">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-background to-foreground" />
+                    <button 
+                      onClick={() => setTheme('system')}
+                      className={cn(
+                        "p-4 rounded-lg border-2 bg-card flex flex-col items-center gap-2 transition-colors",
+                        mounted && theme === 'system' ? "border-primary" : "border-border hover:border-muted-foreground"
+                      )}
+                    >
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-100 to-slate-800 border border-border flex items-center justify-center">
+                        <Monitor className="w-5 h-5 text-foreground" />
+                      </div>
                       <span className="text-sm font-medium">System</span>
                     </button>
                   </div>
+                  {mounted && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Current theme: {resolvedTheme === 'dark' ? 'Dark' : 'Light'}
+                      {theme === 'system' && ' (following system preference)'}
+                    </p>
+                  )}
                 </div>
+                
+                {/* Accent Color Selection */}
+                <div className="pt-4 border-t border-border">
+                  <Label className="text-base">Accent Color</Label>
+                  <p className="text-sm text-muted-foreground mb-3">Choose your preferred accent color</p>
+                  <div className="grid grid-cols-6 gap-3">
+                    {themeColors.map((color) => (
+                      <button
+                        key={color.id}
+                        onClick={() => handleAccentColorChange(color.id)}
+                        className={cn(
+                          "relative w-full aspect-square rounded-full transition-all",
+                          color.preview,
+                          accentColor === color.id 
+                            ? "ring-2 ring-offset-2 ring-offset-background ring-foreground scale-110" 
+                            : "hover:scale-105"
+                        )}
+                        title={color.name}
+                      >
+                        {accentColor === color.id && (
+                          <Check className="w-4 h-4 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Current accent: {themeColors.find(c => c.id === accentColor)?.name}
+                  </p>
+                </div>
+
                 <div className="pt-4 border-t border-border">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">Compact Mode</p>
                       <p className="text-sm text-muted-foreground">Use smaller spacing and fonts</p>
                     </div>
-                    <Switch />
+                    <Switch 
+                      checked={compactMode} 
+                      onCheckedChange={setCompactMode}
+                    />
                   </div>
                 </div>
               </div>

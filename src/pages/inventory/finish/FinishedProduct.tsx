@@ -240,6 +240,14 @@ export default function FinishedProduct() {
     refresh();
   };
 
+  if (isLoading && products.length === 0) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -317,7 +325,7 @@ export default function FinishedProduct() {
             <div className="p-3 rounded-xl bg-primary/10"><Box className="w-6 h-6 text-primary" /></div>
             <div>
               <p className="text-sm text-muted-foreground">Total Products</p>
-              <p className="text-2xl font-bold">{pagination.recordsTotal}</p>
+              <p className="text-2xl font-bold">{pagination.totalRecords}</p>
             </div>
           </div>
         </div>
@@ -348,15 +356,20 @@ export default function FinishedProduct() {
             <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
               <SelectTrigger className="w-[100px] h-8"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-card">
-                {[10, 25, 50, 100].map(v => <SelectItem key={v} value={String(v)}>{v} / page</SelectItem>)}
+                <SelectItem value="10">10 / page</SelectItem>
+                <SelectItem value="25">25 / page</SelectItem>
+                <SelectItem value="50">50 / page</SelectItem>
+                <SelectItem value="100">100 / page</SelectItem>
               </SelectContent>
             </Select>
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Search..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+              <Input placeholder="Search products..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
+            {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
             <Button variant="outline" size="sm" className={cn("gap-2", hasActiveFilters && "border-primary text-primary")} onClick={() => setFilterDialogOpen(true)}>
-              <Filter className="w-4 h-4" /> Filter {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
+              <Filter className="w-4 h-4" /> Filter
+              {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
             </Button>
           </div>
         </div>
@@ -370,48 +383,90 @@ export default function FinishedProduct() {
                 <th className="text-right">Total Qty</th>
                 <th>Unit</th>
                 <th className="text-right">Avg. Cost</th>
-                <th className="text-center">Actions</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               {products.map((product) => (
-                <tr key={product.id}>
+                <tr key={product.id} className="animate-fade-in">
                   <td className="font-medium">{product.name}</td>
-                  <td className="text-right">{parseFloat(product.opening_qty).toLocaleString()}</td>
-                  <td className="text-right font-bold">{parseFloat(product.total_qty).toLocaleString()}</td>
-                  <td><Badge variant="outline">{product.unit}</Badge></td>
-                  <td className="text-right text-success font-medium">₹{parseFloat(product.avg_cost).toLocaleString()}</td>
-                  <td className="text-center">
+                  <td className="text-right text-muted-foreground">{parseFloat(product.opening_qty || "0").toLocaleString()}</td>
+                  <td className="text-right font-medium">{parseFloat(product.total_qty || "0").toLocaleString()}</td>
+                  <td className="text-sm">{product.unit}</td>
+                  <td className="text-right font-medium text-success">₹{parseFloat(product.avg_cost || "0").toLocaleString()}</td>
+                  <td>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon"><MoreHorizontal className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-card">
-                        <DropdownMenuItem onClick={() => handleEdit(product)}><Pencil className="w-4 h-4 mr-2" /> Edit</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(`/ledger/inventory/${product.id}`)}><BookOpen className="w-4 h-4 mr-2" /> Ledger</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEdit(product)}>
+                          <Pencil className="w-4 h-4 mr-2" /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/ledger/inventory/${product.id}`)}>
+                          <BookOpen className="w-4 h-4 mr-2" /> View Ledger
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive" onClick={() => { setProductToDelete(product); setDeleteDialogOpen(true); }}><Trash2 className="w-4 h-4 mr-2" /> Delete</DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => { setProductToDelete(product); setDeleteDialogOpen(true); }}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" /> Delete
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </td>
                 </tr>
               ))}
+              {!isLoading && products.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-muted-foreground">No products found</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
 
         <div className="p-4 border-t border-border flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, pagination.recordsTotal)} of {pagination.recordsTotal}
+            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, pagination.totalRecords)} of {pagination.totalRecords} results
           </p>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={previousPage} disabled={currentPage === 1}>Previous</Button>
-            <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === pagination.totalPages}>Next</Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={previousPage} disabled={currentPage === 1}>
+              Previous
+            </Button>
+            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+              let pageNum = pagination.totalPages <= 5 ? i + 1 : (currentPage <= 3 ? i + 1 : (currentPage >= pagination.totalPages - 2 ? pagination.totalPages - 4 + i : currentPage - 2 + i));
+              return (
+                <Button
+                  key={pageNum}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={currentPage === pageNum ? "bg-primary text-primary-foreground" : ""}
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+            <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === pagination.totalPages}>
+              Next
+            </Button>
           </div>
         </div>
       </div>
 
-      <FilterDialog open={filterDialogOpen} onOpenChange={setFilterDialogOpen} onApply={applyFilters} showDateRange={false} filterFields={[{ key: "unit", label: "Unit", placeholder: "e.g. Pcs" }]} initialKeyValues={keyValues} />
+      <FilterDialog 
+        open={filterDialogOpen} 
+        onOpenChange={setFilterDialogOpen} 
+        onApply={applyFilters} 
+        showDateRange={false} 
+        filterFields={[{ key: "unit", label: "Unit", placeholder: "e.g. Pcs" }]} 
+        initialDateRange={dateRange}
+        initialKeyValues={keyValues} 
+      />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="bg-card">
@@ -421,7 +476,7 @@ export default function FinishedProduct() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-white">Delete</AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
