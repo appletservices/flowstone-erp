@@ -37,18 +37,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useBackendSearch } from "@/components/filters/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 const url_ = new URL(`${import.meta.env.VITE_API_URL}`);
 
@@ -296,17 +290,16 @@ export default function KataeProduct() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Product *</Label>
-                  <Select 
-                    value={formData.product_id} 
+                  <SearchableSelect
+                    options={products.map((p) => ({
+                      value: String(p.id),
+                      label: p.name,
+                    }))}
+                    value={formData.product_id}
                     onValueChange={(v) => setFormData({ ...formData, product_id: v })}
-                  >
-                    <SelectTrigger><SelectValue placeholder="Select product" /></SelectTrigger>
-                    <SelectContent className="bg-card">
-                      {products.map((p) => (
-                        <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder="Select product"
+                    searchPlaceholder="Search products..."
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Product Qty</Label>

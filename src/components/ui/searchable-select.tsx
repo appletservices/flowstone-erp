@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Check, ChevronsUpDown, Search } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,28 +23,35 @@ export interface SearchableSelectOption {
 
 interface SearchableSelectProps {
   options: SearchableSelectOption[];
-  value: string;
+  value?: string;
   onValueChange: (value: string) => void;
   placeholder?: string;
   searchPlaceholder?: string;
   emptyMessage?: string;
   disabled?: boolean;
+  isLoading?: boolean;
   className?: string;
+  triggerClassName?: string;
 }
 
 export function SearchableSelect({
   options,
   value,
   onValueChange,
-  placeholder = "Select...",
+  placeholder = "Select option...",
   searchPlaceholder = "Search...",
   emptyMessage = "No results found.",
   disabled = false,
+  isLoading = false,
   className,
+  triggerClassName,
 }: SearchableSelectProps) {
   const [open, setOpen] = React.useState(false);
 
-  const selectedOption = options.find((option) => option.value === value);
+  const selectedOption = React.useMemo(
+    () => options.find((option) => option.value === value),
+    [options, value]
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -53,23 +60,32 @@ export function SearchableSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          disabled={disabled}
+          disabled={disabled || isLoading}
           className={cn(
             "w-full justify-between font-normal",
             !value && "text-muted-foreground",
-            className
+            triggerClassName
           )}
         >
-          {selectedOption ? selectedOption.label : placeholder}
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+           ~   Loading...
+            </span>
+          ) : (
+            <span className="truncate">
+              {selectedOption ? selectedOption.label : placeholder}
+            </span>
+          )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+      <PopoverContent className={cn("w-full min-w-[200px] p-0 bg-popover", className)} align="start">
         <Command>
-          <CommandInput placeholder={searchPlaceholder} />
+          <CommandInput placeholder={searchPlaceholder} className="h-9" />
           <CommandList>
             <CommandEmpty>{emptyMessage}</CommandEmpty>
-            <CommandGroup>
+            <CommandGroup className="max-h-[300px] overflow-auto">
               {options.map((option) => (
                 <CommandItem
                   key={option.value}
@@ -79,13 +95,13 @@ export function SearchableSelect({
                     setOpen(false);
                   }}
                 >
+                  <span className="truncate">{option.label}</span>
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
+                      "ml-auto h-4 w-4",
                       value === option.value ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {option.label}
                 </CommandItem>
               ))}
             </CommandGroup>
