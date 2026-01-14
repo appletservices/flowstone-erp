@@ -1,3 +1,6 @@
+
+
+
 import { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import {
@@ -25,16 +28,22 @@ import {
   Shield,
   Factory,
   Send,
-    RotateCcw,
+  RotateCcw,
   FileBarChart,
   FileText,
-  CreditCard,
   Flame,
-  List
+  List,
+  CreditCard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRoles } from "@/hooks/useRoles";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface MenuItem {
   label: string;
@@ -68,13 +77,7 @@ const menuItems: MenuItem[] = [
     ],
   },
 
-  //  {
-  //   label: "Katae",
-  //   icon: Factory,
-  //   children: [
-  //     { label: "Issued", path: "/katae/issued", icon: Send, permissionId: "katae_issued" },
-  //   ],
-  // },
+  
 
   {
     label: "Katae",
@@ -127,7 +130,6 @@ const menuItems: MenuItem[] = [
     ],
   },
 ];
-
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
@@ -136,12 +138,17 @@ interface SidebarProps {
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const location = useLocation();
   const { hasPermission, currentRole } = useRoles();
-  const [expandedItems, setExpandedItems] = useState<string[]>(["Inventory", "Contact", "Settings"]);
+  const [expandedItems, setExpandedItems] = useState<string[]>([
+    "Inventory",
+    "Contact",
+    "Settings",
+    "Katae",
+    "Karahi",
+    "Reports",
+  ]);
 
   const toggleExpand = (label: string) => {
-    setExpandedItems((prev) =>
-      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]
-    );
+    setExpandedItems((prev) => (prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]));
   };
 
   const isActive = (path?: string) => {
@@ -158,7 +165,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const filterMenuItem = (item: MenuItem): MenuItem | null => {
     if (item.children) {
       const filteredChildren = item.children.filter((child) =>
-        child.permissionId ? hasPermission(child.permissionId, "view") : true
+        child.permissionId ? hasPermission(child.permissionId, "view") : true,
       );
       if (filteredChildren.length === 0) return null;
       return { ...item, children: filteredChildren };
@@ -169,9 +176,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     return item;
   };
 
-  const filteredMenuItems = menuItems
-    .map(filterMenuItem)
-    .filter((item): item is MenuItem => item !== null);
+  const filteredMenuItems = menuItems.map(filterMenuItem).filter((item): item is MenuItem => item !== null);
 
   const roleLabels: { [key: string]: string } = {
     admin: "Admin",
@@ -180,112 +185,143 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   };
 
   return (
-    <aside
-      className={cn(
-        "h-screen bg-sidebar flex flex-col border-r border-sidebar-border transition-all duration-300 relative",
-        collapsed ? "w-16" : "w-64"
-      )}
-    >
-      {/* Logo */}
-      <div className="h-16 flex items-center justify-center border-b border-sidebar-border px-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <Building2 className="w-5 h-5 text-primary-foreground" />
-          </div>
-          {!collapsed && (
-            <span className="font-semibold text-sidebar-foreground text-lg">InvenFlow</span>
-          )}
-        </div>
-      </div>
-
-      {/* Role Badge */}
-      {!collapsed && (
-        <div className="px-4 py-2 border-b border-sidebar-border">
-          <Badge variant="secondary" className="w-full justify-center text-xs">
-            <Shield className="w-3 h-3 mr-1" />
-            {roleLabels[currentRole] || currentRole}
-          </Badge>
-        </div>
-      )}
-
-      {/* Navigation */}
-      <nav className="flex-1 py-4 px-3 overflow-y-auto scrollbar-thin">
-        <ul className="space-y-1">
-          {filteredMenuItems.map((item) => (
-            <li key={item.label}>
-              {item.children ? (
-                <div>
-                  <button
-                    onClick={() => toggleExpand(item.label)}
-                    className={cn(
-                      "sidebar-item w-full justify-between",
-                      isParentActive(item.children) && "sidebar-item-active"
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <item.icon className="w-5 h-5 flex-shrink-0" />
-                      {!collapsed && <span>{item.label}</span>}
-                    </div>
-                    {!collapsed && (
-                      expandedItems.includes(item.label) ? (
-                        <ChevronDown className="w-4 h-4" />
-                      ) : (
-                        <ChevronRight className="w-4 h-4" />
-                      )
-                    )}
-                  </button>
-                  {!collapsed && expandedItems.includes(item.label) && (
-                    <ul className="mt-1 ml-4 space-y-1 animate-fade-in">
-                      {item.children.map((child) => (
-                        <li key={child.path}>
-                          <Link
-                            to={child.path}
-                            className={cn(
-                              "sidebar-item text-sm",
-                              isActive(child.path) && "sidebar-item-active"
-                            )}
-                          >
-                            {child.icon && <child.icon className="w-4 h-4" />}
-                            <span>{child.label}</span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ) : (
-                <Link
-                  to={item.path!}
-                  className={cn(
-                    "sidebar-item",
-                    isActive(item.path) && "sidebar-item-active"
-                  )}
-                >
-                  <item.icon className="w-5 h-5 flex-shrink-0" />
-                  {!collapsed && <span>{item.label}</span>}
-                </Link>
-              )}
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      {/* Collapse Button */}
-      <button
-        onClick={onToggle}
-        className="absolute -right-3 top-20 w-6 h-6 bg-card border border-border rounded-full flex items-center justify-center shadow-soft hover:shadow-medium transition-shadow"
+    <TooltipProvider delayDuration={0}>
+      <aside
+        className={cn(
+          "h-screen bg-sidebar flex flex-col border-r border-sidebar-border transition-all duration-300 relative",
+          collapsed ? "w-16" : "w-64",
+        )}
       >
-        <ChevronLeft className={cn("w-4 h-4 text-muted-foreground transition-transform", collapsed && "rotate-180")} />
-      </button>
+        {/* Logo */}
+        <div className="h-16 flex items-center justify-center border-b border-sidebar-border px-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+              <Building2 className="w-5 h-5 text-primary-foreground" />
+            </div>
+            {!collapsed && <span className="font-semibold text-sidebar-foreground text-lg">InvenFlow</span>}
+          </div>
+        </div>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-sidebar-border">
+        {/* Role Badge */}
         {!collapsed && (
-          <div className="text-xs text-sidebar-muted">
-            © 2024 InvenFlow ERP
+          <div className="px-4 py-2 border-b border-sidebar-border">
+            <Badge variant="secondary" className="w-full justify-center text-xs">
+              <Shield className="w-3 h-3 mr-1" />
+              {roleLabels[currentRole] || currentRole}
+            </Badge>
           </div>
         )}
-      </div>
-    </aside>
+
+        {/* Navigation */}
+        <nav className="flex-1 py-4 px-3 overflow-y-auto scrollbar-thin">
+          <ul className="space-y-1">
+            {filteredMenuItems.map((item) => (
+              <li key={item.label}>
+                {item.children ? (
+                  <div>
+                    {collapsed ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => toggleExpand(item.label)}
+                            className={cn(
+                              "sidebar-item w-full justify-center",
+                              isParentActive(item.children) && "sidebar-item-active",
+                            )}
+                          >
+                            <item.icon className="w-5 h-5 flex-shrink-0" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="flex flex-col gap-1 p-2">
+                          <span className="font-medium">{item.label}</span>
+                          <div className="flex flex-col gap-1 mt-1">
+                            {item.children.map((child) => (
+                              <Link
+                                key={child.path}
+                                to={child.path}
+                                className={cn(
+                                  "text-sm px-2 py-1 rounded hover:bg-accent hover:text-accent-foreground",
+                                  isActive(child.path) && "bg-accent text-accent-foreground font-medium"
+                                )}
+                              >
+                                {child.label}
+                              </Link>
+                            ))}
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => toggleExpand(item.label)}
+                          className={cn(
+                            "sidebar-item w-full justify-between",
+                            isParentActive(item.children) && "sidebar-item-active",
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <item.icon className="w-5 h-5 flex-shrink-0" />
+                            <span>{item.label}</span>
+                          </div>
+                          {expandedItems.includes(item.label) ? (
+                            <ChevronDown className="w-4 h-4" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4" />
+                          )}
+                        </button>
+                        {expandedItems.includes(item.label) && (
+                          <ul className="mt-1 ml-4 space-y-1 animate-fade-in">
+                            {item.children.map((child) => (
+                              <li key={child.path}>
+                                <Link
+                                  to={child.path}
+                                  className={cn("sidebar-item text-sm", isActive(child.path) && "sidebar-item-active")}
+                                >
+                                  {child.icon && <child.icon className="w-4 h-4" />}
+                                  <span>{child.label}</span>
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ) : collapsed ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link to={item.path!} className={cn("sidebar-item justify-center", isActive(item.path) && "sidebar-item-active")}>
+                        <item.icon className="w-5 h-5 flex-shrink-0" />
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <span>{item.label}</span>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Link to={item.path!} className={cn("sidebar-item", isActive(item.path) && "sidebar-item-active")}>
+                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Collapse Button */}
+        <button
+          onClick={onToggle}
+          className="absolute -right-3 top-20 w-6 h-6 bg-card border border-border rounded-full flex items-center justify-center shadow-soft hover:shadow-medium transition-shadow"
+        >
+          <ChevronLeft className={cn("w-4 h-4 text-muted-foreground transition-transform", collapsed && "rotate-180")} />
+        </button>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-sidebar-border">
+          {!collapsed && <div className="text-xs text-sidebar-muted">© 2024 InvenFlow ERP</div>}
+        </div>
+      </aside>
+    </TooltipProvider>
   );
 }

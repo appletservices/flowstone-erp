@@ -12,6 +12,7 @@ import {
   Moon,
   Monitor,
   Check,
+  PanelLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,6 +113,124 @@ const themeColors = [
   },
 ];
 
+// Sidebar background color presets
+const sidebarColors = [
+  {
+    id: "dark-blue",
+    name: "Dark Blue",
+    preview: "bg-[hsl(234,47%,12%)]",
+    light: { 
+      background: "234 47% 12%", 
+      foreground: "220 20% 95%", 
+      accent: "234 47% 18%",
+      border: "234 30% 20%",
+      muted: "234 20% 40%"
+    },
+    dark: { 
+      background: "222 47% 6%", 
+      foreground: "220 20% 95%", 
+      accent: "222 47% 12%",
+      border: "222 30% 15%",
+      muted: "222 20% 40%"
+    },
+  },
+  {
+    id: "charcoal",
+    name: "Charcoal",
+    preview: "bg-[hsl(220,20%,15%)]",
+    light: { 
+      background: "220 20% 15%", 
+      foreground: "220 20% 95%", 
+      accent: "220 20% 20%",
+      border: "220 15% 25%",
+      muted: "220 15% 45%"
+    },
+    dark: { 
+      background: "220 20% 8%", 
+      foreground: "220 20% 95%", 
+      accent: "220 20% 12%",
+      border: "220 15% 18%",
+      muted: "220 15% 40%"
+    },
+  },
+  {
+    id: "slate",
+    name: "Slate",
+    preview: "bg-slate-800",
+    light: { 
+      background: "215 28% 17%", 
+      foreground: "210 40% 96%", 
+      accent: "215 28% 22%",
+      border: "215 20% 27%",
+      muted: "215 16% 47%"
+    },
+    dark: { 
+      background: "215 28% 9%", 
+      foreground: "210 40% 96%", 
+      accent: "215 28% 14%",
+      border: "215 20% 20%",
+      muted: "215 16% 43%"
+    },
+  },
+  {
+    id: "zinc",
+    name: "Zinc",
+    preview: "bg-zinc-800",
+    light: { 
+      background: "240 6% 18%", 
+      foreground: "0 0% 95%", 
+      accent: "240 6% 23%",
+      border: "240 5% 28%",
+      muted: "240 4% 46%"
+    },
+    dark: { 
+      background: "240 6% 10%", 
+      foreground: "0 0% 95%", 
+      accent: "240 6% 15%",
+      border: "240 5% 20%",
+      muted: "240 4% 42%"
+    },
+  },
+  {
+    id: "stone",
+    name: "Stone",
+    preview: "bg-stone-800",
+    light: { 
+      background: "30 6% 20%", 
+      foreground: "30 10% 95%", 
+      accent: "30 6% 25%",
+      border: "30 5% 30%",
+      muted: "30 4% 46%"
+    },
+    dark: { 
+      background: "30 6% 10%", 
+      foreground: "30 10% 95%", 
+      accent: "30 6% 15%",
+      border: "30 5% 18%",
+      muted: "30 4% 40%"
+    },
+  },
+  {
+    id: "neutral",
+    name: "Neutral",
+    preview: "bg-neutral-800",
+    light: { 
+      background: "0 0% 18%", 
+      foreground: "0 0% 95%", 
+      accent: "0 0% 23%",
+      border: "0 0% 28%",
+      muted: "0 0% 45%"
+    },
+    dark: { 
+      background: "0 0% 9%", 
+      foreground: "0 0% 95%", 
+      accent: "0 0% 14%",
+      border: "0 0% 19%",
+      muted: "0 0% 40%"
+    },
+  },
+];
+
 export default function Settings() {
   const [activeSection, setActiveSection] = useState("company");
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -128,12 +247,21 @@ export default function Settings() {
     }
     return 'blue';
   });
+  const [sidebarColor, setSidebarColor] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('sidebarColor') || 'dark-blue';
+    }
+    return 'dark-blue';
+  });
 
   useEffect(() => {
     setMounted(true);
     // Apply saved accent color on mount
     const savedColor = localStorage.getItem('accentColor') || 'blue';
     applyAccentColor(savedColor);
+    // Apply saved sidebar color on mount
+    const savedSidebarColor = localStorage.getItem('sidebarColor') || 'dark-blue';
+    applySidebarColor(savedSidebarColor);
   }, []);
 
   useEffect(() => {
@@ -145,10 +273,11 @@ export default function Settings() {
     }
   }, [compactMode]);
 
-  // Re-apply accent color when theme changes
+  // Re-apply colors when theme changes
   useEffect(() => {
     if (mounted) {
       applyAccentColor(accentColor);
+      applySidebarColor(sidebarColor);
     }
   }, [resolvedTheme, mounted]);
 
@@ -165,10 +294,30 @@ export default function Settings() {
     document.documentElement.style.setProperty('--sidebar-ring', colors.ring);
   };
 
+  const applySidebarColor = (colorId: string) => {
+    const colorConfig = sidebarColors.find(c => c.id === colorId);
+    if (!colorConfig) return;
+
+    const isDark = resolvedTheme === 'dark';
+    const colors = isDark ? colorConfig.dark : colorConfig.light;
+
+    document.documentElement.style.setProperty('--sidebar-background', colors.background);
+    document.documentElement.style.setProperty('--sidebar-foreground', colors.foreground);
+    document.documentElement.style.setProperty('--sidebar-accent', colors.accent);
+    document.documentElement.style.setProperty('--sidebar-border', colors.border);
+    document.documentElement.style.setProperty('--sidebar-muted', colors.muted);
+  };
+
   const handleAccentColorChange = (colorId: string) => {
     setAccentColor(colorId);
     localStorage.setItem('accentColor', colorId);
     applyAccentColor(colorId);
+  };
+
+  const handleSidebarColorChange = (colorId: string) => {
+    setSidebarColor(colorId);
+    localStorage.setItem('sidebarColor', colorId);
+    applySidebarColor(colorId);
   };
 
   return (
@@ -385,6 +534,38 @@ export default function Settings() {
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
                     Current accent: {themeColors.find(c => c.id === accentColor)?.name}
+                  </p>
+                </div>
+
+                {/* Sidebar Background Color Selection */}
+                <div className="pt-4 border-t border-border">
+                  <Label className="text-base flex items-center gap-2">
+                    <PanelLeft className="w-4 h-4" />
+                    Sidebar Background
+                  </Label>
+                  <p className="text-sm text-muted-foreground mb-3">Customize sidebar background color</p>
+                  <div className="grid grid-cols-6 gap-3">
+                    {sidebarColors.map((color) => (
+                      <button
+                        key={color.id}
+                        onClick={() => handleSidebarColorChange(color.id)}
+                        className={cn(
+                          "relative w-full aspect-square rounded-lg transition-all border",
+                          color.preview,
+                          sidebarColor === color.id 
+                            ? "ring-2 ring-offset-2 ring-offset-background ring-foreground scale-105" 
+                            : "hover:scale-105 border-border"
+                        )}
+                        title={color.name}
+                      >
+                        {sidebarColor === color.id && (
+                          <Check className="w-4 h-4 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Current sidebar: {sidebarColors.find(c => c.id === sidebarColor)?.name}
                   </p>
                 </div>
 
