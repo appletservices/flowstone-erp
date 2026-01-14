@@ -3,13 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -20,6 +13,7 @@ import { CalendarIcon, ArrowLeft, Save, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 const url_ = new URL(`${import.meta.env.VITE_API_URL}`);
 
@@ -170,34 +164,32 @@ export default function KarahiIssueMaterial() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label>Vendor *</Label>
-            <Select value={selectedVendor} onValueChange={setSelectedVendor}>
-              <SelectTrigger>
-                <SelectValue placeholder={isLoadingData ? "Loading..." : "Select vendor"} />
-              </SelectTrigger>
-              <SelectContent className="bg-card">
-                {vendors.map((vendor) => (
-                  <SelectItem key={vendor.id} value={String(vendor.id)}>
-                    {vendor.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              options={vendors.map((vendor) => ({
+                value: String(vendor.id),
+                label: vendor.name,
+              }))}
+              value={selectedVendor}
+              onValueChange={setSelectedVendor}
+              placeholder="Select vendor"
+              searchPlaceholder="Search vendors..."
+              isLoading={isLoadingData}
+            />
           </div>
 
           <div className="space-y-2">
             <Label>Product *</Label>
-            <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-              <SelectTrigger>
-                <SelectValue placeholder={isLoadingData ? "Loading..." : "Select product"} />
-              </SelectTrigger>
-              <SelectContent className="bg-card">
-                {products.map((product) => (
-                  <SelectItem key={product.id} value={String(product.id)}>
-                    {product.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              options={products.map((product) => ({
+                value: String(product.id),
+                label: product.name,
+              }))}
+              value={selectedProduct}
+              onValueChange={setSelectedProduct}
+              placeholder="Select product"
+              searchPlaceholder="Search products..."
+              isLoading={isLoadingData}
+            />
           </div>
         </div>
 

@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 interface OrderItem {
   id: string;
@@ -213,12 +214,16 @@ export default function PurchaseOrderForm() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="space-y-2">
             <Label>Vendor</Label>
-            <Select value={formData.vendor} onValueChange={(v) => setFormData({ ...formData, vendor: v })}>
-              <SelectTrigger><SelectValue placeholder="Select vendor" /></SelectTrigger>
-              <SelectContent className="bg-card">
-                {vendors.map((v: any) => <SelectItem key={v.id} value={String(v.id)}>{v.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              options={vendors.map((v: any) => ({
+                value: String(v.id),
+                label: v.name,
+              }))}
+              value={formData.vendor}
+              onValueChange={(v) => setFormData({ ...formData, vendor: v })}
+              placeholder="Select vendor"
+              searchPlaceholder="Search vendors..."
+            />
           </div>
           <div className="space-y-2">
             <Label>Date</Label>
@@ -266,14 +271,19 @@ export default function PurchaseOrderForm() {
               {items.map((item) => (
                 <tr key={item.id}>
                   <td className="p-4">
-                    <Select disabled={!formData.inventoryType || isLoadingItems} value={item.itemId} onValueChange={(v) => handleItemChange(item.id, "itemId", v)}>
-                      <SelectTrigger className="min-w-[200px]">
-                        {isLoadingItems ? <Loader2 className="w-4 h-4 animate-spin" /> : <SelectValue placeholder="Select item" />}
-                      </SelectTrigger>
-                      <SelectContent className="bg-card">
-                        {inventoryItems.map((inv: any) => <SelectItem key={inv.id} value={String(inv.id)}>{inv.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <SearchableSelect
+                      options={inventoryItems.map((inv: any) => ({
+                        value: String(inv.id),
+                        label: inv.name,
+                      }))}
+                      value={item.itemId}
+                      onValueChange={(v) => handleItemChange(item.id, "itemId", v)}
+                      placeholder="Select item"
+                      searchPlaceholder="Search items..."
+                      disabled={!formData.inventoryType}
+                      isLoading={isLoadingItems}
+                      triggerClassName="min-w-[200px]"
+                    />
                   </td>
                   <td className="p-4"><Input readOnly value={item.unit} placeholder="Unit" className="w-[100px] bg-muted" /></td>
                 <td className="p-4">

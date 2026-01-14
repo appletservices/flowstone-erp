@@ -45,6 +45,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 const url_ = new URL(`${import.meta.env.VITE_API_URL}`);
 
@@ -312,21 +313,16 @@ export default function DesignInventory() {
 
               <div className="space-y-2">
                 <Label htmlFor="product">Product *</Label>
-                <Select
+                <SearchableSelect
+                  options={products.map((product) => ({
+                    value: String(product.id),
+                    label: product.name,
+                  }))}
                   value={formData.product_id}
                   onValueChange={(value) => setFormData({ ...formData, product_id: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select product" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card">
-                    {products.map((product) => (
-                      <SelectItem key={product.id} value={String(product.id)}>
-                        {product.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Select product"
+                  searchPlaceholder="Search products..."
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">

@@ -39,6 +39,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 // --- Types for Dynamic Data ---
 interface ContactTypeWise {
@@ -499,49 +500,35 @@ export default function Others() {
               {/* Account Dropdown */}
               <div className="space-y-2">
                 <Label htmlFor="account">Account <span className="text-destructive">*</span></Label>
-                <Select 
-                  value={formData.account_id} 
+                <SearchableSelect
+                  options={accounts.map((account) => ({
+                    value: String(account.id),
+                    label: account.name,
+                  }))}
+                  value={formData.account_id}
                   onValueChange={handleAccountChange}
+                  placeholder="Select account"
+                  searchPlaceholder="Search accounts..."
+                  isLoading={loadingAccounts}
                   disabled={loadingAccounts}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={loadingAccounts ? "Loading accounts..." : "Select account"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={String(account.id)}>
-                        {account.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
               </div>
 
               {/* Sub-Account Dropdown */}
               <div className="space-y-2">
                 <Label htmlFor="sub_account">Sub Account</Label>
-                <Select 
-                  value={formData.sub_account} 
+                <SearchableSelect
+                  options={subAccounts.map((subAccount) => ({
+                    value: subAccount.value,
+                    label: subAccount.label,
+                  }))}
+                  value={formData.sub_account}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, sub_account: value }))}
+                  placeholder={!formData.account_id ? "Select account first" : "Select sub-account"}
+                  searchPlaceholder="Search sub-accounts..."
+                  isLoading={loadingSubAccounts}
                   disabled={loadingSubAccounts || !formData.account_id}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={
-                      loadingSubAccounts 
-                        ? "Loading sub-accounts..." 
-                        : !formData.account_id 
-                          ? "Select account first" 
-                          : "Select sub-account"
-                    } />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subAccounts.map((subAccount) => (
-                      <SelectItem key={subAccount.value} value={subAccount.value}>
-                        {subAccount.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
               </div>
 
               {/* Name */}
