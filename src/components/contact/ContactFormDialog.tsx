@@ -27,6 +27,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 interface ContactFormDialogProps {
   trigger?: React.ReactNode;
@@ -150,23 +151,18 @@ export function ContactFormDialog({
             {/* Account Type */}
             <div className="space-y-2">
               <Label htmlFor="accountType">Account Type *</Label>
-              <Select
+              <SearchableSelect
+                options={accountTypes.map((type) => ({
+                  value: type.value,
+                  label: type.label,
+                }))}
                 value={formData.accountType}
                 onValueChange={(value) =>
                   setFormData({ ...formData, accountType: value })
                 }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent className="bg-card">
-                  {accountTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="Select type"
+                searchPlaceholder="Search account types..."
+              />
             </div>
 
             {/* Date */}

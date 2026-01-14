@@ -21,6 +21,7 @@ import { ArrowLeft, CalendarIcon, Plus, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 interface LineItem {
   id: string;
@@ -185,18 +186,16 @@ export default function KarahiDesignReceiveForm() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Supplier *</Label>
-                <Select value={supplier} onValueChange={setSupplier}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select supplier" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card max-h-60">
-                    {vendors.map((v) => (
-                      <SelectItem key={v.id} value={v.id.toString()}>
-                        {v.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SearchableSelect
+                  options={vendors.map((v) => ({
+                    value: v.id.toString(),
+                    label: v.name,
+                  }))}
+                  value={supplier}
+                  onValueChange={setSupplier}
+                  placeholder="Select supplier"
+                  searchPlaceholder="Search suppliers..."
+                />
               </div>
 
               <div className="space-y-2">
@@ -264,21 +263,17 @@ export default function KarahiDesignReceiveForm() {
                   {lineItems.map((item) => (
                     <tr key={item.id}>
                       <td>
-                        <Select
+                        <SearchableSelect
+                          options={designs.map((d) => ({
+                            value: d.id.toString(),
+                            label: d.name,
+                          }))}
                           value={item.design_id}
                           onValueChange={(value) => updateLineItem(item.id, "design_id", value)}
-                        >
-                          <SelectTrigger className="w-40">
-                            <SelectValue placeholder="Select" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-card">
-                            {designs.map((d) => (
-                              <SelectItem key={d.id} value={d.id.toString()}>
-                                {d.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          placeholder="Select"
+                          searchPlaceholder="Search designs..."
+                          triggerClassName="w-40"
+                        />
                       </td>
                       <td>
                         <Select
@@ -295,21 +290,17 @@ export default function KarahiDesignReceiveForm() {
                         </Select>
                       </td>
                       <td>
-                        <Select
+                        <SearchableSelect
+                          options={machines.map((m) => ({
+                            value: m.id.toString(),
+                            label: m.name,
+                          }))}
                           value={item.machine_id}
                           onValueChange={(value) => updateLineItem(item.id, "machine_id", value)}
-                        >
-                          <SelectTrigger className="w-40">
-                            <SelectValue placeholder="Select" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-card">
-                            {machines.map((m) => (
-                              <SelectItem key={m.id} value={m.id.toString()}>
-                                {m.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          placeholder="Select"
+                          searchPlaceholder="Search machines..."
+                          triggerClassName="w-40"
+                        />
                       </td>
                       <td>
                         <Input

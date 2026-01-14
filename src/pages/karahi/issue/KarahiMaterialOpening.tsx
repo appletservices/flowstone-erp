@@ -5,13 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -19,6 +12,7 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 
 const mockVendors = [
   { id: '1', name: 'Vendor A' },
@@ -160,39 +154,32 @@ const KarahiMaterialOpening = () => {
             {/* Vendor Selection */}
             <div className="space-y-2">
               <Label htmlFor="vendor">Vendor</Label>
-              <Select value={selectedVendor} onValueChange={handleVendorChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select vendor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mockVendors.map((vendor) => (
-                    <SelectItem key={vendor.id} value={vendor.id}>
-                      {vendor.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                options={mockVendors.map((vendor) => ({
+                  value: vendor.id,
+                  label: vendor.name,
+                }))}
+                value={selectedVendor}
+                onValueChange={handleVendorChange}
+                placeholder="Select vendor"
+                searchPlaceholder="Search vendors..."
+              />
             </div>
 
             {/* Inventory Selection */}
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="inventory">Inventory</Label>
-              <Select
+              <SearchableSelect
+                options={filteredInventory.map((item) => ({
+                  value: item.id,
+                  label: item.name,
+                }))}
                 value={selectedInventory}
                 onValueChange={setSelectedInventory}
+                placeholder={selectedVendor ? 'Select inventory' : 'Select vendor first'}
+                searchPlaceholder="Search inventory..."
                 disabled={!selectedVendor}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={selectedVendor ? 'Select inventory' : 'Select vendor first'} />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredInventory.map((item) => (
-                    <SelectItem key={item.id} value={item.id}>
-                      {item.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </div>
           </div>
 

@@ -51,6 +51,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 interface RawInventoryItem {
   id: string;
@@ -279,19 +280,17 @@ export default function RawInventory() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Unit *</Label>
-                  <Select
+                  <SearchableSelect
+                    options={units.map((unit) => ({
+                      value: String(unit.id),
+                      label: unit.name,
+                    }))}
                     value={formData.unit_id}
                     onValueChange={(value) => setFormData({ ...formData, unit_id: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={isLoadingUnits ? "Loading..." : "Select unit"} />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card">
-                      {units.map((unit) => (
-                        <SelectItem key={unit.id} value={String(unit.id)}>{unit.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder="Select unit"
+                    searchPlaceholder="Search units..."
+                    isLoading={isLoadingUnits}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Date *</Label>

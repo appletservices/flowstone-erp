@@ -51,6 +51,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 interface FinishedProductItem {
   id: number;
@@ -293,13 +294,17 @@ export default function FinishedProduct() {
                     <div key={row.id} className="flex items-end gap-3">
                       <div className="flex-1">
                         {index === 0 && <Label className="text-xs">Item</Label>}
-                        <Select value={row.inventoryId} onValueChange={(val) => updateItemRow(row.id, "inventoryId", val)}>
-                          <SelectTrigger><SelectValue placeholder="Select inventory item" /></SelectTrigger>
-                          <SelectContent className="bg-card">
-                            {isLoadingInventory ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 
-                              inventoryItems.map((item) => <SelectItem key={item.id} value={String(item.id)}>{item.name} {item.unit && `(${item.unit})`}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                        <SearchableSelect
+                          options={inventoryItems.map((item) => ({
+                            value: String(item.id),
+                            label: `${item.name}${item.unit ? ` (${item.unit})` : ''}`,
+                          }))}
+                          value={row.inventoryId}
+                          onValueChange={(val) => updateItemRow(row.id, "inventoryId", val)}
+                          placeholder="Select inventory item"
+                          searchPlaceholder="Search inventory..."
+                          isLoading={isLoadingInventory}
+                        />
                       </div>
                       <div className="w-28">
                         {index === 0 && <Label className="text-xs">Quantity</Label>}
