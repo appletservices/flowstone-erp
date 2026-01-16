@@ -27,15 +27,19 @@ const Auth = () => {
   const [checkingSession, setCheckingSession] = useState(true);
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the intended destination from state (set by ProtectedRoute)
+  const from = (location.state as { from?: string })?.from || "/";
 
   /* ---------------- Existing Session ---------------- */
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
     if (token) {
-      navigate("/", { replace: true });
+      navigate(from, { replace: true });
     }
     setCheckingSession(false);
-  }, [navigate]);
+  }, [navigate, from]);
 
   /* ---------------- Login ---------------- */
   const handleLogin = async (e: React.FormEvent) => {
@@ -75,8 +79,8 @@ const Auth = () => {
 
       toast.success(`Welcome ${data.user.name}`);
 
-      // ✅ Always go to root
-      navigate("/", { replace: true });
+      // ✅ Navigate to intended destination or root
+      navigate(from, { replace: true });
     } catch (error: any) {
       toast.error(error.message || "Authentication failed");
     } finally {
