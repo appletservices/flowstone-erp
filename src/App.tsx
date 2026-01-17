@@ -41,6 +41,9 @@ import Security from "@/pages/setting/Security";
 
 import IssuedKatae from "@/pages/katae/IssuedKatae";
 import KataeIssuedMaterial from "@/pages/katae/KataeIssuedMaterial";
+import KataeReceive from "@/pages/katae/KataeReceive";
+import KataeReceiveForm from "@/pages/katae/KataeReceiveForm";
+import KataeReceiveLedger from "@/pages/katae/KataeReceiveLedger";
 import PurchaseReturn from "@/pages/purchase/PurchaseReturn";
 import PurchaseReturnForm from "@/pages/purchase/PurchaseReturnForm";
 import PurchaseReturnDetail from "@/pages/purchase/PurchaseReturnDetail";
@@ -121,6 +124,12 @@ const App = () => (
                   <Route path="/ledger/inventory/:id" element={<Ledger />} />
                   <Route path="/contacts/ledger/vendor/:id" element={<VLedger />} />
                   <Route path="/contacts/ledger/receiveable/:id" element={<RcLedger />} />
+                  <Route path="/katae/issued" element={<PermissionGuard permissionId="katae_issued"><IssuedKatae /></PermissionGuard>} />
+                  <Route path="/katae/issued-material/:id" element={<KataeIssuedMaterial />} />
+                  <Route path="/katae/receive" element={<PermissionGuard><KataeReceive /></PermissionGuard>} />
+                  <Route path="/katae/receive/new" element={<PermissionGuard><KataeReceiveForm /></PermissionGuard>} />
+                  <Route path="/katae/receive/edit/:id" element={<PermissionGuard><KataeReceiveForm /></PermissionGuard>} />
+                  <Route path="/katae/receive-ledger/:id" element={<PermissionGuard><KataeReceiveLedger /></PermissionGuard>} />
 
                   <Route path="/katae/issued" element={<PermissionGuard permissionId="katae_issued"><IssuedKatae /></PermissionGuard>} />
 
