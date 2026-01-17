@@ -131,15 +131,31 @@
   }
 
   .data-table {
-    @apply w-full text-sm;
+    @apply w-full text-sm border-collapse;
+  }
+
+  .data-table th,
+  .data-table td {
+    @apply py-3 px-4 align-middle;
+    text-align: left;
   }
 
   .data-table th {
-    @apply text-left py-3 px-4 font-medium text-muted-foreground bg-muted/50 first:rounded-tl-lg last:rounded-tr-lg;
+    @apply font-medium text-muted-foreground bg-muted/50 first:rounded-tl-lg last:rounded-tr-lg whitespace-nowrap;
   }
 
   .data-table td {
-    @apply py-3 px-4 border-b border-border;
+    @apply border-b border-border;
+  }
+
+  .data-table th.text-right,
+  .data-table td.text-right {
+    text-align: right;
+  }
+
+  .data-table th.text-center,
+  .data-table td.text-center {
+    text-align: center;
   }
 
   .data-table tr:hover td {

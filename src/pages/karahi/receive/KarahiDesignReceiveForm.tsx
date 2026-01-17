@@ -68,8 +68,8 @@ export default function KarahiDesignReceiveForm() {
 
       try {
         const [vRes, dRes, mRes] = await Promise.all([
-            fetch(`${API_URL}/contacts/vendors/all-dropdown`, { headers }),
-          fetch(`${API_URL}/inventory/type/design`, { headers }),
+          fetch(`${API_URL}/contacts/vendors/embroidery`, { headers }),
+          fetch(`${API_URL}/inventory/design/dropdown`, { headers }),
           fetch(`${API_URL}/setup/machine-dropdown`, { headers }),
         ]);
 
@@ -150,11 +150,13 @@ export default function KarahiDesignReceiveForm() {
         body: JSON.stringify(payload),
       });
 
-      if (response.ok) {
+      const result = await response.json();
+
+      if (response.ok && result.success !== false) {
         toast.success("Design receive entry saved successfully");
         navigate("/karahi/design-receive");
       } else {
-        toast.error("Failed to save entry");
+        toast.error(result.message);
       }
     } catch (error) {
       toast.error("An error occurred");

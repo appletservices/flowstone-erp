@@ -123,6 +123,22 @@ export default function KarahiIssueMaterial() {
 
       <div className="rounded-lg border border-border bg-card p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div className="space-y-2">
+            <Label>EMBROIDERY VENDORS *</Label>
+            <SearchableSelect
+              options={vendors.map((vendor) => ({
+                value: String(vendor.id),
+                label: vendor.name,
+              }))}
+              value={selectedVendor}
+              onValueChange={setSelectedVendor}
+              placeholder="Select vendor"
+              searchPlaceholder="Search vendors..."
+              isLoading={isLoadingData}
+            />
+          </div>
+
           <div className="space-y-2">
             <Label>Date *</Label>
             <Popover>
@@ -149,33 +165,11 @@ export default function KarahiIssueMaterial() {
             </Popover>
           </div>
 
-          <div className="space-y-2">
-            <Label>Quantity *</Label>
-            <Input
-              type="number"
-              min="0"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              placeholder="Enter quantity"
-            />
-          </div>
+        
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label>Vendor *</Label>
-            <SearchableSelect
-              options={vendors.map((vendor) => ({
-                value: String(vendor.id),
-                label: vendor.name,
-              }))}
-              value={selectedVendor}
-              onValueChange={setSelectedVendor}
-              placeholder="Select vendor"
-              searchPlaceholder="Search vendors..."
-              isLoading={isLoadingData}
-            />
-          </div>
+       
 
           <div className="space-y-2">
             <Label>Product *</Label>
@@ -189,6 +183,18 @@ export default function KarahiIssueMaterial() {
               placeholder="Select product"
               searchPlaceholder="Search products..."
               isLoading={isLoadingData}
+            />
+          </div>
+
+
+            <div className="space-y-2">
+            <Label>Quantity *</Label>
+            <Input
+              type="number"
+              min="0"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              placeholder="Enter quantity"
             />
           </div>
         </div>

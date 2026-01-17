@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Loader2 } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,36 +15,53 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 
-const mockVendors = [
-  { id: '1', name: 'Vendor A' },
-  { id: '2', name: 'Vendor B' },
-  { id: '3', name: 'Vendor C' },
-];
-
-const mockInventory = [
-  { id: '1', name: 'Raw Material 1', vendorId: '1' },
-  { id: '2', name: 'Raw Material 2', vendorId: '1' },
-  { id: '3', name: 'Raw Material 3', vendorId: '2' },
-  { id: '4', name: 'Raw Material 4', vendorId: '2' },
-  { id: '5', name: 'Raw Material 5', vendorId: '3' },
-];
+interface DropdownOption {
+  id: number | string;
+  name: string;
+}
 
 const KarahiMaterialOpening = () => {
-  const [date, setDate] = useState<Date>();
+    const navigate = useNavigate();
+  const [date, setDate] = useState<Date>(new Date());
   const [quantity, setQuantity] = useState('');
   const [perUnitCost, setPerUnitCost] = useState('');
   const [selectedVendor, setSelectedVendor] = useState('');
   const [selectedInventory, setSelectedInventory] = useState('');
+  
+  const [vendors, setVendors] = useState<DropdownOption[]>([]);
+  const [inventory, setInventory] = useState<DropdownOption[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const filteredInventory = selectedVendor
-    ? mockInventory.filter((item) => item.vendorId === selectedVendor)
-    : [];
+  // Fetch Dropdown Data
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoadingData(true);
+      const token = localStorage.getItem("auth_token");
+      const headers = { Authorization: `Bearer ${token}` };
+      const API_URL = import.meta.env.VITE_API_URL;
 
-  const handleVendorChange = (value: string) => {
-    setSelectedVendor(value);
-    setSelectedInventory('');
-  };
+      try {
+        const [vRes, iRes] = await Promise.all([
+          fetch(`${API_URL}/contacts/vendors/embroidery`, { headers }),
+          fetch(`${API_URL}/inventory/dropdown`, { headers }),
+        ]);
+
+        const vData = await vRes.json();
+        const iData = await iRes.json();
+
+        setVendors(vData.data || vData || []);
+        setInventory(iData.data || iData || []);
+      } catch (error) {
+        console.error('Error fetching dropdowns:', error);
+        toast.error('Failed to load form data');
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,30 +74,37 @@ const KarahiMaterialOpening = () => {
     setIsSubmitting(true);
 
     try {
-      const formData = {
+      const payload = {
         date: format(date, 'yyyy-MM-dd'),
-        quantity: parseFloat(quantity),
-        per_unit_cost: parseFloat(perUnitCost),
+        quantity: quantity,
+        per_unit_cost: perUnitCost,
         vendor_id: selectedVendor,
         inventory_id: selectedInventory,
       };
 
-      console.log('Submitting karahi material opening:', formData);
-      
-      // TODO: Connect to backend API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      toast.success('Karahi material opening saved successfully');
-      
-      // Reset form
-      setDate(undefined);
-      setQuantity('');
-      setPerUnitCost('');
-      setSelectedVendor('');
-      setSelectedInventory('');
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/karahi/opening/store`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success !== false) {
+        toast.success('Karahi material opening saved successfully');
+        // Reset form
+         navigate("/karahi/list");
+
+      } else {
+        toast.error(result.message || 'Failed to save entry');
+      }
     } catch (error) {
-      console.error('Error saving karahi material opening:', error);
-      toast.error('Failed to save karahi material opening');
+      console.error('Submission error:', error);
+      toast.error('An error occurred while saving');
     } finally {
       setIsSubmitting(false);
     }
@@ -87,9 +112,12 @@ const KarahiMaterialOpening = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Karahi Material Opening</h1>
-        <p className="text-muted-foreground">Add opening balance for karahi materials</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Karahi Material Opening</h1>
+          <p className="text-muted-foreground">Add opening balance for karahi materials</p>
+        </div>
+        {isLoadingData && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
       </div>
 
       <div className="bg-card rounded-lg border p-6">
@@ -97,7 +125,7 @@ const KarahiMaterialOpening = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Date */}
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date">Date *</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -111,81 +139,90 @@ const KarahiMaterialOpening = () => {
                     {date ? format(date, 'PPP') : <span>Select date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 bg-card" align="start">
                   <Calendar
                     mode="single"
                     selected={date}
-                    onSelect={setDate}
+                    onSelect={(d) => d && setDate(d)}
                     initialFocus
-                    className={cn('p-3 pointer-events-auto')}
                   />
                 </PopoverContent>
               </Popover>
             </div>
 
-            {/* Quantity */}
-            <div className="space-y-2">
-              <Label htmlFor="quantity">Quantity</Label>
-              <Input
-                id="quantity"
-                type="number"
-                placeholder="Enter quantity"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                min="0"
-                step="0.01"
-              />
-            </div>
-
-            {/* Per Unit Cost */}
-            <div className="space-y-2">
-              <Label htmlFor="perUnitCost">Per Unit Cost</Label>
-              <Input
-                id="perUnitCost"
-                type="number"
-                placeholder="Enter per unit cost"
-                value={perUnitCost}
-                onChange={(e) => setPerUnitCost(e.target.value)}
-                min="0"
-                step="0.01"
-              />
-            </div>
-
             {/* Vendor Selection */}
             <div className="space-y-2">
-              <Label htmlFor="vendor">Vendor</Label>
+              <Label htmlFor="vendor">Vendor *</Label>
               <SearchableSelect
-                options={mockVendors.map((vendor) => ({
-                  value: vendor.id,
-                  label: vendor.name,
+                options={vendors.map((v) => ({
+                  value: String(v.id),
+                  label: v.name,
                 }))}
                 value={selectedVendor}
-                onValueChange={handleVendorChange}
+                onValueChange={setSelectedVendor}
                 placeholder="Select vendor"
                 searchPlaceholder="Search vendors..."
+                isLoading={isLoadingData}
               />
             </div>
 
             {/* Inventory Selection */}
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="inventory">Inventory</Label>
+            <div className="space-y-2">
+              <Label htmlFor="inventory">Inventory Item *</Label>
               <SearchableSelect
-                options={filteredInventory.map((item) => ({
-                  value: item.id,
+                options={inventory.map((item) => ({
+                  value: String(item.id),
                   label: item.name,
                 }))}
                 value={selectedInventory}
                 onValueChange={setSelectedInventory}
-                placeholder={selectedVendor ? 'Select inventory' : 'Select vendor first'}
+                placeholder="Select inventory item"
                 searchPlaceholder="Search inventory..."
-                disabled={!selectedVendor}
+                isLoading={isLoadingData}
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+               {/* Quantity */}
+                <div className="space-y-2">
+                <Label htmlFor="quantity">Quantity *</Label>
+                <Input
+                    id="quantity"
+                    type="number"
+                    placeholder="0.00"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    min="0"
+                    step="any"
+                />
+                </div>
+
+                {/* Per Unit Cost */}
+                <div className="space-y-2">
+                <Label htmlFor="perUnitCost">Per Unit Cost *</Label>
+                <Input
+                    id="perUnitCost"
+                    type="number"
+                    placeholder="0.00"
+                    value={perUnitCost}
+                    onChange={(e) => setPerUnitCost(e.target.value)}
+                    min="0"
+                    step="any"
+                />
+                </div>
             </div>
           </div>
 
-          <div className="flex justify-end">
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Opening'}
+          <div className="flex justify-end pt-4 border-t">
+            <Button type="submit" disabled={isSubmitting || isLoadingData} className="w-full md:w-auto">
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Opening Balance'
+              )}
             </Button>
           </div>
         </form>

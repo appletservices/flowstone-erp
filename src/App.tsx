@@ -121,45 +121,23 @@ const App = () => (
                   <Route path="/ledger/inventory/:id" element={<Ledger />} />
                   <Route path="/contacts/ledger/vendor/:id" element={<VLedger />} />
                   <Route path="/contacts/ledger/receiveable/:id" element={<RcLedger />} />
-                  <Route path="/katae/issued" element={<PermissionGuard permissionId="katae_issued"><IssuedKatae /></PermissionGuard>} />
-                  <Route path="/katae/issued-material/:id" element={<KataeIssuedMaterial />} />
 
+                  <Route path="/katae/issued" element={<PermissionGuard permissionId="katae_issued"><IssuedKatae /></PermissionGuard>} />
+
+                  <Route path="/katae/issue-material" element={<PermissionGuard permissionId="katae_issued"><KataeIssuedMaterial /></PermissionGuard>} />
+                  
                   <Route path="/karahi/list" element={<PermissionGuard><KarahiList /></PermissionGuard>}/>
                   <Route path="/karahi/issue-material" element={<PermissionGuard><KarahiIssueMaterial /></PermissionGuard>}/>                
                   <Route path="/karahi/issued-ledger/:v/:p" element={<PermissionGuard><KarahiLedger /></PermissionGuard>}/>
                   <Route path="/karahi/material-opening" element={<PermissionGuard permissionId="karahi_material_opening"><KarahiMaterialOpening /></PermissionGuard>}/>
-                  <Route
-                    path="/karahi/design-receive"
-                    element={
-                      <PermissionGuard>
-                        <KarahiDesignReceive />
-                      </PermissionGuard>
-                    }
-                  />
-                  <Route
-                    path="/karahi/design-receive/new"
-                    element={
-                      <PermissionGuard>
-                        <KarahiDesignReceiveForm />
-                      </PermissionGuard>
-                    }
-                  />
-                  <Route
-                    path="/karahi/design-receive/edit/:id"
-                    element={
-                      <PermissionGuard>
-                        <KarahiDesignReceiveForm />
-                      </PermissionGuard>
-                    }
-                  />
-                  <Route
-                    path="/karahi/design-receive-ledger/:id"
-                    element={
-                      <PermissionGuard>
-                        <KarahiDesignReceiveLedger />
-                      </PermissionGuard>
-                    }
-                  />
+                  <Route path="/karahi/design-receive" element={<PermissionGuard><KarahiDesignReceive /></PermissionGuard>}/>
+
+                  <Route path="/karahi/design-receive/new" element={<PermissionGuard><KarahiDesignReceiveForm /></PermissionGuard>}/>
+
+                  <Route path="/karahi/design-receive/edit/:id" element={<PermissionGuard><KarahiDesignReceiveForm /></PermissionGuard>}/>
+
+                  <Route path="/karahi/design-receive-ledger/:id" element={<PermissionGuard><KarahiDesignReceiveLedger /></PermissionGuard>}/>
+                  
 
                   <Route path="/reports/purchase" element={<PermissionGuard permissionId="report_purchase"><PurchaseReport /></PermissionGuard>} />
                   <Route path="/reports/payment" element={<PermissionGuard permissionId="report_payment" ><PaymentReport /></PermissionGuard>} />

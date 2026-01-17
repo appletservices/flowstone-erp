@@ -85,6 +85,7 @@ export default function FinishedProduct() {
   const [inventoryItems, setInventoryItems] = useState<InventoryOption[]>([]);
   const [isLoadingInventory, setIsLoadingInventory] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFetchingEdit, setIsFetchingEdit] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -97,7 +98,6 @@ export default function FinishedProduct() {
     { id: "1", inventoryId: "", quantity: "" }
   ]);
 
-  // Hook for backend search and pagination
   const {
     data: products,
     isLoading,
@@ -120,7 +120,6 @@ export default function FinishedProduct() {
     pageSize: 10,
   });
 
-  // Fetch inventory items for dropdown
   useEffect(() => {
     const fetchInventoryItems = async () => {
       setIsLoadingInventory(true);
@@ -146,7 +145,7 @@ export default function FinishedProduct() {
   const totalValue = products.reduce((acc, p) => acc + (parseFloat(p.total_qty || "0") * parseFloat(p.avg_cost || "0")), 0);
 
   const addItemRow = () => {
-    setItemRows([...itemRows, { id: Date.now().toString(), inventoryId: "", quantity: "" }]);
+    setItemRows([...itemRows, { id: crypto.randomUUID(), inventoryId: "", quantity: "" }]);
   };
 
   const removeItemRow = (id: string) => {
@@ -159,6 +158,59 @@ export default function FinishedProduct() {
     setItemRows(itemRows.map(row => row.id === id ? { ...row, [field]: value } : row));
   };
 
+ const handleEdit = async (product: FinishedProductItem) => {
+    setIsFetchingEdit(true);
+    setEditingProduct(product);
+    
+    try {
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/inventory/finish/edit/${product.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      const result = await response.json();
+
+      if (result) {
+        // API format: DD-MM-YYYY -> Input format: YYYY-MM-DD
+        let formattedDate = new Date().toISOString().split('T')[0];
+        if (result.date) {
+          const parts = result.date.split("-");
+          if (parts.length === 3) {
+            formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+          }
+        }
+
+        // Use parseFloat().toString() to trim trailing zeros (e.g., "50.0000" -> "50")
+        setFormData({
+          name: result.name || "",
+          date: formattedDate,
+          openingQty: result.opening_qty ? parseFloat(result.opening_qty).toString() : "",
+          openingCost: result.opening_cost ? parseFloat(result.opening_cost).toString() : "",
+        });
+
+        const mappedRows = result.items?.map((item: any) => ({
+          id: crypto.randomUUID(),
+          inventoryId: String(item.inventory_id),
+          quantity: item.quantity ? parseFloat(item.quantity).toString() : "",
+        }));
+
+        setItemRows(mappedRows?.length > 0 ? mappedRows : [{ id: "1", inventoryId: "", quantity: "" }]);
+        setDialogOpen(true);
+      }
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      toast.error("Failed to load product details");
+    } finally {
+      setIsFetchingEdit(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!formData.name || !formData.date || !formData.openingQty || !formData.openingCost) {
       toast.error("Please fill in all required fields");
@@ -167,7 +219,7 @@ export default function FinishedProduct() {
 
     const validItems = itemRows.filter(row => row.inventoryId && row.quantity);
     if (validItems.length === 0) {
-      toast.error("Please add at least one item");
+      toast.error("Please add at least one item (BOM)");
       return;
     }
 
@@ -185,7 +237,11 @@ export default function FinishedProduct() {
       };
 
       const token = localStorage.getItem("auth_token");
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/finish/store`, {
+      const url = editingProduct 
+        ? `${import.meta.env.VITE_API_URL}/inventory/finish/update/${editingProduct.id}`
+        : `${import.meta.env.VITE_API_URL}/inventory/finish/store`;
+
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -221,24 +277,24 @@ export default function FinishedProduct() {
     setDialogOpen(false);
   };
 
-  const handleEdit = (product: FinishedProductItem) => {
-    setEditingProduct(product);
-    setFormData({
-      name: product.name,
-      date: new Date().toISOString().split('T')[0], // Note: API listing doesn't provide date, might need extra fetch
-      openingQty: product.opening_qty,
-      openingCost: product.opening_cost,
-    });
-    setDialogOpen(true);
-  };
-
   const handleDelete = async () => {
     if (!productToDelete) return;
-    // Implementation for delete API...
-    setDeleteDialogOpen(false);
-    setProductToDelete(null);
-    toast.success("Product deleted successfully");
-    refresh();
+    try {
+        const token = localStorage.getItem("auth_token");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/finish/delete/${productToDelete.id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.ok) {
+            toast.success("Product deleted successfully");
+            refresh();
+        }
+    } catch (e) {
+        toast.error("Failed to delete");
+    } finally {
+        setDeleteDialogOpen(false);
+        setProductToDelete(null);
+    }
   };
 
   if (isLoading && products.length === 0) {
@@ -256,7 +312,7 @@ export default function FinishedProduct() {
           <h1 className="text-2xl font-bold text-foreground">Finished Products</h1>
           <p className="text-muted-foreground">Manage finished products and components</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { if(!isFetchingEdit) { setDialogOpen(open); if (!open) resetForm(); } }}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="w-4 h-4" /> Add Product
@@ -291,9 +347,9 @@ export default function FinishedProduct() {
                 </div>
                 <div className="space-y-2">
                   {itemRows.map((row, index) => (
-                    <div key={row.id} className="flex items-end gap-3">
+                    <div key={row.id} className="flex items-end gap-3 animate-in fade-in slide-in-from-top-1">
                       <div className="flex-1">
-                        {index === 0 && <Label className="text-xs">Item</Label>}
+                        {index === 0 && <Label className="text-xs mb-1 block">Item</Label>}
                         <SearchableSelect
                           options={inventoryItems.map((item) => ({
                             value: String(item.id),
@@ -307,7 +363,7 @@ export default function FinishedProduct() {
                         />
                       </div>
                       <div className="w-28">
-                        {index === 0 && <Label className="text-xs">Quantity</Label>}
+                        {index === 0 && <Label className="text-xs mb-1 block">Quantity</Label>}
                         <Input type="number" placeholder="0" value={row.quantity} onChange={(e) => updateItemRow(row.id, "quantity", e.target.value)} />
                       </div>
                       <Button variant="ghost" size="icon" onClick={() => removeItemRow(row.id)} disabled={itemRows.length === 1} className="text-muted-foreground hover:text-destructive"><Minus className="w-4 h-4" /></Button>
@@ -371,7 +427,6 @@ export default function FinishedProduct() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Search products..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
-            {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
             <Button variant="outline" size="sm" className={cn("gap-2", hasActiveFilters && "border-primary text-primary")} onClick={() => setFilterDialogOpen(true)}>
               <Filter className="w-4 h-4" /> Filter
               {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
@@ -442,20 +497,6 @@ export default function FinishedProduct() {
             <Button variant="outline" size="sm" onClick={previousPage} disabled={currentPage === 1}>
               Previous
             </Button>
-            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-              let pageNum = pagination.totalPages <= 5 ? i + 1 : (currentPage <= 3 ? i + 1 : (currentPage >= pagination.totalPages - 2 ? pagination.totalPages - 4 + i : currentPage - 2 + i));
-              return (
-                <Button
-                  key={pageNum}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={currentPage === pageNum ? "bg-primary text-primary-foreground" : ""}
-                >
-                  {pageNum}
-                </Button>
-              );
-            })}
             <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === pagination.totalPages}>
               Next
             </Button>
@@ -485,6 +526,12 @@ export default function FinishedProduct() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {isFetchingEdit && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        </div>
+      )}
     </div>
   );
 }

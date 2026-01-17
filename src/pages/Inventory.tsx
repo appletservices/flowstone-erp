@@ -216,29 +216,29 @@ export default function Inventory() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="data-table w-full text-left">
+          <table className="data-table">
             <thead>
-              <tr className="border-b border-border bg-muted/20">
-                <th className="p-4">Category</th>
-                <th className="p-4">Item Name</th>
-                <th className="p-4">Opening-Qty</th>
-                <th className="p-4">Total-Qty</th>
-                <th className="p-4">Converted-Qty</th>
-                <th className="p-4">Unit</th>
-                <th className="p-4">Average Cost</th>
-                <th className="p-4"></th>
+              <tr>
+                <th>Category</th>
+                <th>Item Name</th>
+                <th className="text-right">Opening-Qty</th>
+                <th className="text-right">Total-Qty</th>
+                <th className="text-right">Converted-Qty</th>
+                <th>Unit</th>
+                <th className="text-right">Average Cost</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="text-center py-8 text-muted-foreground">
                     Loading...
                   </td>
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="text-center py-8 text-muted-foreground">
                     No items found
                   </td>
                 </tr>
@@ -246,19 +246,19 @@ export default function Inventory() {
                 data.map((item) => {
                   const categoryStyles = getCategoryStyles(item.category);
                   return (
-                    <tr key={item.id} className="border-b border-border hover:bg-muted/5 animate-fade-in">
-                      <td className="p-4 capitalize">
+                    <tr key={item.id}>
+                      <td className="capitalize">
                         <span className={cn("text-sm font-medium px-2 py-1 rounded-md", categoryStyles.bg, categoryStyles.color)}>
                           {item.category}
                         </span>
                       </td>
-                      <td className="p-4 font-medium">{item.name}</td>
-                      <td className="p-4">{Number(item.opening_qty).toLocaleString()}</td>
-                      <td className="p-4 font-semibold">{Number(item.total_qty).toLocaleString()}</td>
-                      <td className="p-4">{Number(item.converted_qty).toLocaleString()}</td>
-                      <td className="p-4 text-sm text-muted-foreground">{item.unit}</td>
-                      <td className="p-4">Rs. {Number(item.avg_cost).toLocaleString()}</td>
-                      <td className="p-4 text-right">
+                      <td className="font-medium">{item.name}</td>
+                      <td className="text-right">{Number(item.opening_qty).toLocaleString()}</td>
+                      <td className="text-right font-semibold">{Number(item.total_qty).toLocaleString()}</td>
+                      <td className="text-right">{Number(item.converted_qty).toLocaleString()}</td>
+                      <td className="text-muted-foreground">{item.unit}</td>
+                      <td className="text-right">Rs. {Number(item.avg_cost).toLocaleString()}</td>
+                      <td className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
