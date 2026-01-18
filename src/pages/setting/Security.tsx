@@ -30,6 +30,7 @@ interface SecurityLog {
   data: string; 
   last_activity_time: string;
   reference_no: string;
+  table: string;
   tdate: string;
   feature: string;
 }
@@ -212,6 +213,7 @@ const Security = () => {
               <TableHead>User</TableHead>
               <TableHead>Action</TableHead>
               <TableHead>Feature</TableHead>
+               <TableHead>Table</TableHead>
               <TableHead>Data Payload</TableHead>
             </TableRow>
           </TableHeader>
@@ -230,6 +232,7 @@ const Security = () => {
                   </span>
                 </TableCell>
                 <TableCell className="text-xs capitalize">{log.feature.replace(/-/g, ' ')}</TableCell>
+                <TableCell className="font-medium text-xs">{log.table}</TableCell>
                 <TableCell>
                   <div className="border rounded text-[10px] bg-muted/20">
                     <table className="w-full">

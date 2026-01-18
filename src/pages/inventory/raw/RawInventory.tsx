@@ -76,6 +76,7 @@ export default function RawInventory() {
   const [itemToDelete, setItemToDelete] = useState<RawInventoryItem | null>(null);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFetchingEdit, setIsFetchingEdit] = useState(false); // Add this line
   const [units, setUnits] = useState<UnitOption[]>([]);
   const [isLoadingUnits, setIsLoadingUnits] = useState(false);
   
@@ -170,8 +171,8 @@ export default function RawInventory() {
       
       if (result.status || response.ok) {
         toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
-        resetForm();
-        refresh();
+      resetForm();
+  await refresh(); // ensure refetch
       } else {
         toast.error(result.message || "Failed to save item");
       }
@@ -226,17 +227,38 @@ export default function RawInventory() {
     setDialogOpen(false);
   };
 
-  const handleEdit = (item: RawInventoryItem) => {
+const handleEdit = async (item: RawInventoryItem) => {
+    setIsFetchingEdit(true);
     setEditingItem(item);
-    const unitMatch = units.find(u => u.name === item.unit);
-    setFormData({
-      name: item.name,
-      unit_id: unitMatch ? String(unitMatch.id) : "",
-      date: new Date().toISOString().split('T')[0],
-      opening_qty: item.opening_qty,
-      per_unit_cost: item.avg_cost,
-    });
-    setDialogOpen(true);
+    
+    try {
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/raw/edit/${item.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      
+      const result = await response.json();
+
+      if (result) {
+        // Only update the form data with trimmed values
+        setFormData({
+          name: result.name || "",
+          unit_id: result.unit_id ? String(result.unit_id) : "",
+          date: new Date().toISOString().split('T')[0], 
+          opening_qty: result.opening_qty ? parseFloat(result.opening_qty).toString() : "",
+          per_unit_cost: result.perunitcost ? parseFloat(result.perunitcost).toString() : "",
+        });
+        setDialogOpen(true);
+      }
+    } catch (error) {
+      console.error("Error fetching item details:", error);
+      toast.error("Failed to load item details");
+    } finally {
+      setIsFetchingEdit(false);
+    }
   };
 
   if (isLoading && items.length === 0) {

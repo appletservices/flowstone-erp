@@ -262,18 +262,14 @@ export default function VLedger() {
                   </td>
                   <td className="p-4 text-sm font-medium">{entry.narration}</td>
                   <td className="p-4 text-right">
-                    {parseFloat(entry.debit) > 0 ? (
                       <span className="text-destructive font-medium">
                         ₹{parseFloat(entry.debit).toLocaleString("en-IN")}
                       </span>
-                    ) : "-"}
                   </td>
                   <td className="p-4 text-right">
-                    {parseFloat(entry.credit) > 0 ? (
                       <span className="text-success font-medium">
                         ₹{parseFloat(entry.credit).toLocaleString("en-IN")}
                       </span>
-                    ) : "-"}
                   </td>
                   <td className="p-4 text-right font-bold text-sm">
                     ₹{Math.abs(parseFloat(entry.balance)).toLocaleString("en-IN")}

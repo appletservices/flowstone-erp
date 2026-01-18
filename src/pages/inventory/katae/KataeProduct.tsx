@@ -209,9 +209,11 @@ export default function KataeProduct() {
           name: detail.name,
           product_id: String(detail.product_id),
           date: formattedDate,
-          opening_qty: detail.opening_qty,
-          opening_cost: detail.opening_cost,
           product_qty: detail.product_qty,
+
+          opening_qty: detail.opening_qty ? parseFloat(detail.opening_qty).toString() : "",
+          opening_cost: detail.opening_cost ? parseFloat(detail.opening_cost).toString() : "",
+
         });
         setDialogOpen(true);
       } else {

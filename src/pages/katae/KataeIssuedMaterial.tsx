@@ -82,7 +82,7 @@ export default function KataeIssuedMaterial() {
         quantity: quantity,
       };
 
-      const response = await fetch(`${url_}/karahi/issue/store`, {
+      const response = await fetch(`${url_}/katae/issue/store`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -95,7 +95,7 @@ export default function KataeIssuedMaterial() {
 
       if (response.ok && result.success !== false) {
         toast.success("Karahi material issued successfully");
-        navigate("/karahi/list");
+        navigate("/katae/issued");
       } else {
         toast.error(result.message || "Failed to issue material");
       }
@@ -195,7 +195,7 @@ export default function KataeIssuedMaterial() {
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          <Button variant="outline" onClick={() => navigate("/karahi/list")}>
+          <Button variant="outline" onClick={() => navigate("/katae/issued")}>
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting || isLoadingData}>

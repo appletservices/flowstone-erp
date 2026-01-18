@@ -379,37 +379,6 @@ export default function FinishedProduct() {
           </DialogContent>
         </Dialog>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-card rounded-xl border border-border p-5">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-primary/10"><Box className="w-6 h-6 text-primary" /></div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Products</p>
-              <p className="text-2xl font-bold">{pagination.totalRecords}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-card rounded-xl border border-border p-5">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-success/10"><Box className="w-6 h-6 text-success" /></div>
-            <div>
-              <p className="text-sm text-muted-foreground">Page Value</p>
-              <p className="text-2xl font-bold">₹{totalValue.toLocaleString("en-IN")}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-card rounded-xl border border-border p-5">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-warning/10"><Box className="w-6 h-6 text-warning" /></div>
-            <div>
-              <p className="text-sm text-muted-foreground">Low Stock</p>
-              <p className="text-2xl font-bold">{products.filter(p => parseFloat(p.total_qty) < 10).length}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="bg-card rounded-xl border border-border">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold">Inventory List</h3>

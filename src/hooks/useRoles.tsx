@@ -44,7 +44,7 @@ export const ALL_MODULES: Module[] = [
   { id: "sales", label: "Sales", path: "/sales", category: "Operations" },
 
   { id: "katae_issued", label: "Issued Katae", path: "/katae/issued", category: "Katae" },
-  
+  { id: "katae_receive", label: "Issued Katae", path: "/katae/issued", category: "Katae" },
   { id: "karahi_list", label: "Karahi List", path: "/karahi/list", category: "Karahi" },
   { id: "karahi_issue_material", label: "Karahi Issue Material", path: "/karahi/issue-material", category: "Karahi" },
   { id: "karahi_ledger", label: "Karahi Ledger", path: "/karahi/ledger", category: "Karahi" },

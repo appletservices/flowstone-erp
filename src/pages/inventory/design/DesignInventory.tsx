@@ -217,8 +217,8 @@ export default function DesignInventory() {
           name: detail.name,
           code: detail.code || "",
           product_id: String(detail.product_id),
-          opening_qty: detail.opening_qty,
-          per_unit_cost: detail.opening_cost,
+          opening_qty: detail.opening_qty ? parseFloat(detail.opening_qty).toString() : "",
+          per_unit_cost: detail.opening_cost ? parseFloat(detail.opening_cost).toString() : "",
           date: parsedDate,
         });
         setIsEditing(true);
