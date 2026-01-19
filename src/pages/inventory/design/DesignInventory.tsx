@@ -46,6 +46,7 @@ import { toast } from "sonner";
 import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { usePageHeader } from "@/hooks/usePageHeader";
 
 const url_ = new URL(`${import.meta.env.VITE_API_URL}`);
 
@@ -86,6 +87,13 @@ const emptyFormData: FormData = {
 
 export default function DesignInventory() {
   const navigate = useNavigate();
+  const { setHeaderInfo } = usePageHeader();
+  
+  // Set page header on mount
+  useState(() => {
+    setHeaderInfo({ title: "Design Inventory", subtitle: "Manage design patterns and inventory" });
+  });
+  
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>(emptyFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -275,111 +283,100 @@ export default function DesignInventory() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Design Inventory</h1>
-          <p className="text-muted-foreground">Manage design patterns and inventory</p>
-        </div>
-        <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" /> Add Design
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] bg-card">
-            <DialogHeader>
-              <DialogTitle>{isEditing ? "Edit Design Item" : "Add Design Item"}</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+      <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
+        <DialogContent className="sm:max-w-[500px] bg-card">
+          <DialogHeader>
+            <DialogTitle>{isEditing ? "Edit Design Item" : "Add Design Item"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name *</Label>
+              <Input
+                id="name"
+                placeholder="Enter design name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="code">Code</Label>
+              <Input
+                id="code"
+                placeholder="Enter design code"
+                value={formData.code}
+                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="product">Product *</Label>
+              <SearchableSelect
+                options={products.map((product) => ({
+                  value: String(product.id),
+                  label: product.name,
+                }))}
+                value={formData.product_id}
+                onValueChange={(value) => setFormData({ ...formData, product_id: value })}
+                placeholder="Select product"
+                searchPlaceholder="Search products..."
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
+                <Label htmlFor="opening_qty">Opening Quantity</Label>
                 <Input
-                  id="name"
-                  placeholder="Enter design name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  id="opening_qty"
+                  type="number"
+                  value={formData.opening_qty}
+                  onChange={(e) => setFormData({ ...formData, opening_qty: e.target.value })}
                 />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="code">Code</Label>
+                <Label htmlFor="per_unit_cost">Per Unit Cost</Label>
                 <Input
-                  id="code"
-                  placeholder="Enter design code"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  id="per_unit_cost"
+                  type="number"
+                  value={formData.per_unit_cost}
+                  onChange={(e) => setFormData({ ...formData, per_unit_cost: e.target.value })}
                 />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="product">Product *</Label>
-                <SearchableSelect
-                  options={products.map((product) => ({
-                    value: String(product.id),
-                    label: product.name,
-                  }))}
-                  value={formData.product_id}
-                  onValueChange={(value) => setFormData({ ...formData, product_id: value })}
-                  placeholder="Select product"
-                  searchPlaceholder="Search products..."
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="opening_qty">Opening Quantity</Label>
-                  <Input
-                    id="opening_qty"
-                    type="number"
-                    value={formData.opening_qty}
-                    onChange={(e) => setFormData({ ...formData, opening_qty: e.target.value })}
+            <div className="space-y-2">
+              <Label>Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn("w-full justify-start text-left font-normal", !formData.date && "text-muted-foreground")}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.date ? format(formData.date, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-card" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.date}
+                    onSelect={(date) => setFormData({ ...formData, date })}
+                    initialFocus
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="per_unit_cost">Per Unit Cost</Label>
-                  <Input
-                    id="per_unit_cost"
-                    type="number"
-                    value={formData.per_unit_cost}
-                    onChange={(e) => setFormData({ ...formData, per_unit_cost: e.target.value })}
-                  />
-                </div>
-              </div>
+                </PopoverContent>
+              </Popover>
+            </div>
 
-              <div className="space-y-2">
-                <Label>Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn("w-full justify-start text-left font-normal", !formData.date && "text-muted-foreground")}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.date ? format(formData.date, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={formData.date}
-                      onSelect={(date) => setFormData({ ...formData, date })}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isEditing ? "Update" : "Save"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isEditing ? "Update" : "Save"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <div className="bg-card rounded-xl border border-border">
         <div className="p-4 border-b border-border flex items-center justify-between">
@@ -413,6 +410,9 @@ export default function DesignInventory() {
               onClick={() => setFilterDialogOpen(true)}
             >
               <Filter className="w-4 h-4" /> Filter
+            </Button>
+            <Button className="gap-2" onClick={() => setDialogOpen(true)}>
+              <Plus className="w-4 h-4" /> Add Design
             </Button>
             <FilterDialog
               open={filterDialogOpen}

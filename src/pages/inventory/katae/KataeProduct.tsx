@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils";
 import { useBackendSearch } from "@/components/filters/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { usePageHeader } from "@/hooks/usePageHeader";
 
 const url_ = new URL(`${import.meta.env.VITE_API_URL}`);
 
@@ -83,6 +84,13 @@ const emptyFormData: FormData = {
 
 export default function KataeProduct() {
   const navigate = useNavigate();
+  const { setHeaderInfo } = usePageHeader();
+  
+  // Set page header on mount
+  useState(() => {
+    setHeaderInfo({ title: "Katae Product", subtitle: "Manage katae products and stock levels" });
+  });
+  
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<KataeItem | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -254,94 +262,83 @@ export default function KataeProduct() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Katae Product</h1>
-          <p className="text-muted-foreground">Manage katae products and stock levels</p>
-        </div>
-        <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) resetForm(); }}>
-          <DialogTrigger asChild>
-            <Button className="gap-2" onClick={() => setDialogOpen(true)}>
-              <Plus className="w-4 h-4" /> Add Item
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-card sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>{editingItem ? "Edit Item" : "Add New Item"}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Name *</Label>
-                  <Input
-                    placeholder="Enter item name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Date</Label>
-                  <Input 
-                    type="date" 
-                    value={formData.date} 
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })} 
-                  />
-                </div>
+      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) resetForm(); else setDialogOpen(open); }}>
+        <DialogContent className="bg-card sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{editingItem ? "Edit Item" : "Add New Item"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Name *</Label>
+                <Input
+                  placeholder="Enter item name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Product *</Label>
-                  <SearchableSelect
-                    options={products.map((p) => ({
-                      value: String(p.id),
-                      label: p.name,
-                    }))}
-                    value={formData.product_id}
-                    onValueChange={(v) => setFormData({ ...formData, product_id: v })}
-                    placeholder="Select product"
-                    searchPlaceholder="Search products..."
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Product Qty</Label>
-                  <Input
-                    type="number"
-                    placeholder="Enter product quantity"
-                    value={formData.product_qty}
-                    onChange={(e) => setFormData({ ...formData, product_qty: e.target.value })}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label>Date</Label>
+                <Input 
+                  type="date" 
+                  value={formData.date} 
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })} 
+                />
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Opening Qty</Label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={formData.opening_qty}
-                    onChange={(e) => setFormData({ ...formData, opening_qty: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Opening Cost</Label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={formData.opening_cost}
-                    onChange={(e) => setFormData({ ...formData, opening_cost: e.target.value })}
-                  />
-                </div>
-              </div>
-              <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {editingItem ? "Update Item" : "Add Item"}
-              </Button>
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Product *</Label>
+                <SearchableSelect
+                  options={products.map((p) => ({
+                    value: String(p.id),
+                    label: p.name,
+                  }))}
+                  value={formData.product_id}
+                  onValueChange={(v) => setFormData({ ...formData, product_id: v })}
+                  placeholder="Select product"
+                  searchPlaceholder="Search products..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Product Qty</Label>
+                <Input
+                  type="number"
+                  placeholder="Enter product quantity"
+                  value={formData.product_qty}
+                  onChange={(e) => setFormData({ ...formData, product_qty: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Opening Qty</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={formData.opening_qty}
+                  onChange={(e) => setFormData({ ...formData, opening_qty: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Opening Cost</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={formData.opening_cost}
+                  onChange={(e) => setFormData({ ...formData, opening_cost: e.target.value })}
+                />
+              </div>
+            </div>
+            <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {editingItem ? "Update Item" : "Add Item"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="bg-card rounded-xl border border-border">
         <div className="p-4 border-b border-border flex items-center justify-between">
@@ -366,6 +363,9 @@ export default function KataeProduct() {
               <Filter className="w-4 h-4" />
               Filter
               {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
+            </Button>
+            <Button className="gap-2" onClick={() => setDialogOpen(true)}>
+              <Plus className="w-4 h-4" /> Add Item
             </Button>
           </div>
         </div>

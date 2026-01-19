@@ -1,5 +1,4 @@
-import { Search, Bell, ChevronDown, Sun, Moon } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Bell, ChevronDown, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,19 +12,19 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "next-themes";
+import { usePageHeader } from "@/hooks/usePageHeader";
 
 export function TopBar() {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { headerInfo } = usePageHeader();
+  
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
-      {/* Search */}
-      <div className="relative w-96">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="Search accounts, inventory, vendors..."
-          className="pl-10 bg-muted/50 border-transparent focus:border-primary focus:bg-card"
-        />
+      {/* Page Header */}
+      <div>
+        <h1 className="text-xl font-bold text-foreground">{headerInfo.title}</h1>
+        <p className="text-sm text-muted-foreground">{headerInfo.subtitle}</p>
       </div>
 
       {/* Right Section */}

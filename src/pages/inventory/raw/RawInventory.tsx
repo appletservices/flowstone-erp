@@ -52,6 +52,7 @@ import { cn } from "@/lib/utils";
 import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { usePageHeader } from "@/hooks/usePageHeader";
 
 interface RawInventoryItem {
   id: string;
@@ -70,13 +71,20 @@ interface UnitOption {
 
 export default function RawInventory() {
   const navigate = useNavigate();
+  const { setHeaderInfo } = usePageHeader();
+  
+  // Set page header on mount
+  useState(() => {
+    setHeaderInfo({ title: "Raw Inventory", subtitle: "Manage raw materials and stock levels" });
+  });
+  
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<RawInventoryItem | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<RawInventoryItem | null>(null);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isFetchingEdit, setIsFetchingEdit] = useState(false); // Add this line
+  const [isFetchingEdit, setIsFetchingEdit] = useState(false);
   const [units, setUnits] = useState<UnitOption[]>([]);
   const [isLoadingUnits, setIsLoadingUnits] = useState(false);
   
@@ -271,90 +279,78 @@ const handleEdit = async (item: RawInventoryItem) => {
   
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Raw Inventory</h1>
-          <p className="text-muted-foreground">Manage raw materials and stock levels</p>
-        </div>
-        <Dialog open={dialogOpen} onOpenChange={(open) => {
-          setDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />
-              Add Item
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-card sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>{editingItem ? "Edit Item" : "Add New Item"}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
+      <Dialog open={dialogOpen} onOpenChange={(open) => {
+        setDialogOpen(open);
+        if (!open) resetForm();
+      }}>
+        <DialogContent className="bg-card sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{editingItem ? "Edit Item" : "Add New Item"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Name *</Label>
+              <Input
+                placeholder="Enter item name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Name *</Label>
-                <Input
-                  placeholder="Enter item name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                <Label>Unit *</Label>
+                <SearchableSelect
+                  options={units.map((unit) => ({
+                    value: String(unit.id),
+                    label: unit.name,
+                  }))}
+                  value={formData.unit_id}
+                  onValueChange={(value) => setFormData({ ...formData, unit_id: value })}
+                  placeholder="Select unit"
+                  searchPlaceholder="Search units..."
+                  isLoading={isLoadingUnits}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Unit *</Label>
-                  <SearchableSelect
-                    options={units.map((unit) => ({
-                      value: String(unit.id),
-                      label: unit.name,
-                    }))}
-                    value={formData.unit_id}
-                    onValueChange={(value) => setFormData({ ...formData, unit_id: value })}
-                    placeholder="Select unit"
-                    searchPlaceholder="Search units..."
-                    isLoading={isLoadingUnits}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Date *</Label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      type="date"
-                      className="pl-10"
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Opening Qty *</Label>
+              <div className="space-y-2">
+                <Label>Date *</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    type="number"
-                    placeholder="0"
-                    value={formData.opening_qty}
-                    onChange={(e) => setFormData({ ...formData, opening_qty: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Per Unit Cost (₹)</Label>
-                  <Input
-                    type="number"
-                    placeholder="0.00"
-                    value={formData.per_unit_cost}
-                    onChange={(e) => setFormData({ ...formData, per_unit_cost: e.target.value })}
+                    type="date"
+                    className="pl-10"
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                   />
                 </div>
               </div>
-              <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {editingItem ? "Update Item" : "Add Item"}
-              </Button>
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Opening Qty *</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={formData.opening_qty}
+                  onChange={(e) => setFormData({ ...formData, opening_qty: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Per Unit Cost (₹)</Label>
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  value={formData.per_unit_cost}
+                  onChange={(e) => setFormData({ ...formData, per_unit_cost: e.target.value })}
+                />
+              </div>
+            </div>
+            <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {editingItem ? "Update Item" : "Add Item"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="bg-card rounded-xl border border-border">
         <div className="p-4 border-b border-border flex items-center justify-between">
@@ -390,6 +386,10 @@ const handleEdit = async (item: RawInventoryItem) => {
               <Filter className="w-4 h-4" />
               Filter
               {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
+            </Button>
+            <Button className="gap-2" onClick={() => setDialogOpen(true)}>
+              <Plus className="w-4 h-4" />
+              Add Item
             </Button>
           </div>
         </div>
