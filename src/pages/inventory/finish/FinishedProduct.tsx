@@ -52,6 +52,7 @@ import { cn } from "@/lib/utils";
 import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { usePageHeader } from "@/hooks/usePageHeader";
 
 interface FinishedProductItem {
   id: number;
@@ -77,6 +78,13 @@ interface InventoryOption {
 
 export default function FinishedProduct() {
   const navigate = useNavigate();
+  const { setHeaderInfo } = usePageHeader();
+  
+  // Set page header on mount
+  useState(() => {
+    setHeaderInfo({ title: "Finished Products", subtitle: "Manage finished products and components" });
+  });
+  
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<FinishedProductItem | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -307,78 +315,68 @@ export default function FinishedProduct() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Finished Products</h1>
-          <p className="text-muted-foreground">Manage finished products and components</p>
-        </div>
-        <Dialog open={dialogOpen} onOpenChange={(open) => { if(!isFetchingEdit) { setDialogOpen(open); if (!open) resetForm(); } }}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" /> Add Product
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-card sm:max-w-[900px] max-h-[85vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>{editingProduct ? "Edit Product" : "Add New Product"}</DialogTitle></DialogHeader>
-            <div className="space-y-6 py-4">
-              <div className="grid grid-cols-4 gap-3">
-                <div className="space-y-2">
-                  <Label>Name *</Label>
-                  <Input placeholder="Product name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Date *</Label>
-                  <Input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Opening Qty *</Label>
-                  <Input type="number" placeholder="0" value={formData.openingQty} onChange={(e) => setFormData({ ...formData, openingQty: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Opening Cost *</Label>
-                  <Input type="number" placeholder="0.00" value={formData.openingCost} onChange={(e) => setFormData({ ...formData, openingCost: e.target.value })} />
-                </div>
+      <Dialog open={dialogOpen} onOpenChange={(open) => { if(!isFetchingEdit) { setDialogOpen(open); if (!open) resetForm(); } }}>
+        <DialogContent className="bg-card sm:max-w-[900px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{editingProduct ? "Edit Product" : "Add New Product"}</DialogTitle></DialogHeader>
+          <div className="space-y-6 py-4">
+            <div className="grid grid-cols-4 gap-3">
+              <div className="space-y-2">
+                <Label>Name *</Label>
+                <Input placeholder="Product name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
               </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-base font-semibold">Inventory Items (BOM)</Label>
-                  <Button type="button" variant="outline" size="sm" onClick={addItemRow} className="gap-1"><Plus className="w-4 h-4" /> Add Item</Button>
-                </div>
-                <div className="space-y-2">
-                  {itemRows.map((row, index) => (
-                    <div key={row.id} className="flex items-end gap-3 animate-in fade-in slide-in-from-top-1">
-                      <div className="flex-1">
-                        {index === 0 && <Label className="text-xs mb-1 block">Item</Label>}
-                        <SearchableSelect
-                          options={inventoryItems.map((item) => ({
-                            value: String(item.id),
-                            label: `${item.name}${item.unit ? ` (${item.unit})` : ''}`,
-                          }))}
-                          value={row.inventoryId}
-                          onValueChange={(val) => updateItemRow(row.id, "inventoryId", val)}
-                          placeholder="Select inventory item"
-                          searchPlaceholder="Search inventory..."
-                          isLoading={isLoadingInventory}
-                        />
-                      </div>
-                      <div className="w-28">
-                        {index === 0 && <Label className="text-xs mb-1 block">Quantity</Label>}
-                        <Input type="number" placeholder="0" value={row.quantity} onChange={(e) => updateItemRow(row.id, "quantity", e.target.value)} />
-                      </div>
-                      <Button variant="ghost" size="icon" onClick={() => removeItemRow(row.id)} disabled={itemRows.length === 1} className="text-muted-foreground hover:text-destructive"><Minus className="w-4 h-4" /></Button>
-                    </div>
-                  ))}
-                </div>
+              <div className="space-y-2">
+                <Label>Date *</Label>
+                <Input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
               </div>
-              <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {editingProduct ? "Update Product" : "Add Product"}
-              </Button>
+              <div className="space-y-2">
+                <Label>Opening Qty *</Label>
+                <Input type="number" placeholder="0" value={formData.openingQty} onChange={(e) => setFormData({ ...formData, openingQty: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Opening Cost *</Label>
+                <Input type="number" placeholder="0.00" value={formData.openingCost} onChange={(e) => setFormData({ ...formData, openingCost: e.target.value })} />
+              </div>
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Inventory Items (BOM)</Label>
+                <Button type="button" variant="outline" size="sm" onClick={addItemRow} className="gap-1"><Plus className="w-4 h-4" /> Add Item</Button>
+              </div>
+              <div className="space-y-2">
+                {itemRows.map((row, index) => (
+                  <div key={row.id} className="flex items-end gap-3 animate-in fade-in slide-in-from-top-1">
+                    <div className="flex-1">
+                      {index === 0 && <Label className="text-xs mb-1 block">Item</Label>}
+                      <SearchableSelect
+                        options={inventoryItems.map((item) => ({
+                          value: String(item.id),
+                          label: `${item.name}${item.unit ? ` (${item.unit})` : ''}`,
+                        }))}
+                        value={row.inventoryId}
+                        onValueChange={(val) => updateItemRow(row.id, "inventoryId", val)}
+                        placeholder="Select inventory item"
+                        searchPlaceholder="Search inventory..."
+                        isLoading={isLoadingInventory}
+                      />
+                    </div>
+                    <div className="w-28">
+                      {index === 0 && <Label className="text-xs mb-1 block">Quantity</Label>}
+                      <Input type="number" placeholder="0" value={row.quantity} onChange={(e) => updateItemRow(row.id, "quantity", e.target.value)} />
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => removeItemRow(row.id)} disabled={itemRows.length === 1} className="text-muted-foreground hover:text-destructive"><Minus className="w-4 h-4" /></Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {editingProduct ? "Update Product" : "Add Product"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="bg-card rounded-xl border border-border">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold">Inventory List</h3>
@@ -399,6 +397,9 @@ export default function FinishedProduct() {
             <Button variant="outline" size="sm" className={cn("gap-2", hasActiveFilters && "border-primary text-primary")} onClick={() => setFilterDialogOpen(true)}>
               <Filter className="w-4 h-4" /> Filter
               {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
+            </Button>
+            <Button className="gap-2" onClick={() => setDialogOpen(true)}>
+              <Plus className="w-4 h-4" /> Add Product
             </Button>
           </div>
         </div>
