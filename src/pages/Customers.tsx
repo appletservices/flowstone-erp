@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 import {
   Search,
   Filter,
@@ -109,6 +110,7 @@ const statusConfig = {
 };
 
 export default function Customers() {
+  useSetPageHeader("Customers", "Manage customer accounts and payments");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredCustomerss = Customerss.filter(
@@ -125,29 +127,6 @@ export default function Customers() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Customers</h1>
-          <p className="text-muted-foreground">
-            Manage customer Customerss and payments
-          </p>
-        </div>
-        <ContactFormDialog
-          trigger={
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />
-              Add Customer
-            </Button>
-          }
-          title="Add Customer"
-          accountTypes={[
-            { value: "retail", label: "Retail Customer" },
-            { value: "wholesale", label: "Wholesale Customer" },
-            { value: "distributor", label: "Distributor" },
-          ]}
-        />
-      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

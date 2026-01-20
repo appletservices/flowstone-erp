@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 import { format } from "date-fns";
 import {
   User,
@@ -120,6 +121,7 @@ interface AccountType {
 }
 
 export default function Receivable() {
+  useSetPageHeader("Receivables", "Manage customer receivables and payments");
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
@@ -326,19 +328,6 @@ export default function Receivable() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Receivables</h1>
-          <p className="text-muted-foreground">Manage customer receivables and payments</p>
-        </div>
-        <ContactFormDialog
-          trigger={<Button className="gap-2"><Plus className="w-4 h-4" /> Add Customer</Button>}
-          title="Add Customer"
-          accountTypes={accountTypes}
-          onSubmit={handleAddCustomer}
-        />
-      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

@@ -18,6 +18,7 @@ import {
   Loader2 
 } from "lucide-react";
 import { toast } from "sonner";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 
 interface DesignReceiveEntry {
   id: number;
@@ -29,6 +30,7 @@ interface DesignReceiveEntry {
 }
 
 export default function KarahiDesignReceive() {
+  useSetPageHeader("Karahi Design Receive", "Manage karahi design receive entries");
   const navigate = useNavigate();
   const [data, setData] = useState<DesignReceiveEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,17 +71,6 @@ export default function KarahiDesignReceive() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Karahi Design Receive</h1>
-          <p className="text-muted-foreground">Manage karahi design receive entries</p>
-        </div>
-        <Button onClick={() => navigate("/karahi/design-receive/new")}>
-          <Plus className="w-4 h-4 mr-2" />
-          Receive Design
-        </Button>
-      </div>
-
       <div className="bg-card rounded-xl border border-border">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold">Design Receive List</h3>
@@ -96,6 +87,10 @@ export default function KarahiDesignReceive() {
             <Button variant="outline" size="sm" className="gap-2">
               <Filter className="w-4 h-4" />
               Filter
+            </Button>
+            <Button className="gap-2" onClick={() => navigate("/karahi/design-receive/new")}>
+              <Plus className="w-4 h-4" />
+              Receive Design
             </Button>
           </div>
         </div>
