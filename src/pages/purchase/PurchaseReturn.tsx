@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 import {
   RotateCcw,
   Search,
@@ -43,6 +44,7 @@ interface ApiResponse {
 }
 
 export default function PurchaseReturn() {
+  useSetPageHeader("Purchase Returns", "Manage purchase returns and refunds");
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<PurchaseReturnData[]>([]);
@@ -85,17 +87,6 @@ export default function PurchaseReturn() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Purchase Returns</h1>
-          <p className="text-muted-foreground">Manage purchase returns and refunds</p>
-        </div>
-        <Button className="gap-2" onClick={() => navigate("/purchase-return/new")}>
-          <Plus className="w-4 h-4" />
-          Create Purchase Return
-        </Button>
-      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

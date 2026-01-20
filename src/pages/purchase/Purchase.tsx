@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 import {
   ShoppingCart,
   Search,
@@ -44,6 +45,7 @@ interface ApiResponse {
 }
 
 export default function Purchase() {
+  useSetPageHeader("Purchase Orders", "Manage purchase orders and vendor payments");
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<PurchaseOrder[]>([]);
@@ -95,19 +97,6 @@ export default function Purchase() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Purchase Orders</h1>
-          <p className="text-muted-foreground">
-            Manage purchase orders, GRN verification, and vendor payments
-          </p>
-        </div>
-        <Button className="gap-2" onClick={() => navigate("/inventory/purchase/new")}>
-          <Plus className="w-4 h-4" />
-          Create Purchase Order
-        </Button>
-      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

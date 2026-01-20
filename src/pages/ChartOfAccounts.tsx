@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 import {
   ChevronRight,
   ChevronDown,
@@ -141,6 +142,7 @@ function AccountNode({ account, level }: AccountNodeProps) {
 }
 
 export default function ChartOfAccounts() {
+  useSetPageHeader("Chart of Accounts", "Manage your complete account hierarchy");
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -192,16 +194,6 @@ export default function ChartOfAccounts() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Chart of Accounts</h1>
-          <p className="text-muted-foreground">Manage your complete account hierarchy with balances</p>
-        </div>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Account
-        </Button>
-      </div>
 
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">

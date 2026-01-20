@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 import {
   Search,
   Filter,
@@ -84,6 +85,7 @@ const colorPalette = [
 ];
 
 export default function Others() {
+  useSetPageHeader("Other Contacts", "Manage business contacts and accounts");
   const [apiData, setApiData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -358,16 +360,6 @@ export default function Others() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Other Contacts</h1>
-          <p className="text-muted-foreground">Manage business contacts and accounts</p>
-        </div>
-        <Button className="gap-2" onClick={handleOpenAdd}>
-          <Plus className="w-4 h-4" /> Add Contact
-        </Button>
-      </div>
 
       {/* Dynamic Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

@@ -1,3 +1,4 @@
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 import {
   Wallet,
   Package,
@@ -12,21 +13,9 @@ import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { InventoryChart } from "@/components/dashboard/InventoryChart";
 
 export default function Dashboard() {
+  useSetPageHeader("Dashboard", "Welcome back! Here's your business overview.");
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back! Here's your business overview.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Last updated:</span>
-          <span className="font-medium text-foreground">Today, 3:45 PM</span>
-        </div>
-      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

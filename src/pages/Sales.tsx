@@ -1,3 +1,4 @@
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 import {
   Receipt,
   Search,
@@ -104,6 +105,7 @@ const statusConfig = {
 };
 
 export default function Sales() {
+  useSetPageHeader("Sales & Invoices", "Manage sales invoices and revenue tracking");
   const stats = {
     total: salesInvoices.length,
     totalAmount: salesInvoices.reduce((acc, inv) => {
@@ -117,19 +119,6 @@ export default function Sales() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Sales & Invoices</h1>
-          <p className="text-muted-foreground">
-            Manage sales invoices, customer payments, and revenue tracking
-          </p>
-        </div>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Create Invoice
-        </Button>
-      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

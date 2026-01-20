@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Printer, Edit, FileText, Loader2 } from "lucide-react";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
@@ -33,6 +34,8 @@ export default function PurchaseOrderDetail() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [orderData, setOrderData] = useState<ApiResponse | null>(null);
+  
+  useSetPageHeader(`Order Details - PO-${id}`, "View purchase order details and items");
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -77,21 +80,12 @@ export default function PurchaseOrderDetail() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
+      {/* Header Actions */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/inventory/purchase")}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Order Details - PO-{id}
-            </h1>
-            <p className="text-muted-foreground">
-              View purchase order details and items
-            </p>
-          </div>
-        </div>
+        <Button variant="ghost" size="sm" className="gap-2" onClick={() => navigate("/inventory/purchase")}>
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
         <div className="flex items-center gap-2">
           <Button variant="outline" className="gap-2">
             <Printer className="w-4 h-4" />

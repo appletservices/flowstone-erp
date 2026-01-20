@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 import { Plus, Pencil, Trash2, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,6 +38,7 @@ const initialCategories: ExpenseCategory[] = [
 ];
 
 export default function ExpenseCategories() {
+  useSetPageHeader("Expense Categories", "Manage expense classification categories");
   const [categories, setCategories] = useState<ExpenseCategory[]>(initialCategories);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<ExpenseCategory | null>(null);
@@ -76,10 +78,6 @@ export default function ExpenseCategories() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground">Expense Categories</h1>
-        <p className="text-muted-foreground mt-1">Manage expense classification categories</p>
-      </div>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
