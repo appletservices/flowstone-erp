@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Save } from "lucide-react";
 import { SearchableSelect, SearchableSelectOption } from "@/components/ui/searchable-select";
 import { toast } from "sonner";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 
 interface FormData {
   vendor: string;
@@ -34,6 +35,11 @@ export default function KataeReceiveForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
+  
+  useSetPageHeader(
+    isEdit ? "Edit Katae Receive" : "Receive Katae",
+    isEdit ? "Update katae receive entry" : "Create a new katae receive entry"
+  );
 
   const [formData, setFormData] = useState<FormData>({
     vendor: "",
@@ -84,14 +90,6 @@ export default function KataeReceiveForm() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {isEdit ? "Edit Katae Receive" : "Receive Katae"}
-          </h1>
-          <p className="text-muted-foreground">
-            {isEdit ? "Update katae receive entry" : "Create a new katae receive entry"}
-          </p>
-        </div>
       </div>
 
       <form onSubmit={handleSubmit}>
