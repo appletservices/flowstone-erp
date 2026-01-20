@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 
 const url_ = new URL(`${import.meta.env.VITE_API_URL}`);
 
@@ -23,6 +24,7 @@ interface DropdownItem {
 }
 
 export default function KarahiIssueMaterial() {
+  useSetPageHeader("Issue Karahi Material", "Issue materials to karahi vendor");
   const navigate = useNavigate();
   const [date, setDate] = useState<Date>(new Date());
   const [selectedVendor, setSelectedVendor] = useState("");
@@ -109,16 +111,10 @@ export default function KarahiIssueMaterial() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/karahi/list")}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Issue Karahi Material</h1>
-            <p className="text-muted-foreground">Issue materials to karahi vendor</p>
-          </div>
-        </div>
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={() => navigate("/karahi/list")}>
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
       </div>
 
       <div className="rounded-lg border border-border bg-card p-6 space-y-6">

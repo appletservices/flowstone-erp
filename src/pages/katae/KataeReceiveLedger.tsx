@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Search, Filter } from "lucide-react";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 
 interface LedgerEntry {
   id: string;
@@ -22,6 +23,7 @@ const mockLedgerData: LedgerEntry[] = [
 
 export default function KataeReceiveLedger() {
   const { id } = useParams();
+  useSetPageHeader("Katae Receive Ledger", `Ledger for entry #${id}`);
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -38,10 +40,6 @@ export default function KataeReceiveLedger() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Katae Receive Ledger</h1>
-          <p className="text-muted-foreground">Ledger for entry #{id}</p>
-        </div>
       </div>
 
       {/* Summary Cards */}

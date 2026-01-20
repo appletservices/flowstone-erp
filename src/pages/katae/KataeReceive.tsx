@@ -2,13 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Plus, Pencil, BookOpen, Search, Filter, ChevronRight } from "lucide-react";
+import { Plus, Search, Filter, ChevronRight } from "lucide-react";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 
 interface KataeReceiveEntry {
   id: string;
@@ -26,6 +21,7 @@ const mockData: KataeReceiveEntry[] = [
 ];
 
 export default function KataeReceive() {
+  useSetPageHeader("Katae Receive", "Manage katae receive entries");
   const navigate = useNavigate();
   const [data] = useState<KataeReceiveEntry[]>(mockData);
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,10 +31,6 @@ export default function KataeReceive() {
       entry.vendor.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.design.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const handleEdit = (id: string) => {
-    navigate(`/katae/receive/edit/${id}`);
-  };
 
   const handleViewLedger = (id: string) => {
     navigate(`/katae/receive-ledger/${id}`);
@@ -50,17 +42,6 @@ export default function KataeReceive() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Katae Receive</h1>
-          <p className="text-muted-foreground">Manage katae receive entries</p>
-        </div>
-        <Button onClick={handleReceiveKatae}>
-          <Plus className="w-4 h-4 mr-2" />
-          Receive Katae
-        </Button>
-      </div>
-
       <div className="bg-card rounded-xl border border-border">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold">Katae Receive List</h3>
@@ -77,6 +58,10 @@ export default function KataeReceive() {
             <Button variant="outline" size="sm" className="gap-2">
               <Filter className="w-4 h-4" />
               Filter
+            </Button>
+            <Button className="gap-2" onClick={handleReceiveKatae}>
+              <Plus className="w-4 h-4" />
+              Receive Katae
             </Button>
           </div>
         </div>
