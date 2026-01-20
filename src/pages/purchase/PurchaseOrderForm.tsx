@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, Save, Loader2 } from "lucide-react";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +35,11 @@ export default function PurchaseOrderForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = Boolean(id);
+  
+  useSetPageHeader(
+    isEditMode ? "Edit Purchase Order" : "Create Purchase Order",
+    isEditMode ? "Update purchase order details" : "Add a new purchase order"
+  );
   const API_BASE_URL = import.meta.env.VITE_API_URL;
   const token = localStorage.getItem("auth_token");
 
@@ -194,15 +200,10 @@ export default function PurchaseOrderForm() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/inventory/purchase")}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{isEditMode ? 'Edit Purchase Order' : 'Create Purchase Order'}</h1>
-            <p className="text-muted-foreground">{isEditMode ? 'Update purchase order details' : 'Add a new purchase order'}</p>
-          </div>
-        </div>
+        <Button variant="ghost" size="sm" className="gap-2" onClick={() => navigate("/inventory/purchase")}>
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
         <Button className="gap-2" onClick={handleSubmit}>
           <Save className="w-4 h-4" />
           {isEditMode ? 'Update Order' : 'Save Order'}

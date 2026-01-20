@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 import { format } from "date-fns";
 import {
   ArrowLeft,
@@ -44,6 +45,8 @@ export default function RcLedger() {
 
   const [ledgerData, setLedgerData] = useState<LedgerEntry[]>([]);
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
+  
+  useSetPageHeader(contactInfo?.name || "Customer Ledger", `Ledger for ${contactInfo?.type || "customer"}`);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
@@ -118,28 +121,12 @@ export default function RcLedger() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header Actions */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              {contactInfo?.name || "Customer Ledger"}
-            </h1>
-            <div className="flex items-center gap-2 mt-1">
-              {contactInfo && (
-                <>
-                  <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none">
-                    {contactInfo.type}
-                  </Badge>
-                  <span className="text-sm text-muted-foreground">{contactInfo.phone}</span>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
+        <Button variant="ghost" size="sm" className="gap-2" onClick={() => navigate(-1)}>
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-2">
             <Printer className="w-4 h-4" /> Print

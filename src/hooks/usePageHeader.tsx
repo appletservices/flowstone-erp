@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 interface PageHeaderInfo {
   title: string;
@@ -37,8 +37,7 @@ export function usePageHeader() {
 export function useSetPageHeader(title: string, subtitle: string) {
   const { setHeaderInfo } = usePageHeader();
   
-  // Set on mount
-  useState(() => {
+  useEffect(() => {
     setHeaderInfo({ title, subtitle });
-  });
+  }, [title, subtitle, setHeaderInfo]);
 }
