@@ -16,17 +16,20 @@ import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
 import { useSetPageHeader } from "@/hooks/usePageHeader";
 
+// Interface updated to match your specific API response
 interface LedgerEntry {
-  id: string;
-  date: string;
-  receivedQty: number;
-  receivedQtyCost: number;
-  reference: string;
+  id: number;
+  quantity: string;
+  item: number;
+  cost: string;
+  reference_no: string;
+  tdate: string;
 }
 
 export default function KataeReceiveLedger() {
-  const { id } = useParams();
-  useSetPageHeader("Katae Receive Ledger", `Ledger for entry #${id}`);
+  // Capture both vendor and product IDs from the URL
+  const { v, p } = useParams();// v = vendor id (kv), p = product id
+  useSetPageHeader("Katae Receive Ledger", `Product ID: ${p}`);
   const navigate = useNavigate();
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
@@ -48,12 +51,14 @@ export default function KataeReceiveLedger() {
     nextPage,
     previousPage,
   } = useBackendSearch<LedgerEntry>({
-    endpoint: `/katae/receive-ledger/${id}`,
+    // Updated endpoint to match /katae/receive/ledger/{vid}/{pid}
+    endpoint: `/katae/receive/ledger/${v}/${p}`,
     pageSize: 10,
   });
 
-  const totalReceivedQty = summary?.total_received_qty || ledgerData.reduce((sum, entry) => sum + entry.receivedQty, 0);
-  const totalReceivedCost = summary?.total_received_cost || ledgerData.reduce((sum, entry) => sum + entry.receivedQtyCost, 0);
+  // Calculate totals from the string values in the data
+  const totalReceivedQty = ledgerData.reduce((sum, entry) => sum + parseFloat(entry.quantity || "0"), 0);
+  const totalReceivedCost = ledgerData.reduce((sum, entry) => sum + parseFloat(entry.cost || "0"), 0);
 
   if (isLoading && ledgerData.length === 0) {
     return (
@@ -75,11 +80,15 @@ export default function KataeReceiveLedger() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-card rounded-xl border border-border p-4">
           <p className="text-sm text-muted-foreground">Total Received Qty</p>
-          <p className="text-2xl font-bold text-foreground">{totalReceivedQty.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-foreground">
+            {totalReceivedQty.toLocaleString()}
+          </p>
         </div>
         <div className="bg-card rounded-xl border border-border p-4">
           <p className="text-sm text-muted-foreground">Total Received Cost</p>
-          <p className="text-2xl font-bold text-success">Rs. {totalReceivedCost.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-success">
+            Rs. {totalReceivedCost.toLocaleString()}
+          </p>
         </div>
       </div>
 
@@ -126,20 +135,22 @@ export default function KataeReceiveLedger() {
             <thead>
               <tr>
                 <th>Date</th>
+                <th>Reference No</th>
                 <th className="text-right">Received Qty</th>
-                <th className="text-right">Received Qty Cost</th>
-                <th>Reference</th>
+                <th className="text-right">Cost</th>
               </tr>
             </thead>
             <tbody>
               {ledgerData.map((entry) => (
                 <tr key={entry.id} className="animate-fade-in">
-                  <td>{entry.date}</td>
-                  <td className="text-right">{entry.receivedQty.toLocaleString()}</td>
-                  <td className="text-right font-medium text-success">
-                    Rs. {entry.receivedQtyCost.toLocaleString()}
+                  <td>{entry.tdate}</td>
+                  <td className="font-medium">{entry.reference_no}</td>
+                  <td className="text-right">
+                    {parseFloat(entry.quantity).toLocaleString()}
                   </td>
-                  <td className="font-medium">{entry.reference}</td>
+                  <td className="text-right font-medium text-success">
+                    Rs. {parseFloat(entry.cost).toLocaleString()}
+                  </td>
                 </tr>
               ))}
               {!isLoading && ledgerData.length === 0 && (
@@ -161,20 +172,6 @@ export default function KataeReceiveLedger() {
             <Button variant="outline" size="sm" onClick={previousPage} disabled={currentPage === 1}>
               Previous
             </Button>
-            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-              let pageNum = pagination.totalPages <= 5 ? i + 1 : (currentPage <= 3 ? i + 1 : (currentPage >= pagination.totalPages - 2 ? pagination.totalPages - 4 + i : currentPage - 2 + i));
-              return (
-                <Button
-                  key={pageNum}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={currentPage === pageNum ? "bg-primary text-primary-foreground" : ""}
-                >
-                  {pageNum}
-                </Button>
-              );
-            })}
             <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === pagination.totalPages}>
               Next
             </Button>
@@ -188,7 +185,7 @@ export default function KataeReceiveLedger() {
         onApply={applyFilters}
         showDateRange={true}
         filterFields={[
-          { key: "reference", label: "Reference", placeholder: "e.g. REF-001" },
+          { key: "reference_no", label: "Reference No", placeholder: "e.g. KTR-V-..." },
         ]}
         initialDateRange={dateRange}
         initialKeyValues={keyValues}

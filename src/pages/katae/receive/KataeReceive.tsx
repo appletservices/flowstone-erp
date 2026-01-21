@@ -1,39 +1,61 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Filter, ChevronRight } from "lucide-react";
+import { Plus, Search, Filter, ChevronRight, Loader2 } from "lucide-react";
 import { useSetPageHeader } from "@/hooks/usePageHeader";
 
 interface KataeReceiveEntry {
-  id: string;
+  kv: number;
   vendor: string;
-  design: string;
-  received: number;
+  vid: number;
+  items: string;
+  pid: number;
+  received: string;
 }
-
-const mockData: KataeReceiveEntry[] = [
-  { id: "1", vendor: "Vendor A", design: "Design Pattern 1", received: 150 },
-  { id: "2", vendor: "Vendor B", design: "Design Pattern 2", received: 225 },
-  { id: "3", vendor: "Vendor C", design: "Design Pattern 3", received: 180 },
-  { id: "4", vendor: "Vendor A", design: "Design Pattern 4", received: 310 },
-  { id: "5", vendor: "Vendor B", design: "Design Pattern 5", received: 127 },
-];
 
 export default function KataeReceive() {
   useSetPageHeader("Katae Receive", "Manage katae receive entries");
   const navigate = useNavigate();
-  const [data] = useState<KataeReceiveEntry[]>(mockData);
+  
+  const [data, setData] = useState<KataeReceiveEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem("auth_token");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/katae/receive/listing`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const result = await response.json();
+        if (result.data) {
+          setData(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch katae receive listing:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const filteredData = data.filter(
     (entry) =>
       entry.vendor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      entry.design.toLowerCase().includes(searchQuery.toLowerCase())
+      entry.items.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleViewLedger = (id: string) => {
-    navigate(`/katae/receive-ledger/${id}`);
+  const handleViewLedger = (vid: number, pid: number) => {
+    // Navigate using the vendor ID and product ID from the API
+    navigate(`/katae/receive-ledger/${vid}/${pid}`);
   };
 
   const handleReceiveKatae = () => {
@@ -49,7 +71,7 @@ export default function KataeReceive() {
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search..."
+                placeholder="Search vendor or product..."
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -71,31 +93,45 @@ export default function KataeReceive() {
             <thead>
               <tr>
                 <th>Vendor</th>
-                <th>Design</th>
-                <th className="text-right">Received</th>
-                <th></th>
+                <th>Product/Design</th>
+                <th className="text-right">Total Received</th>
+                <th className="w-10"></th>
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((entry) => (
-                <tr key={entry.id} className="animate-fade-in">
-                  <td className="font-medium">{entry.vendor}</td>
-                  <td>{entry.design}</td>
-                  <td className="text-right font-medium text-success">
-                    {entry.received.toLocaleString()}
-                  </td>
-                  <td>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleViewLedger(entry.id)}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={4} className="py-10 text-center">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-primary" />
                   </td>
                 </tr>
-              ))}
+              ) : filteredData.length > 0 ? (
+                filteredData.map((entry, idx) => (
+                  <tr key={`${entry.vid}-${entry.pid}-${idx}`} className="animate-fade-in">
+                    <td className="font-medium">{entry.vendor}</td>
+                    <td>{entry.items}</td>
+                    <td className="text-right font-medium text-success">
+                      {parseFloat(entry.received).toLocaleString()}
+                    </td>
+                    <td>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handleViewLedger(entry.vid, entry.pid)}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-10 text-center text-muted-foreground">
+                    No records found
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -111,7 +147,7 @@ export default function KataeReceive() {
             <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">
               1
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" disabled={filteredData.length < 10}>
               Next
             </Button>
           </div>

@@ -133,7 +133,7 @@ const App = () => (
                   <Route path="/katae/receive" element={<PermissionGuard><KataeReceive /></PermissionGuard>} />
                   <Route path="/katae/receive/new" element={<PermissionGuard><KataeReceiveForm /></PermissionGuard>} />
                   <Route path="/katae/receive/edit/:id" element={<PermissionGuard><KataeReceiveForm /></PermissionGuard>} />
-                  <Route path="/katae/receive-ledger/:id" element={<PermissionGuard><KataeReceiveLedger /></PermissionGuard>} />
+                  <Route path="/katae/receive-ledger/:v/:p" element={<PermissionGuard><KataeReceiveLedger /></PermissionGuard>} />
 
                   
 

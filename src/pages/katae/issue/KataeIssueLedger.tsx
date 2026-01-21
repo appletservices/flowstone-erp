@@ -1,29 +1,26 @@
-import { useState, useEffect } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
-  ArrowLeft, Search, Filter, TrendingUp, 
+  ArrowLeft, Search, TrendingUp, 
   TrendingDown, Wallet, Loader2 
 } from "lucide-react";
 
-// Updated interface to match your API response
+// Matches your specific API response fields
 interface LedgerEntry {
   id: number;
   kv: number;
-  vendor: string;
   amount: string;
   product: string;
   issue: string;
   received: string;
   tdate: string;
-  running_balance: number;
 }
 
 export default function KataeIssueLedger() {
   const navigate = useNavigate();
-  // Capture v (vendor) and p (product) from the route /karahi/issued-ledger/:v/:p
-  const { v, p } = useParams();
+  const { v, p } = useParams(); // v = vendor id (kv), p = product id
   
   const [ledgerData, setLedgerData] = useState<LedgerEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,14 +28,14 @@ export default function KataeIssueLedger() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
-  // Fetch data from API
   useEffect(() => {
     const fetchLedger = async () => {
       setIsLoading(true);
       try {
         const token = localStorage.getItem("auth_token");
+        // Updated endpoint to match your requirement
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/katae/issued-ledger/${v}/${p}`,
+          `${import.meta.env.VITE_API_URL}/katae/issue/ledger/${v}/${p}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -60,17 +57,31 @@ export default function KataeIssueLedger() {
     if (v && p) fetchLedger();
   }, [v, p]);
 
-  // Derived state for summary and filtering
-  const filteredData = ledgerData.filter(
+  // Calculate totals and running balances locally
+  const processedData = useMemo(() => {
+    let balance = 0;
+    // We sort by date ascending to calculate the running balance correctly, 
+    // then reverse for the display (newest first)
+    return [...ledgerData]
+      .sort((a, b) => new Date(a.tdate).getTime() - new Date(b.tdate).getTime())
+      .map((entry) => {
+        const issueVal = parseFloat(entry.issue || "0");
+        const receivedVal = parseFloat(entry.received || "0");
+        balance = balance + issueVal - receivedVal;
+        return { ...entry, running_balance: balance };
+      })
+      
+  }, [ledgerData]);
+
+  const filteredData = processedData.filter(
     (entry) =>
       entry.product.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      entry.vendor.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.tdate.includes(searchQuery)
   );
 
   const totalIssued = ledgerData.reduce((sum, entry) => sum + parseFloat(entry.issue), 0);
   const totalReceived = ledgerData.reduce((sum, entry) => sum + parseFloat(entry.received), 0);
-  const currentBalance = ledgerData[0]?.running_balance || 0; // Using running_balance from API
+  const currentBalance = totalIssued - totalReceived;
 
   // Pagination logic
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
@@ -95,31 +106,19 @@ export default function KataeIssueLedger() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Katae issue Ledger</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Katae Issue Ledger</h1>
             <p className="text-muted-foreground">
-              {ledgerData[0] ? `${ledgerData[0].vendor} - ${ledgerData[0].product}` : "No records found"}
+              {ledgerData[0] ? `Product: ${ledgerData[0].product}` : "No records found"}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-card rounded-xl border border-border p-5">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-success/10">
-              <TrendingUp className="w-6 h-6 text-success" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Received</p>
-              <p className="text-2xl font-bold">{totalReceived.toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-card rounded-xl border border-border p-5">
-          <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-destructive/10">
-              <TrendingDown className="w-6 h-6 text-destructive" />
+              <TrendingUp className="w-6 h-6 text-destructive" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Issued</p>
@@ -129,18 +128,28 @@ export default function KataeIssueLedger() {
         </div>
         <div className="bg-card rounded-xl border border-border p-5">
           <div className="flex items-center gap-3">
+            <div className="p-3 rounded-xl bg-success/10">
+              <TrendingDown className="w-6 h-6 text-success" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Total Received</p>
+              <p className="text-2xl font-bold">{totalReceived.toLocaleString()}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-card rounded-xl border border-border p-5">
+          <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-primary/10">
               <Wallet className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Current Balance</p>
+              <p className="text-sm text-muted-foreground">Pending Balance</p>
               <p className="text-2xl font-bold">{currentBalance.toLocaleString()}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Table */}
       <div className="bg-card rounded-xl border border-border">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold">Transaction History</h3>
@@ -160,25 +169,25 @@ export default function KataeIssueLedger() {
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Vendor</th>
+                <th>Product</th>
                 <th className="text-right">Issued</th>
                 <th className="text-right">Received</th>
-                <th className="text-right">Balance</th>
+                <th className="text-right">Amount</th>
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((entry) => (
-                <tr key={entry.id}>
+              {paginatedData.map((entry, index) => (
+                <tr key={`${entry.id}-${index}`}>
                   <td>{entry.tdate}</td>
-                  <td>{entry.vendor}</td>
-                  <td className="text-right text-destructive">
-                    {parseFloat(entry.issue) > 0 ? parseFloat(entry.issue).toLocaleString() : "-"}
+                  <td>{entry.product}</td>
+                  <td className="text-right text-destructive font-medium">
+                    {parseFloat(entry.issue) > 0 ? parseFloat(entry.issue).toFixed(2) : "-"}
                   </td>
-                  <td className="text-right text-success">
-                    {parseFloat(entry.received) > 0 ? parseFloat(entry.received).toLocaleString() : "-"}
+                  <td className="text-right text-success font-medium">
+                    {parseFloat(entry.received) > 0 ? parseFloat(entry.received).toFixed(2) : "-"}
                   </td>
-                  <td className="text-right font-medium">
-                    {entry.running_balance.toLocaleString()}
+                  <td className="text-right font-bold">
+                    {entry.amount.toLocaleString()}
                   </td>
                 </tr>
               ))}
@@ -193,7 +202,6 @@ export default function KataeIssueLedger() {
           </table>
         </div>
 
-        {/* Pagination Controls */}
         <div className="p-4 border-t border-border flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             Page {currentPage} of {totalPages || 1}

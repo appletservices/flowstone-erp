@@ -97,12 +97,6 @@ export default function IssedKatae() {
 
   return (
     <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatsCard icon={<Package />} label="Total Items" value={items.length} />
-        <StatsCard icon={<Users />} label="Vendors" value={uniqueVendorsList.length} color="text-emerald-500" />
-        <StatsCard icon={<Boxes />} label="Total Available" value={totalAvailable.toLocaleString()} color="text-orange-500" />
-      </div>
 
       {/* Table & Filters */}
       <div className="bg-card rounded-xl border">
