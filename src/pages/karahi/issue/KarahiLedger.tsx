@@ -160,25 +160,27 @@ export default function KarahiLedger() {
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Vendor</th>
-                <th className="text-right">Issued</th>
-                <th className="text-right">Received</th>
-                <th className="text-right">Balance</th>
+                <th>Reference No</th>
+                <th className="text-right">Issue Qty</th>
+                <th className="text-right">Amount</th>
+                <th className="text-center">Action</th>
               </tr>
             </thead>
             <tbody>
               {paginatedData.map((entry) => (
                 <tr key={entry.id}>
                   <td>{entry.tdate}</td>
-                  <td>{entry.vendor}</td>
-                  <td className="text-right text-destructive">
+                  <td className="font-mono text-sm">{entry.id}</td>
+                  <td className="text-right">
                     {parseFloat(entry.issue) > 0 ? parseFloat(entry.issue).toLocaleString() : "-"}
                   </td>
-                  <td className="text-right text-success">
-                    {parseFloat(entry.received) > 0 ? parseFloat(entry.received).toLocaleString() : "-"}
+                  <td className="text-right">
+                    {parseFloat(entry.amount) > 0 ? `₹${parseFloat(entry.amount).toLocaleString()}` : "-"}
                   </td>
-                  <td className="text-right font-medium">
-                    {entry.running_balance.toLocaleString()}
+                  <td className="text-center">
+                    <Button variant="ghost" size="sm">
+                      View
+                    </Button>
                   </td>
                 </tr>
               ))}
