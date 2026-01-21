@@ -95,7 +95,7 @@ export default function KataeIssuedMaterial() {
 
       if (response.ok && result.success !== false) {
         toast.success("Karahi material issued successfully");
-        navigate("/katae/issued");
+        navigate("/katae/issue/list");
       } else {
         toast.error(result.message || "Failed to issue material");
       }

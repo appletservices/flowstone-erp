@@ -9,9 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowRight, Search, Filter, Send, Package, Users, Boxes, Loader2 } from "lucide-react";
+import { ArrowRight, Search, Send, Package, Users, Boxes, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useSetPageHeader } from "@/hooks/usePageHeader";
 
 // Ensure the URL is constructed correctly
 const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -25,7 +26,8 @@ interface KarahiItem {
   available: string;
 }
 
-export default function IssuedKatae() {
+export default function IssedKatae() {
+  useSetPageHeader("Katae List", "Real-time vendor stock levels");
   const navigate = useNavigate();
   const [items, setItems] = useState<KarahiItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +42,7 @@ export default function IssuedKatae() {
       const token = localStorage.getItem("auth_token");
       
       // Use standard fetch without "new URL" if it's causing issues
-      const response = await fetch(`${API_BASE_URL}/karahi/issue/listing`, {
+      const response = await fetch(`${API_BASE_URL}/katae/issue/listing`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -94,18 +96,7 @@ export default function IssuedKatae() {
   );
 
   return (
-    <div className="space-y-6 p-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Katae List</h1>
-          <p className="text-muted-foreground text-sm">Real-time vendor stock levels</p>
-        </div>
-        <Button onClick={() => navigate("/katae/issue-material")} className="gap-2">
-          <Send className="w-4 h-4" /> Issue Material
-        </Button>
-      </div>
-
+    <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatsCard icon={<Package />} label="Total Items" value={items.length} />
@@ -116,24 +107,30 @@ export default function IssuedKatae() {
       {/* Table & Filters */}
       <div className="bg-card rounded-xl border">
         <div className="p-4 border-b flex flex-col md:flex-row gap-4 justify-between items-center">
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search vendor or product..." 
-              className="pl-10"
-              value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-            />
+          <h3 className="font-semibold">All Items</h3>
+          <div className="flex items-center gap-4">
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input 
+                placeholder="Search vendor or product..." 
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+              />
+            </div>
+            <Select value={selectedVendor} onValueChange={(v) => { setSelectedVendor(v); setCurrentPage(1); }}>
+              <SelectTrigger className="w-full md:w-[200px]">
+                <SelectValue placeholder="All Vendors" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Vendors</SelectItem>
+                {uniqueVendorsList.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Button className="gap-2" onClick={() => navigate("/katae/issue-material")}>
+              <Send className="w-4 h-4" /> Issue Material
+            </Button>
           </div>
-          <Select value={selectedVendor} onValueChange={(v) => { setSelectedVendor(v); setCurrentPage(1); }}>
-            <SelectTrigger className="w-full md:w-[200px]">
-              <SelectValue placeholder="All Vendors" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Vendors</SelectItem>
-              {uniqueVendorsList.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-            </SelectContent>
-          </Select>
         </div>
 
         <div className="overflow-x-auto">
@@ -162,7 +159,7 @@ export default function IssuedKatae() {
                       {parseFloat(item.available).toFixed(2)}
                     </td>
                     <td className="p-4 text-center">
-                      <Button variant="ghost" size="sm" onClick={() => navigate(`/karahi/issued-ledger/${item.vendor_id}/${item.product_id}`)}>
+                      <Button variant="ghost" size="sm" onClick={() => navigate(`/katae/issued-ledger/${item.vendor_id}/${item.product_id}`)}>
                         <ArrowRight className="w-4 h-4" />
                       </Button>
                     </td>

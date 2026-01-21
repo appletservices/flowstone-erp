@@ -39,11 +39,12 @@ import NotFound from "@/pages/NotFound";
 import RoleManagement from "@/pages/setting/RoleManagement";
 import Security from "@/pages/setting/Security";
 
-import IssuedKatae from "@/pages/katae/IssuedKatae";
-import KataeIssuedMaterial from "@/pages/katae/KataeIssuedMaterial";
-import KataeReceive from "@/pages/katae/KataeReceive";
-import KataeReceiveForm from "@/pages/katae/KataeReceiveForm";
-import KataeReceiveLedger from "@/pages/katae/KataeReceiveLedger";
+import IssuedKatae from "@/pages/katae/issue/IssuedKatae";
+import KataeIssuedMaterial from "@/pages/katae/issue/KataeIssuedMaterial";
+import KataeIssueLedger from "@/pages/katae/issue/KataeIssueLedger";
+import KataeReceive from "@/pages/katae/receive/KataeReceive";
+import KataeReceiveForm from "@/pages/katae/receive/KataeReceiveForm";
+import KataeReceiveLedger from "@/pages/katae/receive/KataeReceiveLedger";
 import PurchaseReturn from "@/pages/purchase/PurchaseReturn";
 import PurchaseReturnForm from "@/pages/purchase/PurchaseReturnForm";
 import PurchaseReturnDetail from "@/pages/purchase/PurchaseReturnDetail";
@@ -124,16 +125,19 @@ const App = () => (
                   <Route path="/ledger/inventory/:id" element={<Ledger />} />
                   <Route path="/contacts/ledger/vendor/:id" element={<VLedger />} />
                   <Route path="/contacts/ledger/receiveable/:id" element={<RcLedger />} />
-                  <Route path="/katae/issued" element={<PermissionGuard permissionId="katae_issued"><IssuedKatae /></PermissionGuard>} />
-                  <Route path="/katae/issued-material/:id" element={<KataeIssuedMaterial />} />
+                  
+                  <Route path="/katae/issue/list" element={<PermissionGuard permissionId="katae_issued"><IssuedKatae /></PermissionGuard>} />
+                  <Route path="/katae/issue-material" element={<PermissionGuard permissionId="katae_issued"><KataeIssuedMaterial /></PermissionGuard>} />
+                  <Route path="/katae/issued-ledger/:v/:p" element={<PermissionGuard permissionId="katae_issued"><KataeIssueLedger /></PermissionGuard>}/>
+
                   <Route path="/katae/receive" element={<PermissionGuard><KataeReceive /></PermissionGuard>} />
                   <Route path="/katae/receive/new" element={<PermissionGuard><KataeReceiveForm /></PermissionGuard>} />
                   <Route path="/katae/receive/edit/:id" element={<PermissionGuard><KataeReceiveForm /></PermissionGuard>} />
                   <Route path="/katae/receive-ledger/:id" element={<PermissionGuard><KataeReceiveLedger /></PermissionGuard>} />
 
-                  <Route path="/katae/issued" element={<PermissionGuard permissionId="katae_issued"><IssuedKatae /></PermissionGuard>} />
+                  
 
-                  <Route path="/katae/issue-material" element={<PermissionGuard permissionId="katae_issued"><KataeIssuedMaterial /></PermissionGuard>} />
+                  
                   
                   <Route path="/karahi/list" element={<PermissionGuard><KarahiList /></PermissionGuard>}/>
                   <Route path="/karahi/issue-material" element={<PermissionGuard><KarahiIssueMaterial /></PermissionGuard>}/>                

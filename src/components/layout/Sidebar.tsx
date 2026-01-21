@@ -83,7 +83,7 @@ const menuItems: MenuItem[] = [
     label: "Katae",
     icon: Factory,
     children: [
-      { label: "Issued", path: "/katae/issued", icon: Send,permissionId: "katae_issued"},
+      { label: "Issued", path: "/katae/issue/list", icon: Send,permissionId: "katae_issued"},
       { label: "Receive", path: "/katae/receive", icon: RotateCcw },
     ],
   },
