@@ -10,11 +10,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, Filter, Loader2 } from "lucide-react";
+import { ArrowLeft, Search, Filter, Loader2, Printer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
 import { useSetPageHeader } from "@/hooks/usePageHeader";
+import { ExportButtons, formatCurrency } from "@/components/ExportButtons";
 
 // Interface updated to match your specific API response
 interface LedgerEntry {
@@ -70,10 +71,39 @@ export default function KataeReceiveLedger() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => window.print()}>
+            <Printer className="w-4 h-4" /> Print
+          </Button>
+          <ExportButtons
+            config={{
+              filename: `katae-receive-ledger-${v}-${p}-${new Date().toISOString().split('T')[0]}`,
+              title: `Katae Receive Ledger - Product #${p}`,
+              subtitle: `Generated on ${new Date().toLocaleDateString('en-IN')}`,
+              columns: [
+                { key: "tdate", header: "Date", width: 12 },
+                { key: "reference_no", header: "Reference No", width: 18 },
+                { key: "quantity", header: "Received Qty", width: 12 },
+                { key: "cost", header: "Cost", width: 15 },
+              ],
+              data: ledgerData.map((entry) => ({
+                tdate: entry.tdate,
+                reference_no: entry.reference_no,
+                quantity: parseFloat(entry.quantity).toLocaleString(),
+                cost: formatCurrency(entry.cost),
+              })),
+              totals: {
+                tdate: "Totals",
+                quantity: totalReceivedQty.toLocaleString(),
+                cost: formatCurrency(totalReceivedCost),
+              },
+            }}
+          />
+        </div>
       </div>
 
       {/* Summary Cards */}

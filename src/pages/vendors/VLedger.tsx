@@ -8,7 +8,6 @@ import {
   ArrowDownLeft,
   Calendar,
   Filter,
-  Download,
   Printer,
   Search,
   ChevronLeft,
@@ -21,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { FilterDialog, DateRange, FilterValue } from "@/components/filters/FilterDialog";
+import { ExportButtons, formatDate, formatCurrency } from "@/components/ExportButtons";
 
 interface LedgerEntry {
   record: string | null;
@@ -128,12 +128,37 @@ export default function VLedger() {
           Back
         </Button>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => window.print()}>
             <Printer className="w-4 h-4" /> Print
           </Button>
-          <Button variant="outline" size="sm" className="gap-2">
-            <Download className="w-4 h-4" /> Export
-          </Button>
+          <ExportButtons
+            config={{
+              filename: `vendor-ledger-${id}-${new Date().toISOString().split('T')[0]}`,
+              title: vendorInfo?.name || "Vendor Ledger",
+              subtitle: `${vendorInfo?.type || "Vendor"} Ledger - Generated on ${new Date().toLocaleDateString('en-IN')}`,
+              columns: [
+                { key: "date", header: "Date", width: 12 },
+                { key: "reference_no", header: "Reference", width: 15 },
+                { key: "narration", header: "Description", width: 25 },
+                { key: "debit", header: "Debit", width: 12 },
+                { key: "credit", header: "Credit", width: 12 },
+                { key: "balance", header: "Balance", width: 12 },
+              ],
+              data: ledgerData.map((entry) => ({
+                ...entry,
+                date: formatDate(entry.tdate),
+                debit: formatCurrency(entry.debit),
+                credit: formatCurrency(entry.credit),
+                balance: formatCurrency(Math.abs(parseFloat(entry.balance))) + (parseFloat(entry.balance) < 0 ? " Dr" : " Cr"),
+              })),
+              totals: {
+                narration: "Totals",
+                debit: formatCurrency(totalDebit),
+                credit: formatCurrency(totalCredit),
+                balance: formatCurrency(Math.abs(currentBalance)),
+              },
+            }}
+          />
         </div>
       </div>
 

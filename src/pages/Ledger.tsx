@@ -7,7 +7,6 @@ import {
   ArrowDownLeft,
   Search,
   Filter,
-  Download,
   Printer,
   Loader2,
   Calendar,
@@ -25,6 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
+import { ExportButtons, formatDate } from "@/components/ExportButtons";
 
 interface LedgerEntry {
   id: number;
@@ -96,14 +96,38 @@ export default function Ledger() {
           Back
         </Button>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => window.print()}>
             <Printer className="w-4 h-4" />
             Print
           </Button>
-          <Button variant="outline" size="sm" className="gap-2">
-            <Download className="w-4 h-4" />
-            Export
-          </Button>
+          <ExportButtons
+            config={{
+              filename: `ledger-${id}-${new Date().toISOString().split('T')[0]}`,
+              title: itemName,
+              subtitle: `${type || 'Inventory'} Ledger - Generated on ${new Date().toLocaleDateString('en-IN')}`,
+              columns: [
+                { key: "date", header: "Date", width: 12 },
+                { key: "reference_no", header: "Reference", width: 15 },
+                { key: "narration", header: "Description", width: 25 },
+                { key: "in", header: "In", width: 12 },
+                { key: "out", header: "Out", width: 12 },
+                { key: "running_amount", header: "Balance", width: 12 },
+              ],
+              data: ledgerData.map((entry) => ({
+                ...entry,
+                date: formatDate(entry.updated_at),
+                in: parseFloat(entry.in || "0") > 0 ? parseFloat(entry.in).toLocaleString() : "-",
+                out: parseFloat(entry.out || "0") > 0 ? parseFloat(entry.out).toLocaleString() : "-",
+                running_amount: parseFloat(entry.running_amount || "0").toLocaleString(),
+              })),
+              totals: {
+                narration: "Totals",
+                in: totalIn.toLocaleString(),
+                out: totalOut.toLocaleString(),
+                running_amount: currentBalance.toLocaleString(),
+              },
+            }}
+          />
         </div>
       </div>
 

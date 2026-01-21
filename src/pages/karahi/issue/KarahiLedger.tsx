@@ -12,12 +12,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft, Search, Filter, TrendingUp, 
-  TrendingDown, Wallet, Loader2 
+  TrendingDown, Wallet, Loader2, Printer
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
 import { useSetPageHeader } from "@/hooks/usePageHeader";
+import { ExportButtons, formatDate, formatCurrency } from "@/components/ExportButtons";
 
 interface LedgerEntry {
   id: number;
@@ -77,10 +78,39 @@ export default function KarahiLedger() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => window.print()}>
+            <Printer className="w-4 h-4" /> Print
+          </Button>
+          <ExportButtons
+            config={{
+              filename: `karahi-ledger-${v}-${p}-${new Date().toISOString().split('T')[0]}`,
+              title: vendorProduct,
+              subtitle: `Karahi Ledger - Generated on ${new Date().toLocaleDateString('en-IN')}`,
+              columns: [
+                { key: "date", header: "Date", width: 12 },
+                { key: "reference", header: "Reference No", width: 15 },
+                { key: "issue", header: "Issue Qty", width: 12 },
+                { key: "amount", header: "Amount", width: 12 },
+              ],
+              data: ledgerData.map((entry) => ({
+                date: entry.tdate,
+                reference: entry.id,
+                issue: parseFloat(entry.issue) > 0 ? parseFloat(entry.issue).toLocaleString() : "-",
+                amount: parseFloat(entry.amount) > 0 ? formatCurrency(entry.amount) : "-",
+              })),
+              totals: {
+                date: "Totals",
+                issue: totalIssued.toLocaleString(),
+                amount: formatCurrency(ledgerData.reduce((sum, e) => sum + parseFloat(e.amount || "0"), 0)),
+              },
+            }}
+          />
+        </div>
       </div>
 
       {/* Summary Cards */}

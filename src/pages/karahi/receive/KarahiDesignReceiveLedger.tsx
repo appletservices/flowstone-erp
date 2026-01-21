@@ -10,11 +10,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, Filter, Loader2 } from "lucide-react";
+import { ArrowLeft, Search, Filter, Loader2, Printer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { FilterDialog } from "@/components/filters/FilterDialog";
 import { useSetPageHeader } from "@/hooks/usePageHeader";
+import { ExportButtons, formatCurrency } from "@/components/ExportButtons";
 
 interface LedgerEntry {
   id: string;
@@ -63,10 +64,43 @@ export default function KarahiDesignReceiveLedger() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => window.print()}>
+            <Printer className="w-4 h-4" /> Print
+          </Button>
+          <ExportButtons
+            config={{
+              filename: `design-receive-ledger-${id}-${new Date().toISOString().split('T')[0]}`,
+              title: `Design Received Ledger #${id}`,
+              subtitle: `Generated on ${new Date().toLocaleDateString('en-IN')}`,
+              columns: [
+                { key: "date", header: "Date", width: 12 },
+                { key: "design", header: "Design", width: 20 },
+                { key: "receiveQty", header: "Receive Qty", width: 12 },
+                { key: "designCost", header: "Design Cost", width: 15 },
+                { key: "materialCost", header: "Material Cost", width: 15 },
+                { key: "totalCost", header: "Total Cost", width: 15 },
+              ],
+              data: ledgerData.map((entry) => ({
+                date: entry.date,
+                design: entry.design,
+                receiveQty: entry.receiveQty.toLocaleString(),
+                designCost: formatCurrency(entry.designCost),
+                materialCost: formatCurrency(entry.materialCost),
+                totalCost: formatCurrency(entry.totalCost),
+              })),
+              totals: {
+                date: "Totals",
+                receiveQty: ledgerData.reduce((sum, e) => sum + e.receiveQty, 0).toLocaleString(),
+                totalCost: formatCurrency(ledgerData.reduce((sum, e) => sum + e.totalCost, 0)),
+              },
+            }}
+          />
+        </div>
       </div>
 
       <div className="bg-card rounded-xl border border-border">
