@@ -2,7 +2,18 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Search, Filter } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Search, Filter, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useBackendSearch } from "@/hooks/useBackendSearch";
+import { FilterDialog } from "@/components/filters/FilterDialog";
 import { useSetPageHeader } from "@/hooks/usePageHeader";
 
 interface LedgerEntry {
@@ -13,26 +24,44 @@ interface LedgerEntry {
   reference: string;
 }
 
-const mockLedgerData: LedgerEntry[] = [
-  { id: "1", date: "2024-01-15", receivedQty: 50, receivedQtyCost: 7500, reference: "REF-001" },
-  { id: "2", date: "2024-01-16", receivedQty: 30, receivedQtyCost: 5400, reference: "REF-002" },
-  { id: "3", date: "2024-01-17", receivedQty: 40, receivedQtyCost: 5400, reference: "REF-003" },
-  { id: "4", date: "2024-01-18", receivedQty: 25, receivedQtyCost: 3750, reference: "REF-004" },
-  { id: "5", date: "2024-01-19", receivedQty: 60, receivedQtyCost: 7200, reference: "REF-005" },
-];
-
 export default function KataeReceiveLedger() {
   const { id } = useParams();
   useSetPageHeader("Katae Receive Ledger", `Ledger for entry #${id}`);
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
-  const filteredData = mockLedgerData.filter(
-    (entry) => entry.reference.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const {
+    data: ledgerData,
+    isLoading,
+    searchQuery,
+    setSearchQuery,
+    dateRange,
+    keyValues,
+    applyFilters,
+    hasActiveFilters,
+    summary,
+    pagination,
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    nextPage,
+    previousPage,
+  } = useBackendSearch<LedgerEntry>({
+    endpoint: `/katae/receive-ledger/${id}`,
+    pageSize: 10,
+  });
 
-  const totalReceivedQty = filteredData.reduce((sum, entry) => sum + entry.receivedQty, 0);
-  const totalReceivedCost = filteredData.reduce((sum, entry) => sum + entry.receivedQtyCost, 0);
+  const totalReceivedQty = summary?.total_received_qty || ledgerData.reduce((sum, entry) => sum + entry.receivedQty, 0);
+  const totalReceivedCost = summary?.total_received_cost || ledgerData.reduce((sum, entry) => sum + entry.receivedQtyCost, 0);
+
+  if (isLoading && ledgerData.length === 0) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -58,6 +87,17 @@ export default function KataeReceiveLedger() {
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold">Ledger Details</h3>
           <div className="flex items-center gap-4">
+            <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+              <SelectTrigger className="w-[100px] h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-card">
+                <SelectItem value="10">10 / page</SelectItem>
+                <SelectItem value="25">25 / page</SelectItem>
+                <SelectItem value="50">50 / page</SelectItem>
+                <SelectItem value="100">100 / page</SelectItem>
+              </SelectContent>
+            </Select>
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -67,9 +107,16 @@ export default function KataeReceiveLedger() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="outline" size="sm" className="gap-2">
+            {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn("gap-2", hasActiveFilters && "border-primary text-primary")}
+              onClick={() => setFilterDialogOpen(true)}
+            >
               <Filter className="w-4 h-4" />
               Filter
+              {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
             </Button>
           </div>
         </div>
@@ -85,7 +132,7 @@ export default function KataeReceiveLedger() {
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((entry) => (
+              {ledgerData.map((entry) => (
                 <tr key={entry.id} className="animate-fade-in">
                   <td>{entry.date}</td>
                   <td className="text-right">{entry.receivedQty.toLocaleString()}</td>
@@ -95,27 +142,57 @@ export default function KataeReceiveLedger() {
                   <td className="font-medium">{entry.reference}</td>
                 </tr>
               ))}
+              {!isLoading && ledgerData.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="text-center py-8 text-muted-foreground">
+                    No entries found
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
 
         <div className="p-4 border-t border-border flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {filteredData.length} of {mockLedgerData.length} entries
+            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, pagination.totalRecords)} of {pagination.totalRecords} results
           </p>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" disabled>
+            <Button variant="outline" size="sm" onClick={previousPage} disabled={currentPage === 1}>
               Previous
             </Button>
-            <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">
-              1
-            </Button>
-            <Button variant="outline" size="sm">
+            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+              let pageNum = pagination.totalPages <= 5 ? i + 1 : (currentPage <= 3 ? i + 1 : (currentPage >= pagination.totalPages - 2 ? pagination.totalPages - 4 + i : currentPage - 2 + i));
+              return (
+                <Button
+                  key={pageNum}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={currentPage === pageNum ? "bg-primary text-primary-foreground" : ""}
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+            <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === pagination.totalPages}>
               Next
             </Button>
           </div>
         </div>
       </div>
+
+      <FilterDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        onApply={applyFilters}
+        showDateRange={true}
+        filterFields={[
+          { key: "reference", label: "Reference", placeholder: "e.g. REF-001" },
+        ]}
+        initialDateRange={dateRange}
+        initialKeyValues={keyValues}
+      />
     </div>
   );
 }
