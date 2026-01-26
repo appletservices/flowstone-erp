@@ -5,13 +5,13 @@ import {
   ArrowDownLeft,
   Calendar,
   Filter,
-  Download,
   Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { ExportButtons, formatDate, formatCurrency } from "@/components/ExportButtons";
 
 interface LedgerEntry {
   id: string;
@@ -150,14 +150,39 @@ export default function InvKLedger() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => window.print()}>
             <Printer className="w-4 h-4" />
             Print
           </Button>
-          <Button variant="outline" size="sm" className="gap-2">
-            <Download className="w-4 h-4" />
-            Export
-          </Button>
+          <ExportButtons
+            config={{
+              filename: `katae-inv-ledger-${type}-${id}-${new Date().toISOString().split('T')[0]}`,
+              title: contact?.name || "Ledger",
+              subtitle: `${contact?.type || "Contact"} Ledger - Generated on ${new Date().toLocaleDateString('en-IN')}`,
+              columns: [
+                { key: "date", header: "Date", width: 12 },
+                { key: "reference", header: "Reference", width: 15 },
+                { key: "description", header: "Description", width: 25 },
+                { key: "debit", header: "Debit", width: 12 },
+                { key: "credit", header: "Credit", width: 12 },
+                { key: "balance", header: "Balance", width: 12 },
+              ],
+              data: mockLedgerEntries.map((entry) => ({
+                date: formatDate(entry.date),
+                reference: entry.reference,
+                description: entry.description,
+                debit: entry.type === "debit" ? formatCurrency(entry.amount) : "-",
+                credit: entry.type === "credit" ? formatCurrency(entry.amount) : "-",
+                balance: formatCurrency(entry.balance),
+              })),
+              totals: {
+                description: "Totals",
+                debit: formatCurrency(totalDebit),
+                credit: formatCurrency(totalCredit),
+                balance: formatCurrency(currentBalance),
+              },
+            }}
+          />
         </div>
       </div>
 
