@@ -411,7 +411,7 @@ export default function Vendors() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-card">
                   <DropdownMenuItem onClick={() => openEditDialog(vendor)}><Pencil className="w-4 h-4 mr-2" /> Edit</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate(`/contacts/ledger/vendor/${vendor.id}`)}><BookOpen className="w-4 h-4 mr-2" /> View Ledger</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate(`/contacts/ledger/${vendor.id}`)}><BookOpen className="w-4 h-4 mr-2" /> View Ledger</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => openDeleteDialog(vendor)} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" /> Delete</DropdownMenuItem>
                 </DropdownMenuContent>
@@ -445,7 +445,7 @@ export default function Vendors() {
 
             <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Code: {vendor.code}</span>
-              <Button variant="ghost" size="sm" className="text-primary h-7 px-2" onClick={() => navigate(`/contacts/ledger/vendor/${vendor.id}`)}>View Ledger</Button>
+              <Button variant="ghost" size="sm" className="text-primary h-7 px-2" onClick={() => navigate(`/contacts/ledger/${vendor.id}`)}>View Ledger</Button>
             </div>
           </div>
         ))}

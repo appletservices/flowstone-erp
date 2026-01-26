@@ -149,6 +149,10 @@ export default function PurchaseReturn() {
               <Filter className="w-4 h-4" />
               Filter
             </Button>
+            <Button className="gap-2" onClick={() => navigate("/purchase-return/new")}>
+              <Plus className="w-4 h-4" />
+              Create  Purchase return
+            </Button>
           </div>
         </div>
 

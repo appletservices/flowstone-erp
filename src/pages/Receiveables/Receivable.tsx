@@ -410,7 +410,7 @@ export default function Receivable() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-card">
                   <DropdownMenuItem onClick={() => openEditDialog(customer)}><Pencil className="w-4 h-4 mr-2" /> Edit</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate(`/contacts/ledger/receiveable/${customer.id}`)}><BookOpen className="w-4 h-4 mr-2" /> View Ledger</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate(`/contacts/ledger/${customer.id}`)}><BookOpen className="w-4 h-4 mr-2" /> View Ledger</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => openDeleteDialog(customer)} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" /> Delete</DropdownMenuItem>
                 </DropdownMenuContent>
@@ -444,7 +444,7 @@ export default function Receivable() {
 
             <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Code: {customer.code}</span>
-              <Button variant="ghost" size="sm" className="text-primary h-7 px-2" onClick={() => navigate(`/contacts/ledger/receiveable/${customer.id}`)}>View Ledger</Button>
+              <Button variant="ghost" size="sm" className="text-primary h-7 px-2" onClick={() => navigate(`/contacts/ledger/${customer.id}`)}>View Ledger</Button>
             </div>
           </div>
         ))}

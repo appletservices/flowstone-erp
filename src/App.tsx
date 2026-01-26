@@ -30,10 +30,10 @@ import Machines from "@/pages/setup/Machines";
 import ExpenseCategories from "@/pages/setup/ExpenseCategories";
 import Receivable from "@/pages/Receiveables/Receivable";
 import ContactVendors from "@/pages/vendors/Vendors";
-import Others from "@/pages/Others";
+import Others from "@/pages/others/Others";
 import Ledger from "@/pages/Ledger";
 import VLedger from "@/pages/vendors/VLedger";
-import RcLedger from "@/pages/Receiveables/RcLedger";
+import OtherLedger from "@/pages/others/OtherLedger";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 import RoleManagement from "@/pages/setting/RoleManagement";
@@ -52,8 +52,13 @@ import PurchaseReturnDetail from "@/pages/purchase/PurchaseReturnDetail";
 import PurchaseReport from "@/pages/reports/PurchaseReport";
 import PaymentReport from "@/pages/reports/PaymentReport";
 import AccountLedger from "@/pages/reports/AccountLedger";
-import KataeIssueReport from "@/pages/KataeIssueReport";
-import KataeReceiveReport from "@/pages/KataeReceiveReport";
+import AccountReport from "@/pages/reports/AccountReport";
+import KataeIssueReport from "@/pages/reports/katae/KataeIssueReport";
+import KataeReceiveReport from "@/pages/reports/katae/KataeReceiveReport";
+
+import KarahissueReport from "@/pages/reports/karahi/KarahissueReport";
+import KarahiReceiveReport from "@/pages/reports/karahi/KarahiReceiveReport";
+import DesignReceiveReport from "@/pages/reports/karahi/DesignReceiveReport";
 
 
 import KarahiList from "@/pages/karahi/issue/KarahiList";
@@ -123,8 +128,8 @@ const App = () => (
                   <Route path="/contact/vendors" element={<PermissionGuard permissionId="contact_vendors"><ContactVendors /></PermissionGuard>} />
                   <Route path="/contact/others" element={<PermissionGuard permissionId="contact_others"><Others /></PermissionGuard>} />
                   <Route path="/ledger/inventory/:id" element={<Ledger />} />
-                  <Route path="/contacts/ledger/vendor/:id" element={<VLedger />} />
-                  <Route path="/contacts/ledger/receiveable/:id" element={<RcLedger />} />
+                  <Route path="/contacts/ledger/:id" element={<VLedger />} />
+                  <Route path="/other/ledger/:id" element={<OtherLedger />} />
                   
                   <Route path="/katae/issue/list" element={<PermissionGuard permissionId="katae_issued"><IssuedKatae /></PermissionGuard>} />
                   <Route path="/katae/issue-material" element={<PermissionGuard permissionId="katae_issued"><KataeIssuedMaterial /></PermissionGuard>} />
@@ -154,9 +159,15 @@ const App = () => (
 
                   <Route path="/reports/purchase" element={<PermissionGuard permissionId="report_purchase"><PurchaseReport /></PermissionGuard>} />
                   <Route path="/reports/payment" element={<PermissionGuard permissionId="report_payment" ><PaymentReport /></PermissionGuard>} />
-                  <Route path="/account/report" element={<PermissionGuard ><AccountLedger /></PermissionGuard>} />
+                  <Route path="/account/ledger/:id" element={<PermissionGuard ><AccountLedger /></PermissionGuard>} />
+                  <Route path="/account/report" element={<PermissionGuard ><AccountReport /></PermissionGuard>} />
+
                   <Route path="/reports/katae/issue" element={<PermissionGuard permissionId="report_katae_issue"><KataeIssueReport /></PermissionGuard>}/>
                   <Route path="/reports/katae/receive" element={<PermissionGuard permissionId="report_katae_receive"><KataeReceiveReport /></PermissionGuard>} />
+
+                  <Route path="/reports/karahi/issue" element={<PermissionGuard permissionId="report_karahi_issue"><KarahissueReport/></PermissionGuard>}/>
+                  <Route path="/reports/karahi/receive" element={<PermissionGuard permissionId="report_karahi_receive"><KarahiReceiveReport /></PermissionGuard>} />
+                   <Route path="/reports/karahi/receive-design" element={<PermissionGuard permissionId="report_karahi_receive"><DesignReceiveReport /></PermissionGuard>} />
 
                   
 

@@ -246,12 +246,12 @@ export default function DesignInventory() {
     try {
       const token = localStorage.getItem("auth_token");
       const response = await fetch(`${url_}/inventory/design/delete`, {
-        method: "POST",
+        method: "delete",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id:id }),
       });
 
       if (response.ok) {

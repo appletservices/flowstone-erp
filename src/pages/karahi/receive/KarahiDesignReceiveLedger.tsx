@@ -32,6 +32,12 @@ export default function KarahiDesignReceiveLedger() {
   const navigate = useNavigate();
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
+  const formatNumber = (value: number | string) => {
+  const num = Number(value);
+  return num.toFixed(5).replace(/\.?0+$/, "");
+  };
+
+
   const {
     data: ledgerData,
     isLoading,
@@ -49,7 +55,7 @@ export default function KarahiDesignReceiveLedger() {
     nextPage,
     previousPage,
   } = useBackendSearch<LedgerEntry>({
-    endpoint: `/karahi/design-receive-ledger/${id}`,
+    endpoint: `/karahi/receive/design-ledger/${id}`,
     pageSize: 10,
   });
 
@@ -124,12 +130,22 @@ export default function KarahiDesignReceiveLedger() {
                 <tr key={entry.id} className="animate-fade-in">
                   <td>{entry.date}</td>
                   <td className="font-medium">{entry.design}</td>
-                  <td className="text-right">{entry.receiveQty}</td>
-                  <td className="text-right">Rs. {entry.designCost.toLocaleString()}</td>
-                  <td className="text-right">Rs. {entry.materialCost.toLocaleString()}</td>
-                  <td className="text-right font-medium text-success">
-                    Rs. {entry.totalCost.toLocaleString()}
+                  <td className="text-right">
+                    Rs. {formatNumber(entry.receiveQty)}
                   </td>
+
+                  <td className="text-right">
+                    Rs. {formatNumber(entry.designCost)}
+                  </td>
+
+                  <td className="text-right">
+                    Rs. {formatNumber(entry.materialCost)}
+                  </td>
+
+                  <td className="text-right font-medium text-success">
+                    Rs. {formatNumber(entry.totalCost)}
+                  </td>
+
                 </tr>
               ))}
               {!isLoading && ledgerData.length === 0 && (

@@ -166,6 +166,7 @@ export default function KarahiLedger() {
                 <th>Date</th>
                 <th>Reference No</th>
                 <th className="text-right">Issue Qty</th>
+                <th className="text-right">Received Qty</th>
                 <th className="text-right">Amount</th>
                 <th className="text-center">Action</th>
               </tr>
@@ -177,6 +178,9 @@ export default function KarahiLedger() {
                   <td className="font-mono text-sm">{entry.id}</td>
                   <td className="text-right">
                     {parseFloat(entry.issue) > 0 ? parseFloat(entry.issue).toLocaleString() : "-"}
+                  </td>
+                   <td className="text-right">
+                    {parseFloat(entry.received) > 0 ? parseFloat(entry.received).toLocaleString() : "-"}
                   </td>
                   <td className="text-right">
                     {parseFloat(entry.amount) > 0 ? `₹${parseFloat(entry.amount).toLocaleString()}` : "-"}

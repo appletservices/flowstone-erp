@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSetPageHeader } from "@/hooks/usePageHeader";
 import {
   Search,
@@ -85,6 +86,7 @@ const colorPalette = [
 ];
 
 export default function Others() {
+  const navigate = useNavigate();
   useSetPageHeader("Other Contacts", "Manage business contacts and accounts");
   const [apiData, setApiData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -454,7 +456,7 @@ export default function Others() {
                           <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="w-4 h-4" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>View Ledger</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/other/ledger/${contact.id}`)}>View Ledger</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleOpenEdit(contact)}>Edit Contact</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

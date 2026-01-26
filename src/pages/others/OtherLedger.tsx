@@ -39,7 +39,7 @@ interface ContactInfo {
   type: string;
 }
 
-export default function RcLedger() {
+export default function OtherLedger() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -57,7 +57,7 @@ export default function RcLedger() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("auth_token");
-      const url = new URL(`${import.meta.env.VITE_API_URL}/contacts/receiveables/ledger/${id}`);
+      const url = new URL(`${import.meta.env.VITE_API_URL}/contacts/others/ledger/${id}`);
       
       if (searchQuery) url.searchParams.append("search", searchQuery);
       if (dateRange.from) url.searchParams.append("from_date", format(dateRange.from, "yyyy-MM-dd"));
@@ -235,7 +235,7 @@ export default function RcLedger() {
                   </td>
                   <td className="p-4">
                     <button
-                      onClick={() => entry.record && window.open(entry.record, '_blank')}
+                     onClick={() => navigate(`/other/ledger/${entry.record}`)}
                       className={cn(
                         "font-mono text-xs uppercase transition-colors",
                         entry.record 

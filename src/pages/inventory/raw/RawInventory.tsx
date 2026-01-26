@@ -197,8 +197,8 @@ export default function RawInventory() {
 
     try {
       const token = localStorage.getItem("auth_token");
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/raw/delete`, {
-        method: "POST",
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/delete`, {
+        method: "delete",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
