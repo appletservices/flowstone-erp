@@ -183,11 +183,11 @@ const App = () => (
                     <Route path="/reports/karahi/receive" element={<PermissionGuard permissionId="report_karahi_receive"><KarahiReceiveReport /></PermissionGuard>} />
                     <Route path="/reports/karahi/receive-design" element={<PermissionGuard permissionId="report_karahi_receive"><DesignReceiveReport /></PermissionGuard>} />
 
-                    {/* Production Routes */}
-                    <Route path="/production/collective" element={<PermissionGuard permissionId="production_collective"><ProductionCollective /></PermissionGuard>} />
-                    <Route path="/production/issue" element={<PermissionGuard permissionId="production_issue"><ProductionIssue /></PermissionGuard>} />
-                    <Route path="/production/receive" element={<PermissionGuard permissionId="production_receive"><ProductionReceive /></PermissionGuard>} />
-                    <Route path="/production/opening" element={<PermissionGuard permissionId="production_opening"><ProductionOpening /></PermissionGuard>} />
+                    {/* Production Routes - No permission guard */}
+                    <Route path="/production/collective" element={<ProductionCollective />} />
+                    <Route path="/production/issue" element={<ProductionIssue />} />
+                    <Route path="/production/receive" element={<ProductionReceive />} />
+                    <Route path="/production/opening" element={<ProductionOpening />} />
 
                   </Route>
 
