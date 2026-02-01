@@ -77,13 +77,13 @@ const menuItems: MenuItem[] = [
     ],
   },
 
-  
+
 
   {
     label: "Katae",
     icon: Factory,
     children: [
-      { label: "Issued", path: "/katae/issue/list", icon: Send,permissionId: "katae_issued"},
+      { label: "Issued", path: "/katae/issue/list", icon: Send, permissionId: "katae_issued" },
       { label: "Receive", path: "/katae/receive", icon: RotateCcw },
     ],
   },
@@ -109,13 +109,22 @@ const menuItems: MenuItem[] = [
   },
   { label: "Purchase", icon: ShoppingCart, path: "/inventory/purchase", permissionId: "purchase" },
   { label: "Purchase Return", icon: RotateCcw, path: "/purchase-return", permissionId: "purchase_return" },
-  { label: "Sales", icon: Receipt, path: "/sales", permissionId: "sales" },
+  {
+    label: "Sales",
+    icon: Receipt,
+    children: [
+      { label: "Sales", path: "/sales", icon: Receipt, permissionId: "sales" },
+      { label: "Return Sales ", path: "/sales/return", icon: RotateCcw, permissionId: "sales" },
+
+    ],
+  },
+
   {
     label: "Reports",
     icon: FileBarChart,
     children: [
       { label: "Purchase Report", path: "/reports/purchase", icon: FileText, permissionId: "report_purchase" },
-      { label: "Payment Report", path: "/reports/payment", icon: CreditCard ,permissionId: "report_payment" },
+      { label: "Payment Report", path: "/reports/payment", icon: CreditCard, permissionId: "report_payment" },
       { label: "Account Report", path: "/account/report", icon: CreditCard },
 
       { label: "Katae Issue Report", path: "/reports/katae/issue", icon: Send, permissionId: "report_katae_issue" },
