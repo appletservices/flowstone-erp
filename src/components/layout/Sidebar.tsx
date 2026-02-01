@@ -33,7 +33,11 @@ import {
   FileText,
   Flame,
   List,
-  CreditCard
+  CreditCard,
+  Hammer,
+  Layers3,
+  ArrowDownToLine,
+  FolderInput
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRoles } from "@/hooks/useRoles";
@@ -74,6 +78,16 @@ const menuItems: MenuItem[] = [
       { label: "Design Inventory", path: "/inventory/design", icon: Palette, permissionId: "inventory_design" },
       { label: "Katae Product", path: "/inventory/katae", icon: Scissors, permissionId: "inventory_katae" },
       { label: "Finished Product", path: "/inventory/finish", icon: PackageCheck, permissionId: "inventory_finished" },
+    ],
+  },
+  {
+    label: "Production",
+    icon: Hammer,
+    children: [
+      { label: "Collective", path: "/production/collective", icon: Layers3, permissionId: "production_collective" },
+      { label: "Issue", path: "/production/issue", icon: Send, permissionId: "production_issue" },
+      { label: "Receive", path: "/production/receive", icon: ArrowDownToLine, permissionId: "production_receive" },
+      { label: "Opening", path: "/production/opening", icon: FolderInput, permissionId: "production_opening" },
     ],
   },
 
@@ -160,6 +174,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     "Katae",
     "Karahi",
     "Reports",
+    "Production",
   ]);
 
   const toggleExpand = (label: string) => {
