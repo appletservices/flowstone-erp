@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { PageHeaderProvider } from "@/hooks/usePageHeader";
 
 export function AppLayout() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   return (
     <PageHeaderProvider>

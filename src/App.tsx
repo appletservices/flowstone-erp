@@ -73,6 +73,7 @@ import KarahiDesignReceive from "@/pages/karahi/receive/KarahiDesignReceive";
 import KarahiDesignReceiveLedger from "@/pages/karahi/receive/KarahiDesignReceiveLedger";
 import KarahiDesignReceiveForm from "@/pages/karahi/receive/KarahiDesignReceiveForm";
 
+<<<<<<< HEAD
 import PaymentVoucher from "@/pages/finance/PaymentVoucher";
 import PaymentVoucherForm from "@/pages/finance/PaymentVoucherForm";
 import ReceiptVoucher from "@/pages/finance/ReceiptVoucher";
@@ -81,6 +82,12 @@ import VpVoucher from "@/pages/finance/VpVoucher";
 import VpVoucherForm from "@/pages/finance/VpVoucherForm";
 import JournalVoucher from "@/pages/finance/JournalVoucher";
 import PostDatedCheck from "@/pages/finance/PostDatedCheck";
+=======
+import ProductionCollective from "@/pages/production/ProductionCollective";
+import ProductionIssue from "@/pages/production/ProductionIssue";
+import ProductionReceive from "@/pages/production/ProductionReceive";
+import ProductionOpening from "@/pages/production/ProductionOpening";
+>>>>>>> 0d401213c5f791d22868dca3d5b639975bfd602b
 
 
 const queryClient = new QueryClient();
@@ -195,7 +202,11 @@ const App = () => (
                     <Route path="/reports/karahi/receive" element={<PermissionGuard permissionId="report_karahi_receive"><KarahiReceiveReport /></PermissionGuard>} />
                     <Route path="/reports/karahi/receive-design" element={<PermissionGuard permissionId="report_karahi_receive"><DesignReceiveReport /></PermissionGuard>} />
 
-
+                    {/* Production Routes - No permission guard */}
+                    <Route path="/production/collective" element={<ProductionCollective />} />
+                    <Route path="/production/issue" element={<ProductionIssue />} />
+                    <Route path="/production/receive" element={<ProductionReceive />} />
+                    <Route path="/production/opening" element={<ProductionOpening />} />
 
                   </Route>
 
