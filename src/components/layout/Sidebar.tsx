@@ -34,16 +34,13 @@ import {
   Flame,
   List,
   CreditCard,
-<<<<<<< HEAD
   Wallet,
   FileCheck,
   Calendar,
-=======
   Hammer,
   Layers3,
   ArrowDownToLine,
   FolderInput
->>>>>>> 0d401213c5f791d22868dca3d5b639975bfd602b
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRoles } from "@/hooks/useRoles";
