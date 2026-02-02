@@ -1,10 +1,12 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, ChevronRight, Search, Loader2 } from "lucide-react";
+import { Plus, ChevronRight, Search, Loader2, Filter } from "lucide-react";
 import { usePageHeader } from "@/hooks/usePageHeader";
 import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -12,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FilterDialog } from "@/components/filters/FilterDialog";
 
 interface ReceiveRecord {
   id: number;
@@ -29,6 +32,7 @@ interface ReceiveRecord {
 export default function ProductionReceive() {
   const navigate = useNavigate();
   const { setHeaderInfo } = usePageHeader();
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
   useEffect(() => {
     setHeaderInfo({ title: "Production Receive", subtitle: "View and manage production receive records" });
@@ -39,6 +43,10 @@ export default function ProductionReceive() {
     isLoading,
     searchQuery,
     setSearchQuery,
+    dateRange,
+    keyValues,
+    applyFilters,
+    hasActiveFilters,
     pagination,
     currentPage,
     setCurrentPage,
@@ -86,6 +94,16 @@ export default function ProductionReceive() {
               />
             </div>
             {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn("gap-2", hasActiveFilters && "border-primary text-primary")}
+              onClick={() => setFilterDialogOpen(true)}
+            >
+              <Filter className="w-4 h-4" />
+              Filter
+              {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
+            </Button>
             <Button className="gap-2" onClick={() => navigate("/production/receive/new")}>
               <Plus className="w-4 h-4" />
               Create
@@ -169,6 +187,19 @@ export default function ProductionReceive() {
           </div>
         </div>
       </div>
+
+      <FilterDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        onApply={applyFilters}
+        showDateRange={true}
+        filterFields={[
+          { key: "karigar", label: "Karigar", placeholder: "e.g. Worker name" },
+          { key: "product", label: "Product", placeholder: "e.g. Product name" },
+        ]}
+        initialDateRange={dateRange}
+        initialKeyValues={keyValues}
+      />
     </div>
   );
 }
