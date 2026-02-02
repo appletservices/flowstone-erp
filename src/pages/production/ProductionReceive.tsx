@@ -1,18 +1,10 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, ChevronRight } from "lucide-react";
+import { Plus, ChevronRight, Search, Loader2 } from "lucide-react";
 import { usePageHeader } from "@/hooks/usePageHeader";
 import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -20,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface ReceiveRecord {
   id: number;
@@ -60,108 +51,122 @@ export default function ProductionReceive() {
     pageSize: 10,
   });
 
-  return (
-    <div className="space-y-4">
-      {/* Table Header */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex flex-1 gap-2 w-full sm:w-auto">
-          <Input
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-xs"
-          />
-        </div>
-        <Button onClick={() => navigate("/production/receive/new")}>
-          <Plus className="w-4 h-4 mr-2" />
-          Create
-        </Button>
+  if (isLoading && data.length === 0) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
+    );
+  }
 
-      {/* Table */}
-      <div className="border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Reference No</TableHead>
-              <TableHead>Karigar</TableHead>
-              <TableHead>Product</TableHead>
-              <TableHead className="text-right">Issued</TableHead>
-              <TableHead className="text-right">Received</TableHead>
-              <TableHead className="text-right">Remaining</TableHead>
-              <TableHead className="text-right">L.Charges</TableHead>
-              <TableHead className="text-right">Final Cost</TableHead>
-              <TableHead className="text-right"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  {Array.from({ length: 10 }).map((_, j) => (
-                    <TableCell key={j}>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : data.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
-                  No records found
-                </TableCell>
-              </TableRow>
-            ) : (
-              data.map((record) => (
-                <TableRow key={record.id} className="cursor-pointer hover:bg-muted/50">
-                  <TableCell>{record.date}</TableCell>
-                  <TableCell>{record.reference_no}</TableCell>
-                  <TableCell>{record.karigar}</TableCell>
-                  <TableCell>{record.product}</TableCell>
-                  <TableCell className="text-right">{record.issued}</TableCell>
-                  <TableCell className="text-right">{record.received}</TableCell>
-                  <TableCell className="text-right">{record.remaining}</TableCell>
-                  <TableCell className="text-right">{record.lcharges}</TableCell>
-                  <TableCell className="text-right">{record.final_cost}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => navigate(`/production/receive/${record.id}`)}>
+  return (
+    <div className="space-y-6">
+      <div className="bg-card rounded-xl border border-border">
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          <h3 className="font-semibold">All Records</h3>
+          <div className="flex items-center gap-4">
+            <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+              <SelectTrigger className="w-[100px] h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-card">
+                <SelectItem value="10">10 / page</SelectItem>
+                <SelectItem value="25">25 / page</SelectItem>
+                <SelectItem value="50">50 / page</SelectItem>
+                <SelectItem value="100">100 / page</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search records..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+            <Button className="gap-2" onClick={() => navigate("/production/receive/new")}>
+              <Plus className="w-4 h-4" />
+              Create
+            </Button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Reference No</th>
+                <th>Karigar</th>
+                <th>Product</th>
+                <th className="text-right">Issued</th>
+                <th className="text-right">Received</th>
+                <th className="text-right">Remaining</th>
+                <th className="text-right">L.Charges</th>
+                <th className="text-right">Final Cost</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((record) => (
+                <tr 
+                  key={record.id} 
+                  className="animate-fade-in cursor-pointer hover:bg-muted/50"
+                  onClick={() => navigate(`/production/receive/${record.id}`)}
+                >
+                  <td>{record.date}</td>
+                  <td className="font-medium">{record.reference_no}</td>
+                  <td>{record.karigar}</td>
+                  <td>{record.product}</td>
+                  <td className="text-right">{record.issued}</td>
+                  <td className="text-right">{record.received}</td>
+                  <td className="text-right">{record.remaining}</td>
+                  <td className="text-right">{record.lcharges}</td>
+                  <td className="text-right font-medium text-success">₹{record.final_cost?.toLocaleString()}</td>
+                  <td>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
                       <ChevronRight className="w-4 h-4" />
                     </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Rows per page:</span>
-          <Select value={pageSize.toString()} onValueChange={(v) => setPageSize(Number(v))}>
-            <SelectTrigger className="w-[70px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="25">25</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
+                  </td>
+                </tr>
+              ))}
+              {!isLoading && data.length === 0 && (
+                <tr>
+                  <td colSpan={10} className="p-8 text-center text-muted-foreground">No records found</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            Page {currentPage} of {pagination.totalPages}
-          </span>
-          <Button variant="outline" size="sm" onClick={previousPage} disabled={currentPage <= 1}>
-            Previous
-          </Button>
-          <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage >= pagination.totalPages}>
-            Next
-          </Button>
+
+        <div className="p-4 border-t border-border flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, pagination.totalRecords)} of {pagination.totalRecords} results
+          </p>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={previousPage} disabled={currentPage === 1}>
+              Previous
+            </Button>
+            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+              let pageNum = pagination.totalPages <= 5 ? i + 1 : (currentPage <= 3 ? i + 1 : (currentPage >= pagination.totalPages - 2 ? pagination.totalPages - 4 + i : currentPage - 2 + i));
+              return (
+                <Button
+                  key={pageNum}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={currentPage === pageNum ? "bg-primary text-primary-foreground" : ""}
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+            <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === pagination.totalPages}>
+              Next
+            </Button>
+          </div>
         </div>
       </div>
     </div>
