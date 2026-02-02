@@ -84,10 +84,10 @@ const menuItems: MenuItem[] = [
     label: "Production",
     icon: Hammer,
     children: [
-      { label: "Collective", path: "/production/collective", icon: Layers3, permissionId: "production_collective" },
-      { label: "Issue", path: "/production/issue", icon: Send, permissionId: "production_issue" },
-      { label: "Receive", path: "/production/receive", icon: ArrowDownToLine, permissionId: "production_receive" },
-      { label: "Opening", path: "/production/opening", icon: FolderInput, permissionId: "production_opening" },
+      { label: "Collective", path: "/production/collective", icon: Layers3 },
+      { label: "Issue", path: "/production/issue", icon: Send },
+      { label: "Receive", path: "/production/receive", icon: ArrowDownToLine },
+      { label: "Opening", path: "/production/opening", icon: FolderInput },
     ],
   },
 
