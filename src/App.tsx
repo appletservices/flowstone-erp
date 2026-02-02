@@ -73,6 +73,15 @@ import KarahiDesignReceive from "@/pages/karahi/receive/KarahiDesignReceive";
 import KarahiDesignReceiveLedger from "@/pages/karahi/receive/KarahiDesignReceiveLedger";
 import KarahiDesignReceiveForm from "@/pages/karahi/receive/KarahiDesignReceiveForm";
 
+import PaymentVoucher from "@/pages/finance/PaymentVoucher";
+import PaymentVoucherForm from "@/pages/finance/PaymentVoucherForm";
+import ReceiptVoucher from "@/pages/finance/ReceiptVoucher";
+import ReceiptVoucherForm from "@/pages/finance/ReceiptVoucherForm";
+import VpVoucher from "@/pages/finance/VpVoucher";
+import VpVoucherForm from "@/pages/finance/VpVoucherForm";
+import JournalVoucher from "@/pages/finance/JournalVoucher";
+import PostDatedCheck from "@/pages/finance/PostDatedCheck";
+
 
 const queryClient = new QueryClient();
 
@@ -165,6 +174,14 @@ const App = () => (
 
                     <Route path="/karahi/design-receive-ledger/:id" element={<PermissionGuard><KarahiDesignReceiveLedger /></PermissionGuard>} />
 
+                    <Route path="/finance/payment-voucher" element={<PaymentVoucher />} />
+                    <Route path="/finance/payment-voucher/new" element={<PaymentVoucherForm />} />
+                    <Route path="/finance/receipt-voucher" element={<ReceiptVoucher />} />
+                    <Route path="/finance/receipt-voucher/new" element={<ReceiptVoucherForm />} />
+                    <Route path="/finance/vp-voucher" element={<VpVoucher />} />
+                    <Route path="/finance/vp-voucher/new" element={<VpVoucherForm />} />
+                    <Route path="/finance/journal-voucher" element={<JournalVoucher />} />
+                    <Route path="/finance/post-dated-check" element={<PostDatedCheck />} />
 
                     <Route path="/reports/purchase" element={<PermissionGuard permissionId="report_purchase"><PurchaseReport /></PermissionGuard>} />
                     <Route path="/reports/payment" element={<PermissionGuard permissionId="report_payment" ><PaymentReport /></PermissionGuard>} />

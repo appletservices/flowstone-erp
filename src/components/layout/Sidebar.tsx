@@ -33,7 +33,10 @@ import {
   FileText,
   Flame,
   List,
-  CreditCard
+  CreditCard,
+  Wallet,
+  FileCheck,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRoles } from "@/hooks/useRoles";
@@ -63,6 +66,17 @@ const menuItems: MenuItem[] = [
       { label: "Receivable", path: "/contact/receivable", icon: Users, permissionId: "contact_receivable" },
       { label: "Vendors", path: "/contact/vendors", icon: Truck, permissionId: "contact_vendors" },
       { label: "Others", path: "/contact/others", icon: Package, permissionId: "contact_others" },
+    ],
+  },
+  {
+    label: "Finance",
+    icon: Wallet,
+    children: [
+      { label: "Payment Voucher", path: "/finance/payment-voucher", icon: CreditCard },
+      { label: "Receipt Voucher", path: "/finance/receipt-voucher", icon: Receipt },
+      { label: "VP Voucher", path: "/finance/vp-voucher", icon: FileCheck },
+      { label: "Journal Voucher", path: "/finance/journal-voucher", icon: BookOpen },
+      { label: "Post-Dated Check", path: "/finance/post-dated-check", icon: Calendar },
     ],
   },
   {
