@@ -10,7 +10,13 @@ node_modules
 dist
 dist-ssr
 *.local
-
+package-lock.json
+package.json
+yarn.lock
+pnpm-lock.yaml
+commitlint.config.js
+vite.config.ts
+vite.config.ts
 # Editor directories and files  sdfdf
 .vscode/*
 !.vscode/extensions.json
