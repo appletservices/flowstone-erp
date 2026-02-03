@@ -82,6 +82,7 @@ import VpVoucherForm from "@/pages/finance/VpVoucherForm";
 import JournalVoucher from "@/pages/finance/JournalVoucher";
 import PostDatedCheck from "@/pages/finance/PostDatedCheck";
 import ProductionCollective from "@/pages/production/ProductionCollective";
+import ProductionCollectiveForm from "@/pages/production/ProductionCollectiveForm";
 import ProductionIssue from "@/pages/production/ProductionIssue";
 import ProductionReceive from "@/pages/production/ProductionReceive";
 import ProductionOpening from "@/pages/production/ProductionOpening";
@@ -201,6 +202,7 @@ const App = () => (
 
                     {/* Production Routes - No permission guard */}
                     <Route path="/production/collective" element={<ProductionCollective />} />
+                    <Route path="/production/collective/new" element={<ProductionCollectiveForm />} />
                     <Route path="/production/issue" element={<ProductionIssue />} />
                     <Route path="/production/receive" element={<ProductionReceive />} />
                     <Route path="/production/opening" element={<ProductionOpening />} />
