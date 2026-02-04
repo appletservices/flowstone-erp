@@ -278,12 +278,28 @@ export default function ProductionCollectiveForm() {
                 </TableHeader>
                 <TableBody>
                   {materials.length > 0 ? (
-                    materials.map((item) => (
+                    materials.map((item, index) => (
                       <TableRow key={item.material_id}>
                         <TableCell className="font-medium">{item.material}</TableCell>
                         <TableCell className="text-right">{item.required}</TableCell>
                         <TableCell className="text-right">{item.available.toLocaleString()}</TableCell>
-                        <TableCell className="text-right">{item.issue}</TableCell>
+                        <TableCell className="text-right">
+                          <Input
+                            type="number"
+                            className="w-20 text-right ml-auto"
+                            value={item.issue}
+                            onChange={(e) => {
+                              const newIssue = Number(e.target.value) || 0;
+                              setMaterials((prev) =>
+                                prev.map((m, i) =>
+                                  i === index
+                                    ? { ...m, issue: newIssue, perunitCost: newIssue * m.per_unit }
+                                    : m
+                                )
+                              );
+                            }}
+                          />
+                        </TableCell>
                         <TableCell className="text-right">
                           ₹{item.perunitCost.toFixed(2)}
                         </TableCell>
