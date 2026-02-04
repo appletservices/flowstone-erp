@@ -260,8 +260,9 @@ export default function ProductionCollectiveForm() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Issue Calculator</CardTitle>
             {materials.length > 0 && (
-              <div className="text-sm font-medium">
-                Total Cost: <span className="text-primary">₹{totalCost.toFixed(2)}</span>
+              <div className="text-sm font-medium flex gap-4">
+                <span>Total Cost: <span className="text-primary">₹{totalCost.toFixed(2)}</span></span>
+                <span>Per Piece: <span className="text-primary">₹{(Number(formData.quantity) > 0 ? totalCost / Number(formData.quantity) : 0).toFixed(2)}</span></span>
               </div>
             )}
           </CardHeader>
@@ -285,21 +286,26 @@ export default function ProductionCollectiveForm() {
                         <TableCell className="text-right">{item.required}</TableCell>
                         <TableCell className="text-right">{item.available.toLocaleString()}</TableCell>
                         <TableCell className="text-right">
-                          <Input
-                            type="number"
-                            className="w-20 text-right ml-auto"
-                            value={item.issue}
-                            onChange={(e) => {
-                              const newIssue = Number(e.target.value) || 0;
-                              setMaterials((prev) =>
-                                prev.map((m, i) =>
-                                  i === index
-                                    ? { ...m, issue: newIssue, perunitCost: newIssue * m.per_unit }
-                                    : m
-                                )
-                              );
-                            }}
-                          />
+                          <div className="flex flex-col items-end">
+                            <Input
+                              type="number"
+                              className={`w-20 text-right ${item.issue > item.available ? 'border-destructive' : ''}`}
+                              value={item.issue}
+                              onChange={(e) => {
+                                const newIssue = Number(e.target.value) || 0;
+                                setMaterials((prev) =>
+                                  prev.map((m, i) =>
+                                    i === index
+                                      ? { ...m, issue: newIssue, perunitCost: newIssue * m.per_unit }
+                                      : m
+                                  )
+                                );
+                              }}
+                            />
+                            {item.issue > item.available && (
+                              <span className="text-xs text-destructive mt-1">Exceeds available</span>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="text-right">
                           ₹{item.perunitCost.toFixed(2)}
