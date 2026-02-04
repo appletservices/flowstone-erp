@@ -61,7 +61,7 @@ export default function ProductionCollectiveForm() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [materials, setMaterials] = useState<MaterialItem[]>([]);
-  
+
   const [formData, setFormData] = useState<FormData>({
     date: new Date().toISOString().split("T")[0],
     vendor_id: "",
@@ -72,9 +72,9 @@ export default function ProductionCollectiveForm() {
   });
 
   useEffect(() => {
-    setHeaderInfo({ 
-      title: "Create Production", 
-      subtitle: "Add new production collective record" 
+    setHeaderInfo({
+      title: "Create Production",
+      subtitle: "Add new production collective record"
     });
   }, [setHeaderInfo]);
 
@@ -90,13 +90,14 @@ export default function ProductionCollectiveForm() {
 
     setIsCalculating(true);
     try {
+      const token = localStorage.getItem("auth_token");
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/production/calculate`,
+        `${import.meta.env.VITE_API_URL}/production/issue/calculate`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             date: formData.date,
@@ -110,7 +111,7 @@ export default function ProductionCollectiveForm() {
       );
 
       const result = await response.json();
-      
+
       if (result.success && result.data) {
         setMaterials(result.data);
         toast.success("Calculation completed");
@@ -149,9 +150,9 @@ export default function ProductionCollectiveForm() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => navigate("/production/collective")}
         >
           <ArrowLeft className="w-5 h-5" />
@@ -238,8 +239,8 @@ export default function ProductionCollectiveForm() {
             </div>
 
             <div className="pt-4">
-              <Button 
-                onClick={handleCalculate} 
+              <Button
+                onClick={handleCalculate}
                 disabled={isCalculating}
                 className="w-full gap-2"
               >
@@ -291,8 +292,8 @@ export default function ProductionCollectiveForm() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell 
-                        colSpan={5} 
+                      <TableCell
+                        colSpan={5}
                         className="h-32 text-center text-muted-foreground"
                       >
                         Click "Calculate" to view material requirements
@@ -305,8 +306,8 @@ export default function ProductionCollectiveForm() {
 
             {materials.length > 0 && (
               <div className="pt-4">
-                <Button 
-                  onClick={handleSave} 
+                <Button
+                  onClick={handleSave}
                   disabled={isSaving}
                   className="w-full gap-2"
                 >
