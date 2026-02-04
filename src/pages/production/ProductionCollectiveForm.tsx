@@ -36,18 +36,12 @@ interface FormData {
   labour_charges: string;
 }
 
-// Mock options - replace with actual API calls
-const vendorOptions = [
-  { value: "1", label: "Vendor A" },
-  { value: "2", label: "Vendor B" },
-  { value: "3", label: "Vendor C" },
-];
+const url_ = new URL(`${import.meta.env.VITE_API_URL}`);
 
-const customerReferenceOptions = [
-  { value: "1", label: "Customer Ref 001" },
-  { value: "2", label: "Customer Ref 002" },
-  { value: "3", label: "Customer Ref 003" },
-];
+interface DropdownItem {
+  id: number | string;
+  name: string;
+}
 
 const productOptions = [
   { value: "1", label: "Product A" },
@@ -61,6 +55,10 @@ export default function ProductionCollectiveForm() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [materials, setMaterials] = useState<MaterialItem[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  
+  const [vendors, setVendors] = useState<DropdownItem[]>([]);
+  const [customers, setCustomers] = useState<DropdownItem[]>([]);
   
   const [formData, setFormData] = useState<FormData>({
     date: new Date().toISOString().split("T")[0],
@@ -77,6 +75,37 @@ export default function ProductionCollectiveForm() {
       subtitle: "Add new production collective record" 
     });
   }, [setHeaderInfo]);
+
+  // Fetch Vendors and Customers on Mount
+  useEffect(() => {
+    const fetchData = async () => {
+      const token = localStorage.getItem("auth_token");
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
+
+      try {
+        const [vendorRes, customerRes] = await Promise.all([
+          fetch(`${url_}/contacts/vendors/katae`, { headers }),
+          fetch(`${url_}/contacts/vendors/katae`, { headers }),
+        ]);
+
+        const vendorsData = await vendorRes.json();
+        const customersData = await customerRes.json();
+
+        setVendors(Array.isArray(vendorsData) ? vendorsData : vendorsData.data || []);
+        setCustomers(Array.isArray(customersData) ? customersData : customersData.data || []);
+      } catch (error) {
+        console.error("Error loading dropdown data:", error);
+        toast.error("Failed to load vendors or customers");
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -182,11 +211,15 @@ export default function ProductionCollectiveForm() {
               <div className="space-y-2">
                 <Label htmlFor="vendor">Vendor</Label>
                 <SearchableSelect
-                  options={vendorOptions}
+                  options={vendors.map((vendor) => ({
+                    value: String(vendor.id),
+                    label: vendor.name,
+                  }))}
                   value={formData.vendor_id}
                   onValueChange={(value) => handleInputChange("vendor_id", value)}
                   placeholder="Select vendor..."
                   searchPlaceholder="Search vendors..."
+                  isLoading={isLoadingData}
                 />
               </div>
             </div>
@@ -195,11 +228,15 @@ export default function ProductionCollectiveForm() {
               <div className="space-y-2">
                 <Label htmlFor="customer_reference">Customer Reference</Label>
                 <SearchableSelect
-                  options={customerReferenceOptions}
+                  options={customers.map((customer) => ({
+                    value: String(customer.id),
+                    label: customer.name,
+                  }))}
                   value={formData.customer_reference_id}
                   onValueChange={(value) => handleInputChange("customer_reference_id", value)}
                   placeholder="Select reference..."
                   searchPlaceholder="Search references..."
+                  isLoading={isLoadingData}
                 />
               </div>
               <div className="space-y-2">
