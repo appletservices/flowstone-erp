@@ -259,8 +259,9 @@ export default function ProductionCollectiveForm() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Issue Calculator</CardTitle>
             {materials.length > 0 && (
-              <div className="text-sm font-medium">
-                Total Cost: <span className="text-primary">₹{totalCost.toFixed(2)}</span>
+              <div className="text-sm font-medium flex gap-4">
+                <span>Total Cost: <span className="text-primary">₹{totalCost.toFixed(2)}</span></span>
+                <span>Per Piece: <span className="text-primary">₹{(Number(formData.quantity) > 0 ? totalCost / Number(formData.quantity) : 0).toFixed(2)}</span></span>
               </div>
             )}
           </CardHeader>
