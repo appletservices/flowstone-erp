@@ -285,21 +285,26 @@ export default function ProductionCollectiveForm() {
                         <TableCell className="text-right">{item.required}</TableCell>
                         <TableCell className="text-right">{item.available.toLocaleString()}</TableCell>
                         <TableCell className="text-right">
-                          <Input
-                            type="number"
-                            className="w-20 text-right ml-auto"
-                            value={item.issue}
-                            onChange={(e) => {
-                              const newIssue = Number(e.target.value) || 0;
-                              setMaterials((prev) =>
-                                prev.map((m, i) =>
-                                  i === index
-                                    ? { ...m, issue: newIssue, perunitCost: newIssue * m.per_unit }
-                                    : m
-                                )
-                              );
-                            }}
-                          />
+                          <div className="flex flex-col items-end">
+                            <Input
+                              type="number"
+                              className={`w-20 text-right ${item.issue > item.available ? 'border-destructive' : ''}`}
+                              value={item.issue}
+                              onChange={(e) => {
+                                const newIssue = Number(e.target.value) || 0;
+                                setMaterials((prev) =>
+                                  prev.map((m, i) =>
+                                    i === index
+                                      ? { ...m, issue: newIssue, perunitCost: newIssue * m.per_unit }
+                                      : m
+                                  )
+                                );
+                              }}
+                            />
+                            {item.issue > item.available && (
+                              <span className="text-xs text-destructive mt-1">Exceeds available</span>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="text-right">
                           ₹{item.perunitCost.toFixed(2)}
