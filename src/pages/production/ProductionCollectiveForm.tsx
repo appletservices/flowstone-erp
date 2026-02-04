@@ -43,12 +43,6 @@ interface DropdownItem {
   name: string;
 }
 
-const productOptions = [
-  { value: "1", label: "Product A" },
-  { value: "2", label: "Product B" },
-  { value: "3", label: "Product C" },
-];
-
 export default function ProductionCollectiveForm() {
   const navigate = useNavigate();
   const { setHeaderInfo } = usePageHeader();
@@ -59,6 +53,7 @@ export default function ProductionCollectiveForm() {
   
   const [vendors, setVendors] = useState<DropdownItem[]>([]);
   const [customers, setCustomers] = useState<DropdownItem[]>([]);
+  const [products, setProducts] = useState<DropdownItem[]>([]);
   
   const [formData, setFormData] = useState<FormData>({
     date: new Date().toISOString().split("T")[0],
@@ -86,16 +81,19 @@ export default function ProductionCollectiveForm() {
       };
 
       try {
-        const [vendorRes, customerRes] = await Promise.all([
+        const [vendorRes, customerRes, productRes] = await Promise.all([
           fetch(`${url_}/contacts/vendors/katae`, { headers }),
           fetch(`${url_}/contacts/vendors/katae`, { headers }),
+          fetch(`${url_}/inventory/dropdown`, { headers }),
         ]);
 
         const vendorsData = await vendorRes.json();
         const customersData = await customerRes.json();
+        const productsData = await productRes.json();
 
         setVendors(Array.isArray(vendorsData) ? vendorsData : vendorsData.data || []);
         setCustomers(Array.isArray(customersData) ? customersData : customersData.data || []);
+        setProducts(Array.isArray(productsData) ? productsData : productsData.data || []);
       } catch (error) {
         console.error("Error loading dropdown data:", error);
         toast.error("Failed to load vendors or customers");
@@ -160,11 +158,46 @@ export default function ProductionCollectiveForm() {
       return;
     }
 
+    // Check if any issue qty exceeds available
+    const hasExceeded = materials.some(item => item.issue > item.available);
+    if (hasExceeded) {
+      toast.error("Issue quantity cannot exceed available quantity");
+      return;
+    }
+
     setIsSaving(true);
     try {
-      // TODO: Implement save API call
-      toast.success("Production record saved successfully");
-      navigate("/production/collective");
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`${url_}/production/store`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          date: formData.date,
+          vendor_id: formData.vendor_id,
+          customer_reference_id: formData.customer_reference_id,
+          product_id: formData.product_id,
+          quantity: Number(formData.quantity),
+          labour_charges: Number(formData.labour_charges) || 0,
+          materials: materials.map(item => ({
+            material_id: item.material_id,
+            issue: item.issue,
+            perunitCost: item.perunitCost,
+          })),
+          total_cost: totalCost,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success !== false) {
+        toast.success("Production record saved successfully");
+        navigate("/production/collective");
+      } else {
+        toast.error(result.message || "Failed to save production record");
+      }
     } catch (error) {
       console.error("Save error:", error);
       toast.error("Failed to save production record");
@@ -242,11 +275,15 @@ export default function ProductionCollectiveForm() {
               <div className="space-y-2">
                 <Label htmlFor="product">Product</Label>
                 <SearchableSelect
-                  options={productOptions}
+                  options={products.map((product) => ({
+                    value: String(product.id),
+                    label: product.name,
+                  }))}
                   value={formData.product_id}
                   onValueChange={(value) => handleInputChange("product_id", value)}
                   placeholder="Select product..."
                   searchPlaceholder="Search products..."
+                  isLoading={isLoadingData}
                 />
               </div>
             </div>
