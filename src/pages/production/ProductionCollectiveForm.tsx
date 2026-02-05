@@ -36,24 +36,12 @@ interface FormData {
   labour_charges: string;
 }
 
-// Mock options - replace with actual API calls
-const vendorOptions = [
-  { value: "1", label: "Vendor A" },
-  { value: "2", label: "Vendor B" },
-  { value: "3", label: "Vendor C" },
-];
+const url_ = new URL(`${import.meta.env.VITE_API_URL}`);
 
-const customerReferenceOptions = [
-  { value: "1", label: "Customer Ref 001" },
-  { value: "2", label: "Customer Ref 002" },
-  { value: "3", label: "Customer Ref 003" },
-];
-
-const productOptions = [
-  { value: "1", label: "Product A" },
-  { value: "2", label: "Product B" },
-  { value: "3", label: "Product C" },
-];
+interface DropdownItem {
+  id: number | string;
+  name: string;
+}
 
 export default function ProductionCollectiveForm() {
   const navigate = useNavigate();
@@ -61,6 +49,11 @@ export default function ProductionCollectiveForm() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [materials, setMaterials] = useState<MaterialItem[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
+  const [vendors, setVendors] = useState<DropdownItem[]>([]);
+  const [customers, setCustomers] = useState<DropdownItem[]>([]);
+  const [products, setProducts] = useState<DropdownItem[]>([]);
 
   const [formData, setFormData] = useState<FormData>({
     date: new Date().toISOString().split("T")[0],
@@ -78,6 +71,40 @@ export default function ProductionCollectiveForm() {
     });
   }, [setHeaderInfo]);
 
+  // Fetch Vendors and Customers on Mount
+  useEffect(() => {
+    const fetchData = async () => {
+      const token = localStorage.getItem("auth_token");
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
+
+      try {
+        const [vendorRes, customerRes, productRes] = await Promise.all([
+          fetch(`${url_}/contacts/dropdown`, { headers }),
+          fetch(`${url_}/contacts/receiveables/production`, { headers }),
+          fetch(`${url_}/inventory/type/finish`, { headers }),
+        ]);
+
+        const vendorsData = await vendorRes.json();
+        const customersData = await customerRes.json();
+        const productsData = await productRes.json();
+
+        setVendors(Array.isArray(vendorsData) ? vendorsData : vendorsData.data || []);
+        setCustomers(Array.isArray(customersData) ? customersData : customersData.data || []);
+        setProducts(Array.isArray(productsData) ? productsData : productsData.data || []);
+      } catch (error) {
+        console.error("Error loading dropdown data:", error);
+        toast.error("Failed to load vendors or customers");
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -92,12 +119,13 @@ export default function ProductionCollectiveForm() {
     try {
       const token = localStorage.getItem("auth_token");
       const response = await fetch(
+
         `${import.meta.env.VITE_API_URL}/production/issue/calculate`,
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             date: formData.date,
@@ -132,11 +160,50 @@ export default function ProductionCollectiveForm() {
       return;
     }
 
+    // Check if any issue qty exceeds available
+    const hasExceeded = materials.some(item => item.issue > item.available);
+    if (hasExceeded) {
+      toast.error("Issue quantity cannot exceed available quantity");
+      return;
+    }
+
     setIsSaving(true);
     try {
-      // TODO: Implement save API call
-      toast.success("Production record saved successfully");
-      navigate("/production/collective");
+      const _token = localStorage.getItem("auth_token");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/production/issue/collective/store`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          date: formData.date,
+          vendor_id: formData.vendor_id,
+          customer_reference_id: formData.customer_reference_id,
+          product_id: formData.product_id,
+          quantity: Number(formData.quantity),
+          labour_charges: Number(formData.labour_charges) || 0,
+          materials: materials.map(item => ({
+            material_id: item.material_id,
+            issue: item.issue,
+            required: item.required,
+            perunitCost: item.perunitCost,
+          })),
+          total_cost: totalCost,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success !== false) {
+        const newId = result.id;
+        const webBaseUrl = import.meta.env.VITE_API_URL.replace('/api', '');
+        window.open(`${webBaseUrl}/print/production/issue/${newId}`, "_blank");
+        // toast.success("Production Record Created Successfully!");
+        navigate("/production/collective");
+      } else {
+        toast.error(result.message || "Failed to save production record");
+      }
     } catch (error) {
       console.error("Save error:", error);
       toast.error("Failed to save production record");
@@ -163,14 +230,14 @@ export default function ProductionCollectiveForm() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className=" gap-6">
         {/* Card 1: Production Detail */}
         <Card>
           <CardHeader>
             <CardTitle>Production Detail</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="date">Date</Label>
                 <Input
@@ -180,42 +247,52 @@ export default function ProductionCollectiveForm() {
                   onChange={(e) => handleInputChange("date", e.target.value)}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label htmlFor="vendor">Vendor</Label>
                 <SearchableSelect
-                  options={vendorOptions}
+                  options={vendors.map((vendor) => ({
+                    value: String(vendor.id),
+                    label: vendor.name,
+                  }))}
                   value={formData.vendor_id}
                   onValueChange={(value) => handleInputChange("vendor_id", value)}
                   placeholder="Select vendor..."
                   searchPlaceholder="Search vendors..."
+                  isLoading={isLoadingData}
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="customer_reference">Customer Reference</Label>
                 <SearchableSelect
-                  options={customerReferenceOptions}
+                  options={customers.map((customer) => ({
+                    value: String(customer.id),
+                    label: customer.name,
+                  }))}
                   value={formData.customer_reference_id}
                   onValueChange={(value) => handleInputChange("customer_reference_id", value)}
                   placeholder="Select reference..."
                   searchPlaceholder="Search references..."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product">Product</Label>
-                <SearchableSelect
-                  options={productOptions}
-                  value={formData.product_id}
-                  onValueChange={(value) => handleInputChange("product_id", value)}
-                  placeholder="Select product..."
-                  searchPlaceholder="Search products..."
+                  isLoading={isLoadingData}
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
+
+              <div className="space-y-2">
+                <Label htmlFor="product">Product</Label>
+                <SearchableSelect
+                  options={products.map((product) => ({
+                    value: String(product.id),
+                    label: product.name,
+                  }))}
+                  value={formData.product_id}
+                  onValueChange={(value) => handleInputChange("product_id", value)}
+                  placeholder="Select product..."
+                  searchPlaceholder="Search products..."
+                  isLoading={isLoadingData}
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="quantity">Quantity</Label>
                 <Input

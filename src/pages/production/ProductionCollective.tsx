@@ -60,7 +60,7 @@ export default function ProductionCollective() {
     nextPage,
     previousPage,
   } = useBackendSearch<CollectiveRecord>({
-    endpoint: "/production/collective",
+    endpoint: "/production/issue/collective",
     pageSize: 10,
   });
 
@@ -124,8 +124,9 @@ export default function ProductionCollective() {
                 <th>Reference No</th>
                 <th>Karigar</th>
                 <th>Product</th>
-                <th className="text-right">Issued</th>
                 <th className="text-right">L.Charges</th>
+                <th className="text-right">Issued</th>
+                <th className="text-right">Received</th>
                 <th className="text-right">Final Cost</th>
                 <th></th>
               </tr>
@@ -137,8 +138,10 @@ export default function ProductionCollective() {
                   <td className="font-medium">{record.reference_no}</td>
                   <td>{record.karigar}</td>
                   <td>{record.product}</td>
-                  <td className="text-right">{record.issued}</td>
                   <td className="text-right">{record.lcharges}</td>
+                  <td className="text-right">{record.issued}</td>
+                  <td className="text-right">{record.receive_qty}</td>
+
                   <td className="text-right font-medium text-success">₹{record.final_cost?.toLocaleString()}</td>
                   <td>
                     <DropdownMenu>
