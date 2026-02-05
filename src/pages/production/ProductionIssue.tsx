@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FilterDialog } from "@/components/filters/FilterDialog";
 
-interface IssueRecord {
+interface CollectiveRecord {
   id: number;
   date: string;
   reference_no: string;
@@ -35,12 +35,13 @@ interface IssueRecord {
 }
 
 export default function ProductionIssue() {
+  // this is for production issue
   const navigate = useNavigate();
   const { setHeaderInfo } = usePageHeader();
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
   useEffect(() => {
-    setHeaderInfo({ title: "Production Issue", subtitle: "View and manage production issue records" });
+    setHeaderInfo({ title: "Production Collective", subtitle: "View and manage production collective records" });
   }, [setHeaderInfo]);
 
   const {
@@ -59,8 +60,8 @@ export default function ProductionIssue() {
     setPageSize,
     nextPage,
     previousPage,
-  } = useBackendSearch<IssueRecord>({
-    endpoint: "/production/issue",
+  } = useBackendSearch<CollectiveRecord>({
+    endpoint: "/production/issue/collective",
     pageSize: 10,
   });
 
@@ -109,7 +110,7 @@ export default function ProductionIssue() {
               Filter
               {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
             </Button>
-            <Button className="gap-2" onClick={() => navigate("/production/issue/new")}>
+            <Button className="gap-2" onClick={() => navigate("/production/collective/new")}>
               <Plus className="w-4 h-4" />
               Create
             </Button>
@@ -124,8 +125,9 @@ export default function ProductionIssue() {
                 <th>Reference No</th>
                 <th>Karigar</th>
                 <th>Product</th>
-                <th className="text-right">Issued</th>
                 <th className="text-right">L.Charges</th>
+                <th className="text-right">Issued</th>
+                <th className="text-right">Received</th>
                 <th className="text-right">Final Cost</th>
                 <th></th>
               </tr>
@@ -137,8 +139,10 @@ export default function ProductionIssue() {
                   <td className="font-medium">{record.reference_no}</td>
                   <td>{record.karigar}</td>
                   <td>{record.product}</td>
-                  <td className="text-right">{record.issued}</td>
                   <td className="text-right">{record.lcharges}</td>
+                  <td className="text-right">{record.issued}</td>
+                  <td className="text-right">{record.receive_qty}</td>
+
                   <td className="text-right font-medium text-success">₹{record.final_cost?.toLocaleString()}</td>
                   <td>
                     <DropdownMenu>

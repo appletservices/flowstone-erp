@@ -55,7 +55,7 @@ export default function ProductionReceive() {
     nextPage,
     previousPage,
   } = useBackendSearch<ReceiveRecord>({
-    endpoint: "/production/receive",
+    endpoint: "/production/receive/list",
     pageSize: 10,
   });
 
@@ -129,8 +129,8 @@ export default function ProductionReceive() {
             </thead>
             <tbody>
               {data.map((record) => (
-                <tr 
-                  key={record.id} 
+                <tr
+                  key={record.id}
                   className="animate-fade-in cursor-pointer hover:bg-muted/50"
                   onClick={() => navigate(`/production/receive/${record.id}`)}
                 >
