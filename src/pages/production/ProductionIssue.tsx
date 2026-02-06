@@ -141,7 +141,7 @@ export default function ProductionIssue() {
                   <td>{record.product}</td>
                   <td className="text-right">{record.lcharges}</td>
                   <td className="text-right">{record.issued}</td>
-                  <td className="text-right">{record.receive_qty}</td>
+                  <td className="text-right">{record.issued}</td>
 
                   <td className="text-right font-medium text-success">₹{record.final_cost?.toLocaleString()}</td>
                   <td>
