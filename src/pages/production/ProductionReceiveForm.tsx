@@ -72,7 +72,7 @@ export default function ProductionReceiveForm() {
       };
 
       try {
-        const response = await fetch(`${url_}/contacts/vendors/katae`, { headers });
+        const response = await fetch(`${url_}/contacts/dropdown`, { headers });
         const data = await response.json();
         setVendors(Array.isArray(data) ? data : data.data || []);
       } catch (error) {
@@ -105,7 +105,7 @@ export default function ProductionReceiveForm() {
       try {
         const response = await fetch(`${url_}/production/getProductByKariger/${formData.vendor_id}`, { headers });
         const data = await response.json();
-        
+
         if (data.success && Array.isArray(data.products)) {
           setProducts(data.products);
         } else {
@@ -134,10 +134,10 @@ export default function ProductionReceiveForm() {
       const product = products.find(p => String(p.id) === value);
       if (product) {
         setSelectedProduct(product);
-        setFormData(prev => ({ 
-          ...prev, 
+        setFormData(prev => ({
+          ...prev,
           product_id: value,
-          labour_charges: String(product.labour_charges || 0) 
+          labour_charges: String(product.labour_charges || 0)
         }));
       } else {
         setSelectedProduct(null);
@@ -145,7 +145,7 @@ export default function ProductionReceiveForm() {
     }
   };
 
-  const quantityExceedsRemaining = selectedProduct && 
+  const quantityExceedsRemaining = selectedProduct &&
     Number(formData.quantity) > selectedProduct.remaining;
 
   const handleSave = async () => {
