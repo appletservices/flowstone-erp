@@ -87,6 +87,7 @@ import ProductionIssue from "@/pages/production/ProductionIssue";
 import ProductionReceive from "@/pages/production/ProductionReceive";
 import ProductionReceiveForm from "@/pages/production/ProductionReceiveForm";
 import ProductionOpening from "@/pages/production/ProductionOpening";
+import ProductionOpeningForm from "@/pages/production/ProductionOpeningForm";
 
 
 const queryClient = new QueryClient();
@@ -208,6 +209,7 @@ const App = () => (
                     <Route path="/production/receive" element={<ProductionReceive />} />
                     <Route path="/production/receive/new" element={<ProductionReceiveForm />} />
                     <Route path="/production/opening" element={<ProductionOpening />} />
+                    <Route path="/production/opening/new" element={<ProductionOpeningForm />} />
 
                   </Route>
 
