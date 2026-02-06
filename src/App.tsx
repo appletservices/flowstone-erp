@@ -85,6 +85,7 @@ import ProductionCollective from "@/pages/production/ProductionCollective";
 import ProductionCollectiveForm from "@/pages/production/ProductionCollectiveForm";
 import ProductionIssue from "@/pages/production/ProductionIssue";
 import ProductionReceive from "@/pages/production/ProductionReceive";
+import ProductionReceiveForm from "@/pages/production/ProductionReceiveForm";
 import ProductionOpening from "@/pages/production/ProductionOpening";
 
 
@@ -205,6 +206,7 @@ const App = () => (
                     <Route path="/production/collective/new" element={<ProductionCollectiveForm />} />
                     <Route path="/production/issue" element={<ProductionIssue />} />
                     <Route path="/production/receive" element={<ProductionReceive />} />
+                    <Route path="/production/receive/new" element={<ProductionReceiveForm />} />
                     <Route path="/production/opening" element={<ProductionOpening />} />
 
                   </Route>
