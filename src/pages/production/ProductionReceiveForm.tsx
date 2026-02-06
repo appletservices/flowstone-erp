@@ -12,8 +12,8 @@ import { toast } from "sonner";
 
 interface ProductItem {
   id: number;
-  product: string;
-  remaining: number;
+  name: string;
+  remaing: number;
   labour_charges: number;
 }
 
@@ -146,7 +146,7 @@ export default function ProductionReceiveForm() {
   };
 
   const quantityExceedsRemaining = selectedProduct &&
-    Number(formData.quantity) > selectedProduct.remaining;
+    Number(formData.quantity) > selectedProduct.remaing;
 
   const handleSave = async () => {
     if (!formData.vendor_id || !formData.product_id || !formData.quantity) {
@@ -245,7 +245,7 @@ export default function ProductionReceiveForm() {
               <SearchableSelect
                 options={products.map((product) => ({
                   value: String(product.id),
-                  label: `${product.product} (Remaining: ${product.remaining})`,
+                  label: product.name,
                 }))}
                 value={formData.product_id}
                 onValueChange={(value) => handleInputChange("product_id", value)}
@@ -269,9 +269,9 @@ export default function ProductionReceiveForm() {
                 className={quantityExceedsRemaining ? "border-destructive" : ""}
               />
               {quantityExceedsRemaining && (
-                <span className="text-xs text-destructive">
-                  Exceeds remaining ({selectedProduct?.remaining})
-                </span>
+                <p className="text-sm text-destructive font-medium mt-1">
+                  Quantity exceeds available remaining ({selectedProduct?.remaing})
+                </p>
               )}
             </div>
             <div className="space-y-2">
