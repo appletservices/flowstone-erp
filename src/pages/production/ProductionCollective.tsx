@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Eye, Pencil, Trash2, Search, MoreHorizontal, Loader2, Filter } from "lucide-react";
+import { Plus, Eye, Printer, ChevronRight, Trash2, Search, MoreHorizontal, Loader2, Filter } from "lucide-react";
 import { usePageHeader } from "@/hooks/usePageHeader";
 import { useBackendSearch } from "@/hooks/useBackendSearch";
 import { Button } from "@/components/ui/button";
@@ -155,7 +155,10 @@ export default function ProductionCollective() {
                           <Eye className="w-4 h-4 mr-2" /> View
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                          <Pencil className="w-4 h-4 mr-2" /> Edit
+                          <Printer className="w-4 h-4 mr-2" /> Print
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/ledger/production-collective/${record.id}`)}>
+                          <ChevronRight className="w-4 h-4 mr-2" /> Ledger
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="text-destructive focus:text-destructive">
