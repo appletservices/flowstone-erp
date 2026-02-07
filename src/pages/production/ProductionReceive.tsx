@@ -18,14 +18,13 @@ import { FilterDialog } from "@/components/filters/FilterDialog";
 
 interface ReceiveRecord {
   id: number;
-  date: string;
-  reference_no: string;
+  edate: string;
+  ref: string;
   karigar: string;
   product: string;
   issued: number;
-  received: number;
-  remaining: number;
-  lcharges: number;
+  receive_qty: string;
+  labour_charges: number;
   final_cost: number;
 }
 
@@ -116,12 +115,11 @@ export default function ProductionReceive() {
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Reference No</th>
+                <th>Reference</th>
                 <th>Karigar</th>
                 <th>Product</th>
                 <th className="text-right">Issued</th>
                 <th className="text-right">Received</th>
-                <th className="text-right">Remaining</th>
                 <th className="text-right">L.Charges</th>
                 <th className="text-right">Final Cost</th>
                 <th></th>
@@ -134,17 +132,24 @@ export default function ProductionReceive() {
                   className="animate-fade-in cursor-pointer hover:bg-muted/50"
                   onClick={() => navigate(`/production/receive/${record.id}`)}
                 >
-                  <td>{record.date}</td>
-                  <td className="font-medium">{record.reference_no}</td>
+                  <td>{record.edate}</td>
+                  <td className="font-medium">{record.ref}</td>
                   <td>{record.karigar}</td>
                   <td>{record.product}</td>
                   <td className="text-right">{record.issued}</td>
-                  <td className="text-right">{record.received}</td>
-                  <td className="text-right">{record.remaining}</td>
-                  <td className="text-right">{record.lcharges}</td>
+                  <td className="text-right">{parseFloat(record.receive_qty).toLocaleString()}</td>
+                  <td className="text-right">{record.labour_charges}</td>
                   <td className="text-right font-medium text-success">₹{record.final_cost?.toLocaleString()}</td>
                   <td>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/ledger/production-receive/${record.id}`);
+                      }}
+                    >
                       <ChevronRight className="w-4 h-4" />
                     </Button>
                   </td>
@@ -152,7 +157,7 @@ export default function ProductionReceive() {
               ))}
               {!isLoading && data.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="p-8 text-center text-muted-foreground">No records found</td>
+                  <td colSpan={9} className="p-8 text-center text-muted-foreground">No records found</td>
                 </tr>
               )}
             </tbody>
