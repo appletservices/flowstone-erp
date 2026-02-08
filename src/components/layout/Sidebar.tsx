@@ -154,10 +154,20 @@ const menuItems: MenuItem[] = [
       { label: "Purchase Report", path: "/reports/purchase", icon: FileText, permissionId: "report_purchase" },
       { label: "Payment Report", path: "/reports/payment", icon: CreditCard, permissionId: "report_payment" },
       { label: "Account Report", path: "/account/report", icon: CreditCard },
-
+    ],
+  },
+  {
+    label: "Reports - Katae",
+    icon: Scissors,
+    children: [
       { label: "Katae Issue Report", path: "/reports/katae/issue", icon: Send, permissionId: "report_katae_issue" },
       { label: "Katae Receive Report", path: "/reports/katae/receive", icon: RotateCcw, permissionId: "report_katae_receive" },
-
+    ],
+  },
+  {
+    label: "Reports - Karahi",
+    icon: Flame,
+    children: [
       { label: "Karahi Issue Report", path: "/reports/karahi/issue", icon: Send, permissionId: "report_karahi_issue" },
       { label: "Karahi Receive Report", path: "/reports/karahi/receive", icon: RotateCcw, permissionId: "report_karahi_receive" },
       { label: "Karahi Design Receive Report", path: "/reports/karahi/receive-design", icon: RotateCcw, permissionId: "report_karahi_receive" },
