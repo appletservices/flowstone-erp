@@ -145,7 +145,7 @@ const App = () => (
                     <Route path="/sales/return/edit/:id" element={<PermissionGuard permissionId="sales"><CreateSaleReturn /></PermissionGuard>} />
 
                     <Route path="/settings" element={<PermissionGuard permissionId="settings"><Settings /></PermissionGuard>} />
-                    <Route path="/settings/users" element={<PermissionGuard permissionId="user_management"><UserManagement /></PermissionGuard>} />
+                    <Route path="/settings/users" element={<PermissionGuard permissionId="settings"><UserManagement /></PermissionGuard>} />
                     <Route path="/settings/roles" element={<PermissionGuard permissionId="role_management"><RoleManagement /></PermissionGuard>} />
                     <Route path="/settings/security" element={<PermissionGuard permissionId="security"><Security /></PermissionGuard>} />
                     <Route path="/setup/units" element={<PermissionGuard permissionId="setup_units"><Units /></PermissionGuard>} />
