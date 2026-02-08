@@ -234,17 +234,13 @@ const Security = () => {
                 <TableCell className="text-xs capitalize">{log.feature.replace(/-/g, ' ')}</TableCell>
                 <TableCell className="font-medium text-xs">{log.table}</TableCell>
                 <TableCell>
-                  <div className="border rounded text-[10px] bg-muted/20">
-                    <table className="w-full">
-                      <tbody>
-                        {parseActivityData(log.data).slice(0, 3).map((item, i) => (
-                          <tr key={i} className="border-b last:border-0">
-                            <td className="px-2 py-0.5 font-bold text-muted-foreground w-16">{item.key}</td>
-                            <td className="px-2 py-0.5 truncate max-w-[150px]">{item.value}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="flex flex-wrap gap-1.5 max-w-[400px]">
+                    {parseActivityData(log.data).slice(0, 5).map((item, i) => (
+                      <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/50 text-[10px]">
+                        <span className="font-semibold text-muted-foreground">{item.key}:</span>
+                        <span className="truncate max-w-[80px]" title={item.value}>{item.value}</span>
+                      </span>
+                    ))}
                   </div>
                 </TableCell>
               </TableRow>
