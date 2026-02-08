@@ -72,12 +72,12 @@ interface UnitOption {
 export default function RawInventory() {
   const navigate = useNavigate();
   const { setHeaderInfo } = usePageHeader();
-  
+
   // Set page header on mount
   useState(() => {
     setHeaderInfo({ title: "Raw Inventory", subtitle: "Manage raw materials and stock levels" });
   });
-  
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<RawInventoryItem | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -87,7 +87,7 @@ export default function RawInventory() {
   const [isFetchingEdit, setIsFetchingEdit] = useState(false);
   const [units, setUnits] = useState<UnitOption[]>([]);
   const [isLoadingUnits, setIsLoadingUnits] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     name: "",
     unit_id: "",
@@ -151,10 +151,10 @@ export default function RawInventory() {
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem("auth_token");
-      
+
       // Select endpoint based on whether we are editing or creating
-      const endpoint = editingItem 
-        ? `${import.meta.env.VITE_API_URL}/inventory/raw/update` 
+      const endpoint = editingItem
+        ? `${import.meta.env.VITE_API_URL}/inventory/raw/update`
         : `${import.meta.env.VITE_API_URL}/inventory/raw/store`;
 
       const bodyPayload = {
@@ -176,11 +176,11 @@ export default function RawInventory() {
       });
 
       const result = await response.json();
-      
+
       if (result.status || response.ok) {
         toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
-      resetForm();
-  await refresh(); // ensure refetch
+        resetForm();
+        await refresh(); // ensure refetch
       } else {
         toast.error(result.message || "Failed to save item");
       }
@@ -197,7 +197,7 @@ export default function RawInventory() {
 
     try {
       const token = localStorage.getItem("auth_token");
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/delete`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/raw/delete`, {
         method: "delete",
         headers: {
           "Content-Type": "application/json",
@@ -235,10 +235,10 @@ export default function RawInventory() {
     setDialogOpen(false);
   };
 
-const handleEdit = async (item: RawInventoryItem) => {
+  const handleEdit = async (item: RawInventoryItem) => {
     setIsFetchingEdit(true);
     setEditingItem(item);
-    
+
     try {
       const token = localStorage.getItem("auth_token");
       const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/raw/edit/${item.id}`, {
@@ -247,7 +247,7 @@ const handleEdit = async (item: RawInventoryItem) => {
           "Content-Type": "application/json",
         },
       });
-      
+
       const result = await response.json();
 
       if (result) {
@@ -255,7 +255,7 @@ const handleEdit = async (item: RawInventoryItem) => {
         setFormData({
           name: result.name || "",
           unit_id: result.unit_id ? String(result.unit_id) : "",
-          date: new Date().toISOString().split('T')[0], 
+          date: new Date().toISOString().split('T')[0],
           opening_qty: result.opening_qty ? parseFloat(result.opening_qty).toString() : "",
           per_unit_cost: result.perunitcost ? parseFloat(result.perunitcost).toString() : "",
         });
@@ -276,7 +276,7 @@ const handleEdit = async (item: RawInventoryItem) => {
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-6">
       <Dialog open={dialogOpen} onOpenChange={(open) => {
@@ -369,8 +369,8 @@ const handleEdit = async (item: RawInventoryItem) => {
             </Select>
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search items..." 
+              <Input
+                placeholder="Search items..."
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -431,7 +431,7 @@ const handleEdit = async (item: RawInventoryItem) => {
                           <BookOpen className="w-4 h-4 mr-2" /> View Ledger
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => { setItemToDelete(item); setDeleteDialogOpen(true); }}
                           className="text-destructive focus:text-destructive"
                         >

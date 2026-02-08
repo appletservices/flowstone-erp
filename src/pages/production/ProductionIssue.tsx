@@ -61,7 +61,7 @@ export default function ProductionIssue() {
     nextPage,
     previousPage,
   } = useBackendSearch<CollectiveRecord>({
-    endpoint: "/production/issue/collective",
+    endpoint: "/production/issue/list",
     pageSize: 10,
   });
 
@@ -110,7 +110,7 @@ export default function ProductionIssue() {
               Filter
               {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
             </Button>
-            <Button className="gap-2" onClick={() => navigate("/production/collective/new")}>
+            <Button className="gap-2" onClick={() => navigate("/production/issue/create")}>
               <Plus className="w-4 h-4" />
               Create
             </Button>

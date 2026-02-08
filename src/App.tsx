@@ -204,7 +204,7 @@ const App = () => (
 
                     {/* Production Routes - No permission guard */}
                     <Route path="/production/collective" element={<ProductionCollective />} />
-                    <Route path="/production/collective/new" element={<ProductionCollectiveForm />} />
+                    <Route path="/production/issue/create" element={<ProductionCollectiveForm />} />
                     <Route path="/production/issue" element={<ProductionIssue />} />
                     <Route path="/production/receive" element={<ProductionReceive />} />
                     <Route path="/production/receive/new" element={<ProductionReceiveForm />} />

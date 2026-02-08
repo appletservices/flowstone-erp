@@ -141,9 +141,9 @@ export default function ProductionReceive() {
                   <td className="text-right">{record.labour_charges}</td>
                   <td className="text-right font-medium text-success">₹{record.final_cost?.toLocaleString()}</td>
                   <td>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="h-8 w-8"
                       onClick={(e) => {
                         e.stopPropagation();
