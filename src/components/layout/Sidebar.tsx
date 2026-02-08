@@ -178,6 +178,7 @@ const menuItems: MenuItem[] = [
     icon: Settings,
     children: [
       { label: "General", path: "/settings", icon: Settings, permissionId: "settings" },
+      { label: "User Management", path: "/settings/users", icon: Users, permissionId: "user_management" },
       { label: "Roles & Permissions", path: "/settings/roles", icon: Shield, permissionId: "role_management" },
       { label: "Security", path: "/settings/security", icon: Shield, permissionId: "security" },
     ],
