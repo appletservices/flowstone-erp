@@ -42,6 +42,7 @@ import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 import RoleManagement from "@/pages/setting/RoleManagement";
 import Security from "@/pages/setting/Security";
+import UserManagement from "@/pages/setting/UserManagement";
 
 import IssuedKatae from "@/pages/katae/issue/IssuedKatae";
 import KataeIssuedMaterial from "@/pages/katae/issue/KataeIssuedMaterial";
@@ -144,6 +145,7 @@ const App = () => (
                     <Route path="/sales/return/edit/:id" element={<PermissionGuard permissionId="sales"><CreateSaleReturn /></PermissionGuard>} />
 
                     <Route path="/settings" element={<PermissionGuard permissionId="settings"><Settings /></PermissionGuard>} />
+                    <Route path="/settings/users" element={<PermissionGuard permissionId="user_management"><UserManagement /></PermissionGuard>} />
                     <Route path="/settings/roles" element={<PermissionGuard permissionId="role_management"><RoleManagement /></PermissionGuard>} />
                     <Route path="/settings/security" element={<PermissionGuard permissionId="security"><Security /></PermissionGuard>} />
                     <Route path="/setup/units" element={<PermissionGuard permissionId="setup_units"><Units /></PermissionGuard>} />
