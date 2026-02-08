@@ -40,7 +40,7 @@ import { useTheme } from "next-themes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import UserManagementSection from "@/components/settings/UserManagementSection";
+
 
 interface SettingsSection {
   id: string;
@@ -55,12 +55,6 @@ const sections: SettingsSection[] = [
     label: "Company Settings",
     icon: Building2,
     description: "Business name, address, and contact details",
-  },
-  {
-    id: "users",
-    label: "User Management",
-    icon: Users,
-    description: "Manage users, roles, and permissions",
   },
   {
     id: "security",
@@ -881,7 +875,7 @@ export default function Settings() {
             </div>
           )}
 
-          {activeSection === "users" && <UserManagementSection />}
+          
 
           {activeSection === "notifications" && (
             <div className="bg-card rounded-xl border border-border p-6 animate-fade-in">
