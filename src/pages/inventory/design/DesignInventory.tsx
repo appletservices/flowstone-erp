@@ -88,12 +88,12 @@ const emptyFormData: FormData = {
 export default function DesignInventory() {
   const navigate = useNavigate();
   const { setHeaderInfo } = usePageHeader();
-  
+
   // Set page header on mount
   useState(() => {
     setHeaderInfo({ title: "Design Inventory", subtitle: "Manage design patterns and inventory" });
   });
-  
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>(emptyFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -118,7 +118,7 @@ export default function DesignInventory() {
     setPageSize,
     nextPage,
     previousPage,
-  } = useBackendSearch<DesignItem>({ 
+  } = useBackendSearch<DesignItem>({
     endpoint: "/inventory/design/list",
     pageSize: 10,
   });
@@ -158,7 +158,7 @@ export default function DesignInventory() {
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem("auth_token");
-      const endpoint = isEditing 
+      const endpoint = isEditing
         ? `${url_}/inventory/design/update`
         : `${url_}/inventory/design/store`;
 
@@ -213,7 +213,7 @@ export default function DesignInventory() {
 
       if (response.ok && Array.isArray(result) && result.length > 0) {
         const detail = result[0];
-        
+
         // Parse "05-01-2025" string to Date object
         let parsedDate: Date | undefined = undefined;
         if (detail.tdate) {
@@ -242,7 +242,7 @@ export default function DesignInventory() {
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this design?")) return;
-    
+
     try {
       const token = localStorage.getItem("auth_token");
       const response = await fetch(`${url_}/inventory/design/delete`, {
@@ -251,7 +251,7 @@ export default function DesignInventory() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id:id }),
+        body: JSON.stringify({ id: id }),
       });
 
       if (response.ok) {
@@ -403,9 +403,9 @@ export default function DesignInventory() {
               />
             </div>
             {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className={cn("gap-2", hasActiveFilters && "border-primary")}
               onClick={() => setFilterDialogOpen(true)}
             >

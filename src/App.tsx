@@ -145,7 +145,7 @@ const App = () => (
                     <Route path="/sales/return/edit/:id" element={<PermissionGuard permissionId="sales"><CreateSaleReturn /></PermissionGuard>} />
 
                     <Route path="/settings" element={<PermissionGuard permissionId="settings"><Settings /></PermissionGuard>} />
-                    <Route path="/settings/users" element={<PermissionGuard permissionId="user_management"><UserManagement /></PermissionGuard>} />
+                    <Route path="/settings/users" element={<PermissionGuard permissionId="settings"><UserManagement /></PermissionGuard>} />
                     <Route path="/settings/roles" element={<PermissionGuard permissionId="role_management"><RoleManagement /></PermissionGuard>} />
                     <Route path="/settings/security" element={<PermissionGuard permissionId="security"><Security /></PermissionGuard>} />
                     <Route path="/setup/units" element={<PermissionGuard permissionId="setup_units"><Units /></PermissionGuard>} />
@@ -206,7 +206,7 @@ const App = () => (
 
                     {/* Production Routes - No permission guard */}
                     <Route path="/production/collective" element={<ProductionCollective />} />
-                    <Route path="/production/collective/new" element={<ProductionCollectiveForm />} />
+                    <Route path="/production/issue/create" element={<ProductionCollectiveForm />} />
                     <Route path="/production/issue" element={<ProductionIssue />} />
                     <Route path="/production/receive" element={<ProductionReceive />} />
                     <Route path="/production/receive/new" element={<ProductionReceiveForm />} />

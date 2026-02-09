@@ -26,10 +26,11 @@ import { FilterDialog } from "@/components/filters/FilterDialog";
 interface CollectiveRecord {
   id: number;
   date: string;
-  reference_no: string;
+  ref: string;
   karigar: string;
   product: string;
   issued: number;
+  receive_qty: number,
   lcharges: number;
   final_cost: number;
 }
@@ -109,7 +110,7 @@ export default function ProductionCollective() {
               Filter
               {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">Active</Badge>}
             </Button>
-            <Button className="gap-2" onClick={() => navigate("/production/collective/new")}>
+            <Button className="gap-2" onClick={() => navigate("/production/issue/create")}>
               <Plus className="w-4 h-4" />
               Create
             </Button>
@@ -121,7 +122,7 @@ export default function ProductionCollective() {
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Reference No</th>
+                <th>Reference</th>
                 <th>Karigar</th>
                 <th>Product</th>
                 <th className="text-right">L.Charges</th>
@@ -135,12 +136,12 @@ export default function ProductionCollective() {
               {data.map((record) => (
                 <tr key={record.id} className="animate-fade-in">
                   <td>{record.date}</td>
-                  <td className="font-medium">{record.reference_no}</td>
+                  <td className="font-medium">{record.ref}</td>
                   <td>{record.karigar}</td>
                   <td>{record.product}</td>
                   <td className="text-right">{record.lcharges}</td>
                   <td className="text-right">{record.issued}</td>
-                  <td className="text-right">{record.issued}</td>
+                  <td className="text-right">{record.receive_qty}</td>
 
                   <td className="text-right font-medium text-success">₹{record.final_cost?.toLocaleString()}</td>
                   <td>

@@ -135,8 +135,16 @@ const menuItems: MenuItem[] = [
       { label: "Expense Categories", path: "/setup/expense-categories", icon: FolderOpen, permissionId: "setup_expense" },
     ],
   },
-  { label: "Purchase", icon: ShoppingCart, path: "/inventory/purchase", permissionId: "purchase" },
-  { label: "Purchase Return", icon: RotateCcw, path: "/purchase-return", permissionId: "purchase_return" },
+  {
+    label: "Purchase",
+    icon: ShoppingCart,
+    children: [
+      { label: "Purchase", path: "/inventory/purchase", icon: ShoppingCart, permissionId: "purchase" },
+      { label: "Purchase Return", icon: RotateCcw, path: "/purchase-return", permissionId: "purchase_return" },
+
+    ],
+  },
+
   {
     label: "Sales",
     icon: Receipt,
@@ -178,7 +186,7 @@ const menuItems: MenuItem[] = [
     icon: Settings,
     children: [
       { label: "General", path: "/settings", icon: Settings, permissionId: "settings" },
-      { label: "User Management", path: "/settings/users", icon: Users, permissionId: "user_management" },
+      { label: "User Management", path: "/settings/users", icon: Users, permissionId: "settings" },
       { label: "Roles & Permissions", path: "/settings/roles", icon: Shield, permissionId: "role_management" },
       { label: "Security", path: "/settings/security", icon: Shield, permissionId: "security" },
     ],

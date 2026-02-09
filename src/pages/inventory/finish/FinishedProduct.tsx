@@ -79,12 +79,12 @@ interface InventoryOption {
 export default function FinishedProduct() {
   const navigate = useNavigate();
   const { setHeaderInfo } = usePageHeader();
-  
+
   // Set page header on mount
   useState(() => {
     setHeaderInfo({ title: "Finished Products", subtitle: "Manage finished products and components" });
   });
-  
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<FinishedProductItem | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -94,14 +94,14 @@ export default function FinishedProduct() {
   const [isLoadingInventory, setIsLoadingInventory] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetchingEdit, setIsFetchingEdit] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     name: "",
     date: new Date().toISOString().split('T')[0],
     openingQty: "",
     openingCost: "",
   });
-  
+
   const [itemRows, setItemRows] = useState<ItemRow[]>([
     { id: "1", inventoryId: "", quantity: "" }
   ]);
@@ -166,10 +166,10 @@ export default function FinishedProduct() {
     setItemRows(itemRows.map(row => row.id === id ? { ...row, [field]: value } : row));
   };
 
- const handleEdit = async (product: FinishedProductItem) => {
+  const handleEdit = async (product: FinishedProductItem) => {
     setIsFetchingEdit(true);
     setEditingProduct(product);
-    
+
     try {
       const token = localStorage.getItem("auth_token");
       const response = await fetch(
@@ -181,7 +181,7 @@ export default function FinishedProduct() {
           },
         }
       );
-      
+
       const result = await response.json();
 
       if (result) {
@@ -245,7 +245,7 @@ export default function FinishedProduct() {
       };
 
       const token = localStorage.getItem("auth_token");
-      const url = editingProduct 
+      const url = editingProduct
         ? `${import.meta.env.VITE_API_URL}/inventory/finish/update/${editingProduct.id}`
         : `${import.meta.env.VITE_API_URL}/inventory/finish/store`;
 
@@ -288,20 +288,25 @@ export default function FinishedProduct() {
   const handleDelete = async () => {
     if (!productToDelete) return;
     try {
-        const token = localStorage.getItem("auth_token");
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/finish/delete/${productToDelete.id}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (response.ok) {
-            toast.success("Product deleted successfully");
-            refresh();
-        }
+      const token = localStorage.getItem("auth_token");
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/finish/delete`, {
+        method: "delete",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: productToDelete.id }),
+      });
+      if (response.ok) {
+        toast.success("Product deleted successfully");
+        refresh();
+      }
     } catch (e) {
-        toast.error("Failed to delete");
+      toast.error("Failed to delete");
     } finally {
-        setDeleteDialogOpen(false);
-        setProductToDelete(null);
+      setDeleteDialogOpen(false);
+      setProductToDelete(null);
     }
   };
 
@@ -315,7 +320,7 @@ export default function FinishedProduct() {
 
   return (
     <div className="space-y-6">
-      <Dialog open={dialogOpen} onOpenChange={(open) => { if(!isFetchingEdit) { setDialogOpen(open); if (!open) resetForm(); } }}>
+      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!isFetchingEdit) { setDialogOpen(open); if (!open) resetForm(); } }}>
         <DialogContent className="bg-card sm:max-w-[900px] max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editingProduct ? "Edit Product" : "Add New Product"}</DialogTitle></DialogHeader>
           <div className="space-y-6 py-4">
@@ -439,7 +444,7 @@ export default function FinishedProduct() {
                           <BookOpen className="w-4 h-4 mr-2" /> View Ledger
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => { setProductToDelete(product); setDeleteDialogOpen(true); }}
                           className="text-destructive focus:text-destructive"
                         >
@@ -474,14 +479,14 @@ export default function FinishedProduct() {
         </div>
       </div>
 
-      <FilterDialog 
-        open={filterDialogOpen} 
-        onOpenChange={setFilterDialogOpen} 
-        onApply={applyFilters} 
-        showDateRange={false} 
-        filterFields={[{ key: "unit", label: "Unit", placeholder: "e.g. Pcs" }]} 
+      <FilterDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        onApply={applyFilters}
+        showDateRange={false}
+        filterFields={[{ key: "unit", label: "Unit", placeholder: "e.g. Pcs" }]}
         initialDateRange={dateRange}
-        initialKeyValues={keyValues} 
+        initialKeyValues={keyValues}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -499,7 +504,7 @@ export default function FinishedProduct() {
 
       {isFetchingEdit && (
         <div className="fixed inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
         </div>
       )}
     </div>

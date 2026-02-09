@@ -85,12 +85,12 @@ const emptyFormData: FormData = {
 export default function KataeProduct() {
   const navigate = useNavigate();
   const { setHeaderInfo } = usePageHeader();
-  
+
   // Set page header on mount
   useState(() => {
     setHeaderInfo({ title: "Katae Product", subtitle: "Manage katae products and stock levels" });
   });
-  
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<KataeItem | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -146,7 +146,7 @@ export default function KataeProduct() {
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem("auth_token");
-      const endpoint = editingItem 
+      const endpoint = editingItem
         ? `${url_}/inventory/katae/update`
         : `${url_}/inventory/katae/store`;
 
@@ -168,7 +168,7 @@ export default function KataeProduct() {
         },
         body: JSON.stringify(payload),
       });
-      
+
       const result = await response.json();
       if (response.ok && result.success !== false) {
         toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
@@ -203,7 +203,7 @@ export default function KataeProduct() {
 
       if (response.ok && result.length > 0) {
         const detail = result[0];
-        
+
         // Convert DD-MM-YYYY to YYYY-MM-DD for the date input
         let formattedDate = "";
         if (detail.tdate) {
@@ -238,7 +238,7 @@ export default function KataeProduct() {
     try {
       const token = localStorage.getItem("auth_token");
       const response = await fetch(`${url_}/inventory/katae/delete`, {
-        method: "POST",
+        method: "delete",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -279,14 +279,14 @@ export default function KataeProduct() {
               </div>
               <div className="space-y-2">
                 <Label>Date</Label>
-                <Input 
-                  type="date" 
-                  value={formData.date} 
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })} 
+                <Input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 />
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Product *</Label>
@@ -346,8 +346,8 @@ export default function KataeProduct() {
           <div className="flex items-center gap-4">
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search items..." 
+              <Input
+                placeholder="Search items..."
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

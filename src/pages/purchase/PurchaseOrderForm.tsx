@@ -35,7 +35,7 @@ export default function PurchaseOrderForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = Boolean(id);
-  
+
   useSetPageHeader(
     isEditMode ? "Edit Purchase Order" : "Create Purchase Order",
     isEditMode ? "Update purchase order details" : "Add a new purchase order"
@@ -183,14 +183,16 @@ export default function PurchaseOrderForm() {
     try {
       const url = isEditMode ? `${API_BASE_URL}/purchase/update/${id}` : `${API_BASE_URL}/purchase/store`;
       const response = await fetch(url, {
-        method: isEditMode ? 'PUT':'POST',
+        method: isEditMode ? 'PUT' : 'POST',
         headers: getHeaders(),
         body: JSON.stringify(payload),
       });
-
-      if (response.ok) {
-        toast.success(`Purchase order ${isEditMode ? 'updated' : 'created'}`);
+      const result = await response.json();
+      if (result.status != false) {
+        toast.success(result.message);
         navigate("/inventory/purchase");
+      } else {
+        toast.error(result.message || "Failed to save item");
       }
     } catch (error) { toast.error("Save failed"); }
   };
@@ -287,15 +289,15 @@ export default function PurchaseOrderForm() {
                     />
                   </td>
                   <td className="p-4"><Input readOnly value={item.unit} placeholder="Unit" className="w-[100px] bg-muted" /></td>
-                <td className="p-4">
-                  <Input
-                    type="number"
-                    placeholder="0.00"
-                    value={item.conversion}
-                    onChange={(e) => handleItemChange(item.id, "conversion", e.target.value)}
-                    className="min-w-[100px]"
-                  />
-                </td>
+                  <td className="p-4">
+                    <Input
+                      type="number"
+                      placeholder="0.00"
+                      value={item.conversion}
+                      onChange={(e) => handleItemChange(item.id, "conversion", e.target.value)}
+                      className="min-w-[100px]"
+                    />
+                  </td>
                   <td className="p-4"><Input type="number" placeholder="0" value={item.quantity} onChange={(e) => handleItemChange(item.id, "quantity", e.target.value)} className="w-[100px]" /></td>
                   <td className="p-4"><Input type="number" placeholder="0" value={item.perUnitCost} onChange={(e) => handleItemChange(item.id, "perUnitCost", e.target.value)} className="w-[100px]" /></td>
                   <td className="p-4 font-medium">₹{item.amount || "0.00"}</td>
