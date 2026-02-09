@@ -158,27 +158,6 @@ export default function PaymentReport() {
         <CreditCard className="h-8 w-8 text-primary" />
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-foreground">₹{totalAmount.toLocaleString()}</div>
-            <p className="text-sm text-muted-foreground">Total Amount</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">₹{completedAmount.toLocaleString()}</div>
-            <p className="text-sm text-muted-foreground">Completed Payments</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-yellow-600">₹{pendingAmount.toLocaleString()}</div>
-            <p className="text-sm text-muted-foreground">Pending Payments</p>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Filters */}
       <Card>
@@ -335,7 +314,7 @@ export default function PaymentReport() {
                       <TableCell>{getPaymentTypeBadge(item.paymentType)}</TableCell>
                       <TableCell className="max-w-[200px] truncate">{item.description}</TableCell>
                       <TableCell className="text-right font-medium">₹{item.amount.toLocaleString()}</TableCell>
-                      <TableCell>{getStatusBadge(item.status)}</TableCell>
+
                     </TableRow>
                   ))
                 )}

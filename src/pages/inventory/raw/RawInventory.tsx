@@ -177,7 +177,7 @@ export default function RawInventory() {
 
       const result = await response.json();
 
-      if (result.status || response.ok) {
+      if (result.status) {
         toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
         resetForm();
         await refresh(); // ensure refetch

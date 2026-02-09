@@ -135,8 +135,16 @@ const menuItems: MenuItem[] = [
       { label: "Expense Categories", path: "/setup/expense-categories", icon: FolderOpen, permissionId: "setup_expense" },
     ],
   },
-  { label: "Purchase", icon: ShoppingCart, path: "/inventory/purchase", permissionId: "purchase" },
-  { label: "Purchase Return", icon: RotateCcw, path: "/purchase-return", permissionId: "purchase_return" },
+  {
+    label: "Purchase",
+    icon: ShoppingCart,
+    children: [
+      { label: "Purchase", path: "/inventory/purchase", icon: ShoppingCart, permissionId: "purchase" },
+      { label: "Purchase Return", icon: RotateCcw, path: "/purchase-return", permissionId: "purchase_return" },
+
+    ],
+  },
+
   {
     label: "Sales",
     icon: Receipt,
