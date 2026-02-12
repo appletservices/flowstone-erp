@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSetPageHeader } from "@/hooks/usePageHeader";
+import { useNavigate } from "react-router-dom";
 import {
   Package,
   Box,
@@ -70,6 +71,7 @@ const getCategoryStyles = (category: string) => {
 };
 
 export default function Inventory() {
+  const navigate = useNavigate();
   useSetPageHeader("Inventory Management", "Track and manage all inventory categories");
   // State for dynamic API data
   const [data, setData] = useState<InventoryItem[]>([]);
@@ -82,7 +84,7 @@ export default function Inventory() {
   const [recordsTotal, setRecordsTotal] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -97,7 +99,7 @@ export default function Inventory() {
       if (searchQuery) {
         url.searchParams.append("search", searchQuery);
       }
-      
+
       const response = await fetch(url.toString(), {
         method: "GET",
         headers: {
@@ -184,17 +186,17 @@ export default function Inventory() {
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold">All Inventory Items</h3>
           <div className="flex items-center gap-4">
-                <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
-                <SelectTrigger className="w-[100px] h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-card">
-                  <SelectItem value="10">10 / page</SelectItem>
-                  <SelectItem value="25">25 / page</SelectItem>
-                  <SelectItem value="50">50 / page</SelectItem>
-                  <SelectItem value="100">100 / page</SelectItem>
-                </SelectContent>
-              </Select>
+            <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+              <SelectTrigger className="w-[100px] h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-card">
+                <SelectItem value="10">10 / page</SelectItem>
+                <SelectItem value="25">25 / page</SelectItem>
+                <SelectItem value="50">50 / page</SelectItem>
+                <SelectItem value="100">100 / page</SelectItem>
+              </SelectContent>
+            </Select>
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -253,19 +255,10 @@ export default function Inventory() {
                       <td className="text-right">{Number(item.converted_qty).toLocaleString()}</td>
                       <td className="text-muted-foreground">{item.unit}</td>
                       <td className="text-right">Rs. {Number(item.avg_cost).toLocaleString()}</td>
-                      <td className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="bg-card">
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem>Stock Ledger</DropdownMenuItem>
-                            <DropdownMenuItem>Adjust Stock</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                      <td className="p-4 text-center">
+                        <Button variant="ghost" size="sm" onClick={() => navigate(`/ledger/inventory/${item.id}`)}>
+                          <ArrowRight className="w-4 h-4" />
+                        </Button>
                       </td>
                     </tr>
                   );
@@ -282,7 +275,7 @@ export default function Inventory() {
               Showing {data.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0} to {Math.min(currentPage * pageSize, recordsTotal)} of {recordsTotal} items
             </p>
             <div className="flex items-center gap-2">
-             
+
             </div>
           </div>
           <div className="flex items-center gap-1">
