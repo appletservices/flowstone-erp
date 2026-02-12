@@ -34,7 +34,7 @@ export default function PurchaseOrderDetail() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [orderData, setOrderData] = useState<ApiResponse | null>(null);
-  
+
   useSetPageHeader(`Order Details - PO-${id}`, "View purchase order details and items");
 
   useEffect(() => {
@@ -42,17 +42,17 @@ export default function PurchaseOrderDetail() {
       try {
         setLoading(true);
         // Using the proxy prefix /api as established in previous steps
-        const token = localStorage.getItem("auth_token"); 
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/purchase/detail/${id}`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`, 
-            },
-          });
+        const token = localStorage.getItem("auth_token");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/purchase/detail/${id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        });
 
         if (!response.ok) throw new Error("Failed to fetch order details");
-        
+
         const result: ApiResponse = await response.json();
         setOrderData(result);
       } catch (error) {
@@ -99,14 +99,14 @@ export default function PurchaseOrderDetail() {
       </div>
 
 
-  {/* Order Summary */}
+      {/* Order Summary */}
       <div className="bg-card rounded-xl border border-border p-6">
         <div className="flex items-center gap-2 mb-4">
           <FileText className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-semibold">Order Summary</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            <div>
+          <div>
             <p className="text-sm text-muted-foreground">Vendor Type</p>
             <p className="text-sm font-bold capitalize capitalize chip text-[10px] px-2 py-0.5 chip-primary">{info.vendorcat}</p>
           </div>
@@ -114,7 +114,7 @@ export default function PurchaseOrderDetail() {
             <p className="text-sm text-muted-foreground">Vendor</p>
             <p className="text-sm font-bold">{info.vendor}</p>
           </div>
-        
+
           <div>
             <p className="text-sm text-muted-foreground">Date</p>
             <p className="text-sm font-bold">{info.purchase_date}</p>
@@ -122,21 +122,21 @@ export default function PurchaseOrderDetail() {
         </div>
         <Separator className="my-4" />
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-          
-            <div>
+
+          <div>
             <p className="text-sm text-muted-foreground">Total Items</p>
             <p className="text-sm font-bold">{info.total_items}</p>
           </div>
-            <div>
+          <div>
             <p className="text-sm text-muted-foreground">T-Charges</p>
             <p className="text-sm font-bold">{parseFloat(info.t_charges).toLocaleString()}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Total Amount</p>
-            <p className="text-sm font-bold text-primary"> ₹{parseFloat(info.grand_total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            <p className="text-sm font-bold text-primary"> {parseFloat(info.grand_total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           </div>
-        
-        
+
+
         </div>
       </div>
 
@@ -163,11 +163,11 @@ export default function PurchaseOrderDetail() {
                 <tr key={index} className="animate-fade-in border-b border-border hover:bg-muted/50 transition-colors">
                   <td className="p-4 font-medium">{item.item}</td>
                   <td className="p-4">{item.unit}</td>
-                  <td className="p-4">₹{parseFloat(item.unitprice).toFixed(2)}</td>
+                  <td className="p-4">{parseFloat(item.unitprice).toFixed(2)}</td>
                   <td className="p-4">{parseFloat(item.quantity)}</td>
                   <td className="p-4">{parseFloat(item.conversted_qty).toFixed(2)}</td>
                   <td className="p-4 font-semibold">
-                    ₹{parseFloat(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    {parseFloat(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </td>
                 </tr>
               ))}

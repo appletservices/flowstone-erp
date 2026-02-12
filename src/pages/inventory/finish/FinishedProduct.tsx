@@ -428,7 +428,7 @@ export default function FinishedProduct() {
                   <td className="text-right text-muted-foreground">{parseFloat(product.opening_qty || "0").toLocaleString()}</td>
                   <td className="text-right font-medium">{parseFloat(product.total_qty || "0").toLocaleString()}</td>
                   <td className="text-sm">{product.unit}</td>
-                  <td className="text-right font-medium text-success">₹{parseFloat(product.avg_cost || "0").toLocaleString()}</td>
+                  <td className="text-right font-medium text-success">{parseFloat(product.avg_cost || "0").toLocaleString()}</td>
                   <td>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

@@ -145,7 +145,7 @@ export default function PurchaseReturnForm() {
     const updatedItems = await Promise.all(items.map(async (item) => {
       if (item.id === rowId) {
         let updatedItem = { ...item, [field]: value };
-        
+
         if (field === "itemId" && value) {
           try {
             const res = await fetch(`${API_BASE_URL}/inventory/unit/${value}`, { headers: getHeaders() });
@@ -154,7 +154,7 @@ export default function PurchaseReturnForm() {
             updatedItem.conversion = unitData.conversion;
           } catch (e) { console.error(e); }
         }
-        
+
         if (["perUnitCost", "quantity", "itemId"].includes(field)) {
           const cost = parseFloat(updatedItem.perUnitCost) || 0;
           const qty = parseFloat(updatedItem.quantity) || 0;
@@ -172,7 +172,7 @@ export default function PurchaseReturnForm() {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    
+
     const payload = {
       vendor: formData.vendor,
       tdate: formData.date,
@@ -306,17 +306,17 @@ export default function PurchaseReturnForm() {
                     </td>
                     <td className="p-4"><Input readOnly value={item.unit} placeholder="Unit" className="min-w-[100px] bg-muted" /></td>
                     <td className="p-4">
-                    <Input
-                      type="number"
-                      placeholder="0.00"
-                      value={item.conversion}
-                      onChange={(e) => handleItemChange(item.id, "conversion", e.target.value)}
-                      className="min-w-[100px]"
-                    />
-                  </td>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        value={item.conversion}
+                        onChange={(e) => handleItemChange(item.id, "conversion", e.target.value)}
+                        className="min-w-[100px]"
+                      />
+                    </td>
                     <td className="p-4"><Input type="number" placeholder="0" value={item.quantity} onChange={(e) => handleItemChange(item.id, "quantity", e.target.value)} className="min-w-[80px]" /></td>
                     <td className="p-4"><Input type="number" placeholder="0" value={item.perUnitCost} onChange={(e) => handleItemChange(item.id, "perUnitCost", e.target.value)} className="min-w-[100px]" /></td>
-                    <td className="p-4 font-medium">₹{item.amount || "0.00"}</td>
+                    <td className="p-4 font-medium">{item.amount || "0.00"}</td>
                     <td className="p-4">
                       <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemoveItem(item.id)} disabled={items.length === 1}>
                         <Trash2 className="w-4 h-4" />
@@ -332,15 +332,15 @@ export default function PurchaseReturnForm() {
             <div className="flex flex-col items-end gap-2">
               <div className="flex items-center gap-4">
                 <span className="text-muted-foreground">Total:</span>
-                <span className="text-lg font-semibold w-32 text-right">₹{calculateTotal()}</span>
+                <span className="text-lg font-semibold w-32 text-right">{calculateTotal()}</span>
               </div>
               <div className="flex items-center gap-4">
                 <span className="text-muted-foreground">T-Charges:</span>
-                <span className="text-lg font-semibold w-32 text-right">₹{parseFloat(formData.tCharges || "0").toFixed(2)}</span>
+                <span className="text-lg font-semibold w-32 text-right">{parseFloat(formData.tCharges || "0").toFixed(2)}</span>
               </div>
               <div className="flex items-center gap-4 pt-2 border-t border-border mt-2">
                 <span className="text-muted-foreground font-medium">Grand Total:</span>
-                <span className="text-xl font-bold text-primary w-32 text-right">₹{calculateGrandTotal()}</span>
+                <span className="text-xl font-bold text-primary w-32 text-right">{calculateGrandTotal()}</span>
               </div>
             </div>
           </div>

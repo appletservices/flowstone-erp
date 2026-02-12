@@ -113,7 +113,7 @@ export default function PaymentVoucher() {
                                 <TableCell className="font-medium">{item.contact}</TableCell>
                                 <TableCell>{item.other}</TableCell>
                                 <TableCell>{item.account}</TableCell>
-                                <TableCell className="text-right font-semibold">₹{item.amount.toLocaleString("en-IN")}</TableCell>
+                                <TableCell className="text-right font-semibold">{item.amount.toLocaleString("en-IN")}</TableCell>
                                 <TableCell className="max-w-[200px] truncate">{item.narration}</TableCell>
                                 <TableCell>
                                     <DropdownMenu>

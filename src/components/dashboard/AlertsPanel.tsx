@@ -28,7 +28,7 @@ const alerts: Alert[] = [
     id: "3",
     type: "overdue",
     title: "Overdue Payment",
-    description: "₹75,000 payment to XYZ Suppliers overdue by 5 days",
+    description: "75,000 payment to XYZ Suppliers overdue by 5 days",
     time: "1 day ago",
   },
   {

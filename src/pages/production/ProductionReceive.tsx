@@ -139,7 +139,7 @@ export default function ProductionReceive() {
                   <td className="text-right">{record.issued}</td>
                   <td className="text-right">{parseFloat(record.receive_qty).toLocaleString()}</td>
                   <td className="text-right">{record.labour_charges}</td>
-                  <td className="text-right font-medium text-success">₹{record.final_cost?.toLocaleString()}</td>
+                  <td className="text-right font-medium text-success">{record.final_cost?.toLocaleString()}</td>
                   <td>
                     <Button
                       variant="ghost"

@@ -218,7 +218,7 @@ export default function ChartOfAccounts() {
               <div>
                 <p className="text-sm text-muted-foreground">{config.label}</p>
                 <p className="font-semibold">
-                  {account ? formatCurrency(account.balance) : "₹0"}
+                  {account ? formatCurrency(account.balance) : "0"}
                 </p>
               </div>
             </div>

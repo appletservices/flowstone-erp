@@ -116,7 +116,7 @@ export default function PostDatedCheck() {
                                 <TableCell>{new Date(item.clearDate).toLocaleDateString("en-IN")}</TableCell>
                                 <TableCell className="font-medium">{item.contact}</TableCell>
                                 <TableCell>{item.bank}</TableCell>
-                                <TableCell className="text-right font-semibold">₹{item.amount.toLocaleString("en-IN")}</TableCell>
+                                <TableCell className="text-right font-semibold">{item.amount.toLocaleString("en-IN")}</TableCell>
                                 <TableCell>
                                     <Badge variant={getTypeVariant(item.type)}>{item.type}</Badge>
                                 </TableCell>

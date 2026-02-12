@@ -214,7 +214,7 @@ export default function KarahiLedger() {
                     {parseFloat(entry.received) > 0 ? parseFloat(entry.received).toLocaleString() : "-"}
                   </td>
                   <td className="text-right">
-                    {parseFloat(entry.amount) > 0 ? `₹${parseFloat(entry.amount).toLocaleString()}` : "-"}
+                    {parseFloat(entry.amount) > 0 ? `${parseFloat(entry.amount).toLocaleString()}` : "-"}
                   </td>
                   <td className="text-center">
                     <Button variant="ghost" size="sm">

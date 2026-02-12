@@ -44,13 +44,13 @@ export function exportToExcel(options: ExportOptions): void {
   // Create workbook and worksheet
   const ws = XLSX.utils.json_to_sheet(exportData);
   const wb = XLSX.utils.book_new();
-  
+
   // Set column widths
   const colWidths = columns.map((col) => ({ wch: col.width || 15 }));
   ws['!cols'] = colWidths;
 
   XLSX.utils.book_append_sheet(wb, ws, title || 'Ledger');
-  
+
   // Generate and download file
   XLSX.writeFile(wb, `${filename}.xlsx`);
 }
@@ -62,7 +62,7 @@ export function exportToPDF(options: ExportOptions): void {
   const { filename, title, subtitle, columns, data, totals } = options;
 
   const doc = new jsPDF();
-  
+
   // Add title
   if (title) {
     doc.setFontSize(16);
@@ -137,7 +137,7 @@ export function exportToPDF(options: ExportOptions): void {
 /**
  * Format currency for export
  */
-export function formatCurrency(value: number | string, symbol = '₹'): string {
+export function formatCurrency(value: number | string, symbol = ''): string {
   const num = typeof value === 'string' ? parseFloat(value) : value;
   if (isNaN(num)) return '-';
   return `${symbol}${num.toLocaleString('en-IN')}`;

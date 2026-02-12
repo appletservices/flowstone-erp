@@ -143,7 +143,7 @@ export default function SaleDetail() {
                     </div>
                     <div>
                         <p className="text-sm text-muted-foreground">Grand Total</p>
-                        <p className="text-sm font-bold text-primary">₹{parseFloat(info.grand_total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                        <p className="text-sm font-bold text-primary">{parseFloat(info.grand_total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     </div>
                 </div>
             </div>
@@ -173,12 +173,12 @@ export default function SaleDetail() {
                                     <td className="p-4 text-muted-foreground">{index + 1}</td>
                                     <td className="p-4 font-medium">{item.item}</td>
                                     <td className="p-4">{item.unit}</td>
-                                    <td className="p-4">₹{parseFloat(item.unit_price).toFixed(2)}</td>
+                                    <td className="p-4">{parseFloat(item.unit_price).toFixed(2)}</td>
                                     <td className="p-4">{parseFloat(item.quantity)}</td>
                                     <td className="p-4 font-semibold">
-                                        ₹{parseFloat(item.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        {parseFloat(item.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </td>
-                                    <td className="p-4 text-muted-foreground">₹{parseFloat(item.product_cost).toFixed(2)}</td>
+                                    <td className="p-4 text-muted-foreground">{parseFloat(item.product_cost).toFixed(2)}</td>
                                 </tr>
                             ))}
                         </tbody>

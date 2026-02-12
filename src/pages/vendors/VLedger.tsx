@@ -45,7 +45,7 @@ export default function VLedger() {
 
   const [ledgerData, setLedgerData] = useState<LedgerEntry[]>([]);
   const [vendorInfo, setVendorInfo] = useState<VendorInfo | null>(null);
-  
+
   useSetPageHeader(vendorInfo?.name || "Vendor Ledger", `Ledger for ${vendorInfo?.type || "vendor"}`);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,7 +58,7 @@ export default function VLedger() {
     try {
       const token = localStorage.getItem("auth_token");
       const url = new URL(`${import.meta.env.VITE_API_URL}/contacts/vendors/ledger/${id}`);
-      
+
       if (searchQuery) url.searchParams.append("search", searchQuery);
       if (dateRange.from) url.searchParams.append("from_date", format(dateRange.from, "yyyy-MM-dd"));
       if (dateRange.to) url.searchParams.append("to_date", format(dateRange.to, "yyyy-MM-dd"));
@@ -107,8 +107,8 @@ export default function VLedger() {
 
   const totalDebit = ledgerData.reduce((acc, e) => acc + parseFloat(e.debit || "0"), 0);
   const totalCredit = ledgerData.reduce((acc, e) => acc + parseFloat(e.credit || "0"), 0);
-  const currentBalance = ledgerData.length > 0 
-    ? parseFloat(ledgerData[ledgerData.length - 1].balance) 
+  const currentBalance = ledgerData.length > 0
+    ? parseFloat(ledgerData[ledgerData.length - 1].balance)
     : 0;
 
   if (isLoading && ledgerData.length === 0) {
@@ -172,7 +172,7 @@ export default function VLedger() {
             <div>
               <p className="text-sm text-muted-foreground">Total Debit</p>
               <p className="text-2xl font-bold text-destructive">
-                ₹{totalDebit.toLocaleString("en-IN")}
+                {totalDebit.toLocaleString("en-IN")}
               </p>
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function VLedger() {
             <div>
               <p className="text-sm text-muted-foreground">Total Credit</p>
               <p className="text-2xl font-bold text-success">
-                ₹{totalCredit.toLocaleString("en-IN")}
+                {totalCredit.toLocaleString("en-IN")}
               </p>
             </div>
           </div>
@@ -201,7 +201,7 @@ export default function VLedger() {
                 "text-2xl font-bold",
                 currentBalance < 0 ? "text-destructive" : "text-success"
               )}>
-                ₹{Math.abs(currentBalance).toLocaleString("en-IN")}
+                {Math.abs(currentBalance).toLocaleString("en-IN")}
                 <span className="text-xs ml-1 uppercase">
                   {currentBalance < 0 ? "(Dr)" : "(Cr)"}
                 </span>
@@ -215,8 +215,8 @@ export default function VLedger() {
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search narration or reference..." 
+          <Input
+            placeholder="Search narration or reference..."
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -259,32 +259,32 @@ export default function VLedger() {
                     })}
                   </td>
                   <td className="p-4 font-mono text-xs text-muted-foreground uppercase">
-                     <button
-                            onClick={() => entry.record && window.open(entry.record, '_blank')} // Opens in new tab
-                            // OR: onClick={() => navigate(entry.link)} // If the link is an internal route
-                            className={cn(
-                            "font-medium text-xs uppercase transition-colors",
-                            entry.record 
-                                ? "text-primary hover:underline cursor-pointer font-bold  font-medium" 
-                                : "text-muted-foreground cursor-default"
-                            )}
-                            disabled={!entry.record} >
-                            {entry.reference_no}
-                        </button>
+                    <button
+                      onClick={() => entry.record && window.open(entry.record, '_blank')} // Opens in new tab
+                      // OR: onClick={() => navigate(entry.link)} // If the link is an internal route
+                      className={cn(
+                        "font-medium text-xs uppercase transition-colors",
+                        entry.record
+                          ? "text-primary hover:underline cursor-pointer font-bold  font-medium"
+                          : "text-muted-foreground cursor-default"
+                      )}
+                      disabled={!entry.record} >
+                      {entry.reference_no}
+                    </button>
                   </td>
                   <td className="p-4 text-sm font-medium">{entry.narration}</td>
                   <td className="p-4 text-right">
-                      <span className="text-destructive font-medium">
-                        ₹{parseFloat(entry.debit).toLocaleString("en-IN")}
-                      </span>
+                    <span className="text-destructive font-medium">
+                      {parseFloat(entry.debit).toLocaleString("en-IN")}
+                    </span>
                   </td>
                   <td className="p-4 text-right">
-                      <span className="text-success font-medium">
-                        ₹{parseFloat(entry.credit).toLocaleString("en-IN")}
-                      </span>
+                    <span className="text-success font-medium">
+                      {parseFloat(entry.credit).toLocaleString("en-IN")}
+                    </span>
                   </td>
                   <td className="p-4 text-right font-bold text-sm">
-                    ₹{Math.abs(parseFloat(entry.balance)).toLocaleString("en-IN")}
+                    {Math.abs(parseFloat(entry.balance)).toLocaleString("en-IN")}
                     <span className="text-[10px] ml-1">
                       {parseFloat(entry.balance) < 0 ? "Dr" : "Cr"}
                     </span>
@@ -304,13 +304,13 @@ export default function VLedger() {
                 <tr className="bg-muted/30 font-bold border-t border-border">
                   <td colSpan={3} className="p-4 text-right text-sm">Totals</td>
                   <td className="p-4 text-right text-destructive">
-                    ₹{totalDebit.toLocaleString("en-IN")}
+                    {totalDebit.toLocaleString("en-IN")}
                   </td>
                   <td className="p-4 text-right text-success">
-                    ₹{totalCredit.toLocaleString("en-IN")}
+                    {totalCredit.toLocaleString("en-IN")}
                   </td>
                   <td className="p-4 text-right">
-                    ₹{Math.abs(currentBalance).toLocaleString("en-IN")}
+                    {Math.abs(currentBalance).toLocaleString("en-IN")}
                   </td>
                 </tr>
               </tfoot>

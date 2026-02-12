@@ -21,7 +21,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Revenue"
-          value="₹24,85,000"
+          value="24,85,000"
           change="+12.5% from last month"
           changeType="positive"
           icon={Wallet}
@@ -29,7 +29,7 @@ export default function Dashboard() {
         />
         <StatCard
           title="Inventory Value"
-          value="₹18,42,000"
+          value="18,42,000"
           change="+3.2% from last month"
           changeType="positive"
           icon={Package}
@@ -37,7 +37,7 @@ export default function Dashboard() {
         />
         <StatCard
           title="Pending Payables"
-          value="₹4,25,000"
+          value="4,25,000"
           change="-8.3% from last month"
           changeType="negative"
           icon={TrendingUp}
@@ -66,7 +66,7 @@ export default function Dashboard() {
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RecentTransactions />
-        
+
         {/* Top Products */}
         <div className="bg-card rounded-xl border border-border p-5 animate-fade-in">
           <div className="flex items-center justify-between mb-4">

@@ -129,17 +129,17 @@ export default function PurchaseReturnDetail() {
           <div>
             <p className="text-sm text-muted-foreground">T-Charges</p>
             <p className="text-xl font-bold">
-              ₹{parseFloat(info.t_charges).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              {parseFloat(info.t_charges).toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Total Items</p>
             <p className="text-xl font-bold">{info.total_items}</p>
           </div>
-           <div>
+          <div>
             <p className="text-sm text-muted-foreground">Total Amount</p>
             <p className="text-xl font-bold text-primary">
-              ₹{parseFloat(info.grand_total).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              {parseFloat(info.grand_total).toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </p>
           </div>
         </div>
@@ -168,11 +168,11 @@ export default function PurchaseReturnDetail() {
                 <tr key={index} className="animate-fade-in">
                   <td className="font-medium">{item.item}</td>
                   <td>{item.unit}</td>
-                  <td>₹{parseFloat(item.unitprice).toFixed(2)}</td>
+                  <td>{parseFloat(item.unitprice).toFixed(2)}</td>
                   <td>{parseFloat(item.quantity)}</td>
                   <td>{parseFloat(item.conversted_qty).toFixed(2)}</td>
                   <td className="font-semibold">
-                    ₹{parseFloat(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    {parseFloat(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </td>
                 </tr>
               ))}

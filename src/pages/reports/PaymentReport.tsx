@@ -313,7 +313,7 @@ export default function PaymentReport() {
                       <TableCell className="capitalize">{item.partyType}</TableCell>
                       <TableCell>{getPaymentTypeBadge(item.paymentType)}</TableCell>
                       <TableCell className="max-w-[200px] truncate">{item.description}</TableCell>
-                      <TableCell className="text-right font-medium">₹{item.amount.toLocaleString()}</TableCell>
+                      <TableCell className="text-right font-medium">{item.amount.toLocaleString()}</TableCell>
 
                     </TableRow>
                   ))
@@ -323,7 +323,7 @@ export default function PaymentReport() {
                 <TableFooter>
                   <TableRow className="bg-muted/50 font-semibold">
                     <TableCell colSpan={6} className="text-right">Total</TableCell>
-                    <TableCell className="text-right">₹{totalAmount.toLocaleString()}</TableCell>
+                    <TableCell className="text-right">{totalAmount.toLocaleString()}</TableCell>
                     <TableCell></TableCell>
                   </TableRow>
                 </TableFooter>

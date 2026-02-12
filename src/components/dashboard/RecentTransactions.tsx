@@ -16,7 +16,7 @@ const transactions: Transaction[] = [
     type: "in",
     description: "Purchase Payment Received",
     account: "ABC Textiles",
-    amount: "₹1,25,000",
+    amount: "1,25,000",
     date: "Today, 2:30 PM",
   },
   {
@@ -24,7 +24,7 @@ const transactions: Transaction[] = [
     type: "out",
     description: "Raw Material Purchase",
     account: "XYZ Suppliers",
-    amount: "₹45,000",
+    amount: "45,000",
     date: "Today, 11:15 AM",
   },
   {
@@ -32,7 +32,7 @@ const transactions: Transaction[] = [
     type: "in",
     description: "Sales Invoice #1089",
     account: "Fashion Hub Ltd",
-    amount: "₹2,50,000",
+    amount: "2,50,000",
     date: "Yesterday",
   },
   {
@@ -40,7 +40,7 @@ const transactions: Transaction[] = [
     type: "out",
     description: "Vendor Payment",
     account: "Karahi Vendor - Raju",
-    amount: "₹18,500",
+    amount: "18,500",
     date: "Yesterday",
   },
   {
@@ -48,7 +48,7 @@ const transactions: Transaction[] = [
     type: "in",
     description: "Finished Goods Sale",
     account: "Elite Garments",
-    amount: "₹3,75,000",
+    amount: "3,75,000",
     date: "2 days ago",
   },
 ];

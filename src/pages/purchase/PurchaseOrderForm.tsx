@@ -300,7 +300,7 @@ export default function PurchaseOrderForm() {
                   </td>
                   <td className="p-4"><Input type="number" placeholder="0" value={item.quantity} onChange={(e) => handleItemChange(item.id, "quantity", e.target.value)} className="w-[100px]" /></td>
                   <td className="p-4"><Input type="number" placeholder="0" value={item.perUnitCost} onChange={(e) => handleItemChange(item.id, "perUnitCost", e.target.value)} className="w-[100px]" /></td>
-                  <td className="p-4 font-medium">₹{item.amount || "0.00"}</td>
+                  <td className="p-4 font-medium">{item.amount || "0.00"}</td>
                   <td className="p-4">
                     <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => handleRemoveItem(item.id)} disabled={items.length === 1}>
                       <Trash2 className="w-4 h-4" />
@@ -316,15 +316,15 @@ export default function PurchaseOrderForm() {
           <div className="flex flex-col items-end gap-2">
             <div className="flex items-center gap-4 text-sm">
               <span className="text-muted-foreground">Total Items Amount:</span>
-              <span className="font-semibold w-32 text-right">₹{calculateTotal()}</span>
+              <span className="font-semibold w-32 text-right">{calculateTotal()}</span>
             </div>
             <div className="flex items-center gap-4 text-sm">
               <span className="text-muted-foreground">Transport Charges:</span>
-              <span className="font-semibold w-32 text-right">₹{parseFloat(formData.tCharges || "0").toFixed(2)}</span>
+              <span className="font-semibold w-32 text-right">{parseFloat(formData.tCharges || "0").toFixed(2)}</span>
             </div>
             <div className="flex items-center gap-4 pt-2 border-t border-border mt-2">
               <span className="font-bold">Grand Total:</span>
-              <span className="text-xl font-bold text-primary w-32 text-right">₹{calculateGrandTotal()}</span>
+              <span className="text-xl font-bold text-primary w-32 text-right">{calculateGrandTotal()}</span>
             </div>
           </div>
         </div>

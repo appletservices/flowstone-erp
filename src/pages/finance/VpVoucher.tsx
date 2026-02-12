@@ -125,8 +125,8 @@ export default function VpVoucher() {
                                 <TableCell>
                                     <Badge variant={getStatusVariant(item.vpStatus)}>{item.vpStatus}</Badge>
                                 </TableCell>
-                                <TableCell className="text-right">₹{item.tCharges.toLocaleString("en-IN")}</TableCell>
-                                <TableCell className="text-right font-semibold">₹{item.total.toLocaleString("en-IN")}</TableCell>
+                                <TableCell className="text-right">{item.tCharges.toLocaleString("en-IN")}</TableCell>
+                                <TableCell className="text-right font-semibold">{item.total.toLocaleString("en-IN")}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

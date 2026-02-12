@@ -338,8 +338,8 @@ export default function ProductionCollectiveForm() {
             <CardTitle>Issue Calculator</CardTitle>
             {materials.length > 0 && (
               <div className="text-sm font-medium flex gap-4">
-                <span>Total Cost: <span className="text-primary">₹{totalCost.toFixed(2)}</span></span>
-                <span>Per Piece: <span className="text-primary">₹{(Number(formData.quantity) > 0 ? totalCost / Number(formData.quantity) : 0).toFixed(2)}</span></span>
+                <span>Total Cost: <span className="text-primary">{totalCost.toFixed(2)}</span></span>
+                <span>Per Piece: <span className="text-primary">{(Number(formData.quantity) > 0 ? totalCost / Number(formData.quantity) : 0).toFixed(2)}</span></span>
               </div>
             )}
           </CardHeader>
@@ -385,7 +385,7 @@ export default function ProductionCollectiveForm() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          ₹{item.perunitCost.toFixed(2)}
+                          {item.perunitCost.toFixed(2)}
                         </TableCell>
                       </TableRow>
                     ))
