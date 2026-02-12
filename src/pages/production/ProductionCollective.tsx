@@ -143,7 +143,7 @@ export default function ProductionCollective() {
                   <td className="text-right">{record.issued}</td>
                   <td className="text-right">{record.receive_qty}</td>
 
-                  <td className="text-right font-medium text-success">₹{record.final_cost?.toLocaleString()}</td>
+                  <td className="text-right font-medium text-success">{record.final_cost?.toLocaleString()}</td>
                   <td>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

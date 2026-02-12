@@ -18,7 +18,7 @@ export function TopBar() {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const { headerInfo } = usePageHeader();
-  
+
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
       {/* Page Header */}
@@ -63,7 +63,7 @@ export function TopBar() {
             <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
               <span className="font-medium text-sm">Pending Vendor Payment</span>
               <span className="text-xs text-muted-foreground">
-                ABC Textiles - ₹45,000 due in 3 days
+                ABC Textiles - 45,000 due in 3 days
               </span>
             </DropdownMenuItem>
             <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">

@@ -220,9 +220,9 @@ export default function PurchaseReport() {
                       <TableCell>{item.vendor}</TableCell>
                       <TableCell className="font-medium">{item.product}</TableCell>
                       <TableCell className="text-right">{parseFloat(item.quantity).toLocaleString()}</TableCell>
-                      <TableCell className="text-right">₹{parseFloat(item.unitprice).toLocaleString()}</TableCell>
+                      <TableCell className="text-right">{parseFloat(item.unitprice).toLocaleString()}</TableCell>
                       <TableCell className="text-right font-semibold">
-                        ₹{parseFloat(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        {parseFloat(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </TableCell>
                     </TableRow>
                   ))
@@ -235,7 +235,7 @@ export default function PurchaseReport() {
                     <TableCell className="text-right">{totalQuantity.toLocaleString()}</TableCell>
                     <TableCell></TableCell>
                     <TableCell className="text-right text-primary">
-                      ₹{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </TableCell>
                   </TableRow>
                 </TableFooter>

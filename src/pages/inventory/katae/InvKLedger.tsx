@@ -114,17 +114,17 @@ export default function InvKLedger() {
   const { type, id } = useParams<{ type: string; id: string }>();
   const navigate = useNavigate();
 
-  const contact = type && id 
-    ? contactInfo[type as keyof typeof contactInfo]?.[id as keyof (typeof contactInfo)["vendor"]] 
+  const contact = type && id
+    ? contactInfo[type as keyof typeof contactInfo]?.[id as keyof (typeof contactInfo)["vendor"]]
     : null;
   const totalDebit = mockLedgerEntries
     .filter((e) => e.type === "debit")
     .reduce((acc, e) => acc + e.amount, 0);
-  
+
   const totalCredit = mockLedgerEntries
     .filter((e) => e.type === "credit")
     .reduce((acc, e) => acc + e.amount, 0);
-  
+
   const currentBalance = mockLedgerEntries[mockLedgerEntries.length - 1]?.balance || 0;
 
   return (
@@ -196,7 +196,7 @@ export default function InvKLedger() {
             <div>
               <p className="text-sm text-muted-foreground">Total Debit</p>
               <p className="text-2xl font-bold text-destructive">
-                ₹{totalDebit.toLocaleString("en-IN")}
+                {totalDebit.toLocaleString("en-IN")}
               </p>
             </div>
           </div>
@@ -209,7 +209,7 @@ export default function InvKLedger() {
             <div>
               <p className="text-sm text-muted-foreground">Total Credit</p>
               <p className="text-2xl font-bold text-success">
-                ₹{totalCredit.toLocaleString("en-IN")}
+                {totalCredit.toLocaleString("en-IN")}
               </p>
             </div>
           </div>
@@ -225,7 +225,7 @@ export default function InvKLedger() {
                 "text-2xl font-bold",
                 currentBalance > 0 ? "text-warning" : "text-success"
               )}>
-                ₹{currentBalance.toLocaleString("en-IN")}
+                {currentBalance.toLocaleString("en-IN")}
               </p>
             </div>
           </div>
@@ -277,7 +277,7 @@ export default function InvKLedger() {
                   <td className="text-right">
                     {entry.type === "debit" ? (
                       <span className="text-destructive font-medium">
-                        ₹{entry.amount.toLocaleString("en-IN")}
+                        {entry.amount.toLocaleString("en-IN")}
                       </span>
                     ) : (
                       <span className="text-muted-foreground">-</span>
@@ -286,14 +286,14 @@ export default function InvKLedger() {
                   <td className="text-right">
                     {entry.type === "credit" ? (
                       <span className="text-success font-medium">
-                        ₹{entry.amount.toLocaleString("en-IN")}
+                        {entry.amount.toLocaleString("en-IN")}
                       </span>
                     ) : (
                       <span className="text-muted-foreground">-</span>
                     )}
                   </td>
                   <td className="text-right font-semibold">
-                    ₹{entry.balance.toLocaleString("en-IN")}
+                    {entry.balance.toLocaleString("en-IN")}
                   </td>
                 </tr>
               ))}
@@ -302,13 +302,13 @@ export default function InvKLedger() {
               <tr className="bg-muted/50 font-semibold">
                 <td colSpan={3} className="text-right">Totals</td>
                 <td className="text-right text-destructive">
-                  ₹{totalDebit.toLocaleString("en-IN")}
+                  {totalDebit.toLocaleString("en-IN")}
                 </td>
                 <td className="text-right text-success">
-                  ₹{totalCredit.toLocaleString("en-IN")}
+                  {totalCredit.toLocaleString("en-IN")}
                 </td>
                 <td className="text-right">
-                  ₹{currentBalance.toLocaleString("en-IN")}
+                  {currentBalance.toLocaleString("en-IN")}
                 </td>
               </tr>
             </tfoot>

@@ -60,19 +60,19 @@ export default function Purchase() {
   const fetchPurchaseOrders = async () => {
     try {
       setLoading(true);
-       const token = localStorage.getItem("auth_token"); 
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/purchase/list`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`, 
-            },
-          });
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/purchase/list`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
       if (!response.ok) throw new Error("Failed to fetch");
-      
+
       const result: ApiResponse = await response.json();
       setData(result.data);
-      
+
       // Setting stats based on API totals
       setStats({
         total: result.recordsTotal,
@@ -81,9 +81,9 @@ export default function Purchase() {
         received: 45,
       });
     }
-    
-    
-    
+
+
+
     catch (error) {
       toast.error("Error loading purchase orders");
     } finally {
@@ -160,8 +160,8 @@ export default function Purchase() {
               Filter
             </Button>
             <Button className="gap-2" onClick={() => navigate("/inventory/purchase/new")}>
-                          <Plus className="w-4 h-4" />
-                          Create Purchase
+              <Plus className="w-4 h-4" />
+              Create Purchase
             </Button>
           </div>
         </div>
@@ -202,15 +202,15 @@ export default function Purchase() {
                       </td>
                       <td>{po.items} items</td>
                       <td className="font-semibold">
-                        ₹{Number(po.grand_total).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        {Number(po.grand_total).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
-                      <td>₹{Number(po.t_charges).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td>{Number(po.t_charges).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                       <td className="text-muted-foreground">{po.date}</td>
                       <td>
                         <div className="flex items-center gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8"
                             onClick={() => navigate(`/inventory/purchase/${po.id}`)}
                           >

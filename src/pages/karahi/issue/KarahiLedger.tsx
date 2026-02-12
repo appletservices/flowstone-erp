@@ -10,8 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowLeft, Search, Filter, TrendingUp, 
+import {
+  ArrowLeft, Search, Filter, TrendingUp,
   TrendingDown, Wallet, Loader2, Printer
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,7 @@ interface LedgerEntry {
   vendor: string;
   amount: string;
   product: string;
+  reference_no: string,
   issue: string;
   received: string;
   tdate: string;
@@ -205,15 +206,15 @@ export default function KarahiLedger() {
               {ledgerData.map((entry) => (
                 <tr key={entry.id}>
                   <td>{entry.tdate}</td>
-                  <td className="font-mono text-sm">{entry.id}</td>
+                  <td className="font-mono text-sm">{entry.reference_no}</td>
                   <td className="text-right">
                     {parseFloat(entry.issue) > 0 ? parseFloat(entry.issue).toLocaleString() : "-"}
                   </td>
-                   <td className="text-right">
+                  <td className="text-right">
                     {parseFloat(entry.received) > 0 ? parseFloat(entry.received).toLocaleString() : "-"}
                   </td>
                   <td className="text-right">
-                    {parseFloat(entry.amount) > 0 ? `₹${parseFloat(entry.amount).toLocaleString()}` : "-"}
+                    {parseFloat(entry.amount) > 0 ? `${parseFloat(entry.amount).toLocaleString()}` : "-"}
                   </td>
                   <td className="text-center">
                     <Button variant="ghost" size="sm">

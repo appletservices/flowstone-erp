@@ -335,7 +335,7 @@ export default function RawInventory() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Per Unit Cost (₹)</Label>
+                <Label>Per Unit Cost ()</Label>
                 <Input
                   type="number"
                   placeholder="0.00"
@@ -415,7 +415,7 @@ export default function RawInventory() {
                   <td className="text-right font-medium">{parseFloat(item.total_qty || "0").toLocaleString()}</td>
                   <td className="text-right text-muted-foreground">{parseFloat(item.converted_qty || "0").toLocaleString()}</td>
                   <td className="text-sm">{item.unit}</td>
-                  <td className="text-right font-medium text-success">₹{parseFloat(item.avg_cost || "0").toLocaleString()}</td>
+                  <td className="text-right font-medium text-success">{parseFloat(item.avg_cost || "0").toLocaleString()}</td>
                   <td>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

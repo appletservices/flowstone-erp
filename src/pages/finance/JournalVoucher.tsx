@@ -97,14 +97,14 @@ export default function JournalVoucher() {
                                 <TableCell className="font-medium">{item.account}</TableCell>
                                 <TableCell className="text-right">
                                     {item.debit > 0 ? (
-                                        <span className="text-destructive font-semibold">₹{item.debit.toLocaleString("en-IN")}</span>
+                                        <span className="text-destructive font-semibold">{item.debit.toLocaleString("en-IN")}</span>
                                     ) : (
                                         <span className="text-muted-foreground">-</span>
                                     )}
                                 </TableCell>
                                 <TableCell className="text-right">
                                     {item.credit > 0 ? (
-                                        <span className="text-success font-semibold">₹{item.credit.toLocaleString("en-IN")}</span>
+                                        <span className="text-success font-semibold">{item.credit.toLocaleString("en-IN")}</span>
                                     ) : (
                                         <span className="text-muted-foreground">-</span>
                                     )}

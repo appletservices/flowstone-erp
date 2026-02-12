@@ -190,7 +190,7 @@ export default function Receivable() {
     balanceType: parseFloat(item.pending_amount) < 0 ? "debit" : "credit",
     openingAmount: Math.abs(parseFloat(item.pending_amount)).toString(),
     totalTransactions: item.total_transactions || 0,
-    pendingAmount: `₹${Math.abs(parseFloat(item.pending_amount)).toLocaleString("en-IN")}`,
+    pendingAmount: `${Math.abs(parseFloat(item.pending_amount)).toLocaleString("en-IN")}`,
     status: item.status?.toLowerCase() === "active" ? "active" : "inactive",
     lastTransaction: "N/A",
     date: new Date(),
@@ -216,12 +216,12 @@ export default function Receivable() {
           tdate: formData.date ? format(formData.date, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
         }),
       });
-      
+
       const result = await response.json();
       if (!result.success) {
         return { success: false, message: result.message };
       }
-      
+
       toast.success("Customer added successfully");
       refresh();
       return { success: true };
@@ -234,7 +234,7 @@ export default function Receivable() {
 
   const handleEditCustomer = async (formData: any) => {
     if (!editingCustomer) return { success: false, message: "No customer selected" };
-    
+
     try {
       const token = localStorage.getItem("auth_token");
       const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/receiveables/update`, {
@@ -255,12 +255,12 @@ export default function Receivable() {
           tdate: formData.date ? format(formData.date, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
         }),
       });
-      
+
       const result = await response.json();
       if (!result.success) {
         return { success: false, message: result.message };
       }
-      
+
       toast.success("Customer updated successfully");
       setEditDialogOpen(false);
       refresh();
@@ -282,7 +282,7 @@ export default function Receivable() {
   const openEditDialog = async (customer: Customer) => {
     setIsLoadingEditData(true);
     setEditDialogOpen(true);
-    
+
     try {
       const token = localStorage.getItem("auth_token");
       const response = await fetch(`${import.meta.env.VITE_API_URL}/contacts/receiveables/edit/${customer.id}`, {
@@ -291,7 +291,7 @@ export default function Receivable() {
           "Content-Type": "application/json",
         },
       });
-      
+
       const data = await response.json();
       setEditingCustomer({
         id: customer.id,
@@ -365,8 +365,8 @@ export default function Receivable() {
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search customers by name or code..." 
+          <Input
+            placeholder="Search customers by name or code..."
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -436,7 +436,7 @@ export default function Receivable() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Pending Amount</p>
-                <p className={cn("font-semibold", customer.pendingAmount !== "₹0" && "text-warning")}>
+                <p className={cn("font-semibold", customer.pendingAmount !== "0" && "text-warning")}>
                   {customer.pendingAmount}
                 </p>
               </div>

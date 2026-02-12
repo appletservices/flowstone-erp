@@ -199,9 +199,9 @@ export default function PurchaseReturn() {
                     </td>
                     <td>{pr.items} items</td>
                     <td className="font-semibold">
-                      ₹{Number(pr.grand_total).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      {Number(pr.grand_total).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </td>
-                    <td>₹{Number(pr.t_charges).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td>{Number(pr.t_charges).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                     <td className="text-muted-foreground">{pr.date}</td>
                     <td>
                       <div className="flex items-center gap-1">
@@ -225,7 +225,7 @@ export default function PurchaseReturn() {
                             </DropdownMenuItem>
                             <DropdownMenuItem>Print Return</DropdownMenuItem>
                             <DropdownMenuItem className="text-primary">
-                              Restore 
+                              Restore
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

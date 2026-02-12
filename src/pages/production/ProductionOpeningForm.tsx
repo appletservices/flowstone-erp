@@ -213,7 +213,7 @@ export default function ProductionOpeningForm() {
             <div className="space-y-2">
               <Label>Total Cost</Label>
               <div className="h-10 flex items-center px-3 rounded-md border bg-muted text-foreground font-medium">
-                ₹{totalCost.toLocaleString()}
+                {totalCost.toLocaleString()}
               </div>
             </div>
           </div>

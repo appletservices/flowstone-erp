@@ -60,7 +60,7 @@ export default function ProductionOpening() {
     nextPage,
     previousPage,
   } = useBackendSearch<OpeningRecord>({
-    endpoint: "/production/opening",
+    endpoint: "/permissions",
     pageSize: 10,
   });
 
@@ -138,8 +138,8 @@ export default function ProductionOpening() {
                   <td>{record.karigar}</td>
                   <td>{record.product}</td>
                   <td className="text-right">{record.quantity}</td>
-                  <td className="text-right">₹{record.per_unit?.toLocaleString()}</td>
-                  <td className="text-right font-medium text-success">₹{record.total_cost?.toLocaleString()}</td>
+                  <td className="text-right">{record.per_unit?.toLocaleString()}</td>
+                  <td className="text-right font-medium text-success">{record.total_cost?.toLocaleString()}</td>
                   <td>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
