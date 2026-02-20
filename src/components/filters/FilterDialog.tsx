@@ -198,58 +198,7 @@ export function FilterDialog({
             </div>
           )}
 
-          {/* Custom Key-Value Filters */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">Custom Filters</Label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={addKeyValue}
-                className="h-7 gap-1 text-xs"
-              >
-                <Plus className="w-3 h-3" /> Add Filter
-              </Button>
-            </div>
 
-            {keyValues
-              .filter((kv) => !filterFields.some((f) => f.key === kv.key))
-              .map((kv, index) => {
-                const actualIndex = keyValues.findIndex(
-                  (item) => item === kv
-                );
-                return (
-                  <div key={index} className="flex items-center gap-2">
-                    <Input
-                      placeholder="Key"
-                      value={kv.key}
-                      onChange={(e) =>
-                        updateKeyValue(actualIndex, "key", e.target.value)
-                      }
-                      className="flex-1"
-                    />
-                    <Input
-                      placeholder="Value"
-                      value={kv.value}
-                      onChange={(e) =>
-                        updateKeyValue(actualIndex, "value", e.target.value)
-                      }
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeKeyValue(actualIndex)}
-                      className="h-9 w-9 shrink-0"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                );
-              })}
-          </div>
         </div>
 
         <div className="flex justify-between pt-4 border-t border-border">

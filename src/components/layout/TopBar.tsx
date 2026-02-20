@@ -42,7 +42,7 @@ export function TopBar() {
         </Button>
 
         {/* Notifications */}
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="w-5 h-5" />
@@ -73,7 +73,7 @@ export function TopBar() {
               </span>
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
 
         {/* User Profile */}
         <DropdownMenu>
@@ -94,11 +94,11 @@ export function TopBar() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 bg-card">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            {/* <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Profile Settings</DropdownMenuItem>
             <DropdownMenuItem>Preferences</DropdownMenuItem>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator /> */}
             <DropdownMenuItem className="text-destructive" onClick={logout}>
               Sign Out
             </DropdownMenuItem>

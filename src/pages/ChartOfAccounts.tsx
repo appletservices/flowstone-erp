@@ -3,7 +3,6 @@ import { useSetPageHeader } from "@/hooks/usePageHeader";
 import {
   ChevronRight,
   ChevronDown,
-  Plus,
   Search,
   Filter,
   MoreHorizontal,
@@ -45,7 +44,7 @@ const accountTypeConfig = {
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: "INR",
+    currency: "PKR",
     maximumFractionDigits: 0,
   }).format(amount);
 }
@@ -97,7 +96,7 @@ function AccountNode({ account, level }: AccountNodeProps) {
         <span className={cn("chip text-xs", config.bg, config.color)}>{config.label}</span>
 
         <div className="text-right min-w-[120px]">
-          <span className="font-semibold">{formatCurrency(account.balance)}</span>
+          {/* <span className="font-semibold">{formatCurrency(account.balance)}</span> */}
           {account.balanceType && (
             <span
               className={cn(
@@ -122,7 +121,7 @@ function AccountNode({ account, level }: AccountNodeProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-card">
-            <DropdownMenuItem>View Ledger</DropdownMenuItem>
+            <DropdownMenuItem >View Ledger</DropdownMenuItem>
             <DropdownMenuItem>Edit Account</DropdownMenuItem>
             <DropdownMenuItem>Add Child Account</DropdownMenuItem>
             <DropdownMenuItem className="text-destructive">Delete Account</DropdownMenuItem>
@@ -194,17 +193,6 @@ export default function ChartOfAccounts() {
 
   return (
     <div className="space-y-6">
-
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search accounts by name or code..." className="pl-10" />
-        </div>
-        <Button variant="outline" className="gap-2">
-          <Filter className="w-4 h-4" />
-          Filter
-        </Button>
-      </div>
 
       <div className="grid grid-cols-5 gap-4">
         {Object.entries(accountTypeConfig).map(([type, config]) => {

@@ -45,7 +45,7 @@ export default function Ledger() {
   const { type, id } = useParams<{ type: string; id: string }>();
   const navigate = useNavigate();
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
-  
+
   const {
     data: ledgerData,
     isLoading,
@@ -71,12 +71,12 @@ export default function Ledger() {
   // Calculations based on dynamic data
   const totalIn = ledgerData.reduce((acc, curr) => acc + parseFloat(curr.in || "0"), 0);
   const totalOut = ledgerData.reduce((acc, curr) => acc + parseFloat(curr.out || "0"), 0);
-  const currentBalance = ledgerData.length > 0 
-    ? parseFloat(ledgerData[ledgerData.length - 1].running_amount || "0") 
+  const currentBalance = ledgerData.length > 0
+    ? parseFloat(ledgerData[ledgerData.length - 1].running_amount || "0")
     : 0;
 
   const itemName = ledgerData.length > 0 ? ledgerData[0]?.name : "Inventory Ledger";
-  
+
   useSetPageHeader(itemName, `${type || 'Inventory'} ledger - ID: ${id}`);
 
   if (isLoading && ledgerData.length === 0) {
@@ -195,8 +195,8 @@ export default function Ledger() {
             </Select>
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search entries..." 
+              <Input
+                placeholder="Search entries..."
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

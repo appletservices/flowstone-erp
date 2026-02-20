@@ -56,24 +56,24 @@ const sections: SettingsSection[] = [
     icon: Building2,
     description: "Business name, address, and contact details",
   },
-  {
-    id: "security",
-    label: "Security",
-    icon: Shield,
-    description: "Password policies and two-factor authentication",
-  },
-  {
-    id: "data",
-    label: "Data & Backup",
-    icon: Database,
-    description: "Database settings and backup configuration",
-  },
-  {
-    id: "notifications",
-    label: "Notifications",
-    icon: Bell,
-    description: "Email and alert preferences",
-  },
+  // {
+  //   id: "security",
+  //   label: "Security",
+  //   icon: Shield,
+  //   description: "Password policies and two-factor authentication",
+  // },
+  // {
+  //   id: "data",
+  //   label: "Data & Backup",
+  //   icon: Database,
+  //   description: "Database settings and backup configuration",
+  // },
+  // {
+  //   id: "notifications",
+  //   label: "Notifications",
+  //   icon: Bell,
+  //   description: "Email and alert preferences",
+  // },
   {
     id: "appearance",
     label: "Appearance",
@@ -134,16 +134,16 @@ const sidebarColors = [
     id: "dark-blue",
     name: "Dark Blue",
     preview: "bg-[hsl(234,47%,12%)]",
-    light: { 
-      background: "234 47% 12%", 
-      foreground: "220 20% 95%", 
+    light: {
+      background: "234 47% 12%",
+      foreground: "220 20% 95%",
       accent: "234 47% 18%",
       border: "234 30% 20%",
       muted: "234 20% 40%"
     },
-    dark: { 
-      background: "222 47% 6%", 
-      foreground: "220 20% 95%", 
+    dark: {
+      background: "222 47% 6%",
+      foreground: "220 20% 95%",
       accent: "222 47% 12%",
       border: "222 30% 15%",
       muted: "222 20% 40%"
@@ -153,16 +153,16 @@ const sidebarColors = [
     id: "charcoal",
     name: "Charcoal",
     preview: "bg-[hsl(220,20%,15%)]",
-    light: { 
-      background: "220 20% 15%", 
-      foreground: "220 20% 95%", 
+    light: {
+      background: "220 20% 15%",
+      foreground: "220 20% 95%",
       accent: "220 20% 20%",
       border: "220 15% 25%",
       muted: "220 15% 45%"
     },
-    dark: { 
-      background: "220 20% 8%", 
-      foreground: "220 20% 95%", 
+    dark: {
+      background: "220 20% 8%",
+      foreground: "220 20% 95%",
       accent: "220 20% 12%",
       border: "220 15% 18%",
       muted: "220 15% 40%"
@@ -172,16 +172,16 @@ const sidebarColors = [
     id: "slate",
     name: "Slate",
     preview: "bg-slate-800",
-    light: { 
-      background: "215 28% 17%", 
-      foreground: "210 40% 96%", 
+    light: {
+      background: "215 28% 17%",
+      foreground: "210 40% 96%",
       accent: "215 28% 22%",
       border: "215 20% 27%",
       muted: "215 16% 47%"
     },
-    dark: { 
-      background: "215 28% 9%", 
-      foreground: "210 40% 96%", 
+    dark: {
+      background: "215 28% 9%",
+      foreground: "210 40% 96%",
       accent: "215 28% 14%",
       border: "215 20% 20%",
       muted: "215 16% 43%"
@@ -191,16 +191,16 @@ const sidebarColors = [
     id: "zinc",
     name: "Zinc",
     preview: "bg-zinc-800",
-    light: { 
-      background: "240 6% 18%", 
-      foreground: "0 0% 95%", 
+    light: {
+      background: "240 6% 18%",
+      foreground: "0 0% 95%",
       accent: "240 6% 23%",
       border: "240 5% 28%",
       muted: "240 4% 46%"
     },
-    dark: { 
-      background: "240 6% 10%", 
-      foreground: "0 0% 95%", 
+    dark: {
+      background: "240 6% 10%",
+      foreground: "0 0% 95%",
       accent: "240 6% 15%",
       border: "240 5% 20%",
       muted: "240 4% 42%"
@@ -210,16 +210,16 @@ const sidebarColors = [
     id: "stone",
     name: "Stone",
     preview: "bg-stone-800",
-    light: { 
-      background: "30 6% 20%", 
-      foreground: "30 10% 95%", 
+    light: {
+      background: "30 6% 20%",
+      foreground: "30 10% 95%",
       accent: "30 6% 25%",
       border: "30 5% 30%",
       muted: "30 4% 46%"
     },
-    dark: { 
-      background: "30 6% 10%", 
-      foreground: "30 10% 95%", 
+    dark: {
+      background: "30 6% 10%",
+      foreground: "30 10% 95%",
       accent: "30 6% 15%",
       border: "30 5% 18%",
       muted: "30 4% 40%"
@@ -229,16 +229,16 @@ const sidebarColors = [
     id: "neutral",
     name: "Neutral",
     preview: "bg-neutral-800",
-    light: { 
-      background: "0 0% 18%", 
-      foreground: "0 0% 95%", 
+    light: {
+      background: "0 0% 18%",
+      foreground: "0 0% 95%",
       accent: "0 0% 23%",
       border: "0 0% 28%",
       muted: "0 0% 45%"
     },
-    dark: { 
-      background: "0 0% 9%", 
-      foreground: "0 0% 95%", 
+    dark: {
+      background: "0 0% 9%",
+      foreground: "0 0% 95%",
       accent: "0 0% 14%",
       border: "0 0% 19%",
       muted: "0 0% 40%"
@@ -282,8 +282,8 @@ function DataBackupSection() {
   const lastBackup = new Date(Date.now() - 2 * 60 * 60 * 1000); // 2 hours ago
 
   const handleModuleToggle = (moduleId: string) => {
-    setSelectedModules(prev => 
-      prev.includes(moduleId) 
+    setSelectedModules(prev =>
+      prev.includes(moduleId)
         ? prev.filter(id => id !== moduleId)
         : [...prev, moduleId]
     );
@@ -305,7 +305,7 @@ function DataBackupSection() {
 
     setIsExporting(true);
     setExportProgress(0);
-    
+
     // Simulate export progress
     const interval = setInterval(() => {
       setExportProgress(prev => {
@@ -320,7 +320,7 @@ function DataBackupSection() {
     setTimeout(() => {
       setIsExporting(false);
       setExportProgress(0);
-      const dateRange = dateFrom && dateTo 
+      const dateRange = dateFrom && dateTo
         ? ` (${formatDate(dateFrom, "PP")} - ${formatDate(dateTo, "PP")})`
         : "";
       toast.success(`Exported ${selectedModules.length} modules as ${exportFormat.toUpperCase()}${dateRange}`);
@@ -594,7 +594,7 @@ function DataBackupSection() {
           <Archive className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-semibold">Backup Settings</h2>
         </div>
-        
+
         <div className="space-y-6">
           {/* Last Backup Info */}
           <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
@@ -682,7 +682,7 @@ function DataBackupSection() {
           <Trash2 className="w-5 h-5 text-destructive" />
           <h2 className="text-lg font-semibold">Data Management</h2>
         </div>
-        
+
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors">
             <div>
@@ -875,7 +875,7 @@ export default function Settings() {
             </div>
           )}
 
-          
+
 
           {activeSection === "notifications" && (
             <div className="bg-card rounded-xl border border-border p-6 animate-fade-in">
@@ -911,7 +911,7 @@ export default function Settings() {
                   <Label className="text-base">Theme</Label>
                   <p className="text-sm text-muted-foreground mb-3">Choose your preferred theme</p>
                   <div className="grid grid-cols-3 gap-4">
-                    <button 
+                    <button
                       onClick={() => setTheme('light')}
                       className={cn(
                         "p-4 rounded-lg border-2 bg-card flex flex-col items-center gap-2 transition-colors",
@@ -923,7 +923,7 @@ export default function Settings() {
                       </div>
                       <span className="text-sm font-medium">Light</span>
                     </button>
-                    <button 
+                    <button
                       onClick={() => setTheme('dark')}
                       className={cn(
                         "p-4 rounded-lg border-2 bg-card flex flex-col items-center gap-2 transition-colors",
@@ -935,7 +935,7 @@ export default function Settings() {
                       </div>
                       <span className="text-sm font-medium">Dark</span>
                     </button>
-                    <button 
+                    <button
                       onClick={() => setTheme('system')}
                       className={cn(
                         "p-4 rounded-lg border-2 bg-card flex flex-col items-center gap-2 transition-colors",
@@ -955,7 +955,7 @@ export default function Settings() {
                     </p>
                   )}
                 </div>
-                
+
                 {/* Accent Color Selection */}
                 <div className="pt-4 border-t border-border">
                   <Label className="text-base">Accent Color</Label>
@@ -968,8 +968,8 @@ export default function Settings() {
                         className={cn(
                           "relative w-full aspect-square rounded-full transition-all",
                           color.preview,
-                          accentColor === color.id 
-                            ? "ring-2 ring-offset-2 ring-offset-background ring-foreground scale-110" 
+                          accentColor === color.id
+                            ? "ring-2 ring-offset-2 ring-offset-background ring-foreground scale-110"
                             : "hover:scale-105"
                         )}
                         title={color.name}
@@ -1000,8 +1000,8 @@ export default function Settings() {
                         className={cn(
                           "relative w-full aspect-square rounded-lg transition-all border",
                           color.preview,
-                          sidebarColor === color.id 
-                            ? "ring-2 ring-offset-2 ring-offset-background ring-foreground scale-105" 
+                          sidebarColor === color.id
+                            ? "ring-2 ring-offset-2 ring-offset-background ring-foreground scale-105"
                             : "hover:scale-105 border-border"
                         )}
                         title={color.name}
@@ -1023,8 +1023,8 @@ export default function Settings() {
                       <p className="font-medium">Compact Mode</p>
                       <p className="text-sm text-muted-foreground">Use smaller spacing and fonts</p>
                     </div>
-                    <Switch 
-                      checked={compactMode} 
+                    <Switch
+                      checked={compactMode}
                       onCheckedChange={setCompactMode}
                     />
                   </div>

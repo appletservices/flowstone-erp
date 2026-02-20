@@ -61,6 +61,7 @@ import AccountReport from "@/pages/reports/AccountReport";
 import KataeIssueReport from "@/pages/reports/katae/KataeIssueReport";
 import KataeReceiveReport from "@/pages/reports/katae/KataeReceiveReport";
 
+import Reports from "@/pages/reports/Reports"
 import KarahissueReport from "@/pages/reports/karahi/KarahissueReport";
 import KarahiReceiveReport from "@/pages/reports/karahi/KarahiReceiveReport";
 import DesignReceiveReport from "@/pages/reports/karahi/DesignReceiveReport";
@@ -74,17 +75,20 @@ import KarahiDesignReceive from "@/pages/karahi/receive/KarahiDesignReceive";
 import KarahiDesignReceiveLedger from "@/pages/karahi/receive/KarahiDesignReceiveLedger";
 import KarahiDesignReceiveForm from "@/pages/karahi/receive/KarahiDesignReceiveForm";
 
-import PaymentVoucher from "@/pages/finance/PaymentVoucher";
-import PaymentVoucherForm from "@/pages/finance/PaymentVoucherForm";
-import ReceiptVoucher from "@/pages/finance/ReceiptVoucher";
-import ReceiptVoucherForm from "@/pages/finance/ReceiptVoucherForm";
-import VpVoucher from "@/pages/finance/VpVoucher";
-import VpVoucherForm from "@/pages/finance/VpVoucherForm";
-import JournalVoucher from "@/pages/finance/JournalVoucher";
+import PaymentVoucher from "@/pages/finance/pv/PaymentVoucher";
+import PaymentVoucherForm from "@/pages/finance/pv/PaymentVoucherForm";
+import ReceiptVoucher from "@/pages/finance/rv/ReceiptVoucher";
+import ReceiptVoucherForm from "@/pages/finance/rv/ReceiptVoucherForm";
+import VpVoucher from "@/pages/finance/vp/VpVoucher";
+import VpVoucherForm from "@/pages/finance/vp/VpVoucherForm";
+import JournalVoucher from "@/pages/finance/jv/JournalVoucher";
+import JournalVoucherForm from "@/pages/finance/jv/JournalVoucherForm";
 import PostDatedCheck from "@/pages/finance/PostDatedCheck";
 import ProductionCollective from "@/pages/production/ProductionCollective";
 import ProductionCollectiveForm from "@/pages/production/ProductionCollectiveForm";
 import ProductionIssue from "@/pages/production/ProductionIssue";
+import ProductionLedger from "@/pages/production/ProductionLedger";
+import ProductionMaterial from "@/pages/production/ProductionMaterial";
 import ProductionReceive from "@/pages/production/ProductionReceive";
 import ProductionReceiveForm from "@/pages/production/ProductionReceiveForm";
 import ProductionOpening from "@/pages/production/ProductionOpening";
@@ -190,7 +194,9 @@ const App = () => (
                     <Route path="/finance/vp-voucher" element={<VpVoucher />} />
                     <Route path="/finance/vp-voucher/new" element={<VpVoucherForm />} />
                     <Route path="/finance/journal-voucher" element={<JournalVoucher />} />
+                    <Route path="/finance/journal-voucher/new" element={<JournalVoucherForm />} />
                     <Route path="/finance/post-dated-check" element={<PostDatedCheck />} />
+                    <Route path="/reports" element={<Reports />} />
 
                     <Route path="/reports/purchase" element={<PermissionGuard permissionId="report_purchase"><PurchaseReport /></PermissionGuard>} />
                     <Route path="/reports/payment" element={<PermissionGuard permissionId="report_payment" ><PaymentReport /></PermissionGuard>} />
@@ -208,6 +214,8 @@ const App = () => (
                     <Route path="/production/collective" element={<ProductionCollective />} />
                     <Route path="/production/issue/create" element={<ProductionCollectiveForm />} />
                     <Route path="/production/issue" element={<ProductionIssue />} />
+                    <Route path="/ledger/production-issue/:id" element={<ProductionLedger />} />
+                    <Route path="/production-material/:pid/:id" element={<ProductionMaterial />} />
                     <Route path="/production/receive" element={<ProductionReceive />} />
                     <Route path="/production/receive/new" element={<ProductionReceiveForm />} />
                     <Route path="/production/opening" element={<ProductionOpening />} />
