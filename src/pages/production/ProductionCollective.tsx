@@ -145,28 +145,17 @@ export default function ProductionCollective() {
 
                   <td className="text-right font-medium text-success">{record.final_cost?.toLocaleString()}</td>
                   <td>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-card">
-                        <DropdownMenuItem>
-                          <Eye className="w-4 h-4 mr-2" /> View
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Printer className="w-4 h-4 mr-2" /> Print
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(`/ledger/production-collective/${record.id}`)}>
-                          <ChevronRight className="w-4 h-4 mr-2" /> Ledger
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive focus:text-destructive">
-                          <Trash2 className="w-4 h-4 mr-2" /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/ledger/production-issue/${record.id}`);
+                      }}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
                   </td>
                 </tr>
               ))}

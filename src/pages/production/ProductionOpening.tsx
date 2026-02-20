@@ -60,7 +60,7 @@ export default function ProductionOpening() {
     nextPage,
     previousPage,
   } = useBackendSearch<OpeningRecord>({
-    endpoint: "/permissions",
+    endpoint: "/production/opening/list",
     pageSize: 10,
   });
 

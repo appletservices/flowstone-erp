@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, Filter, Plus, Pencil, Trash2, MoreHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ const mockData: JournalVoucherItem[] = [
 ];
 
 export default function JournalVoucher() {
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
     const [data] = useState<JournalVoucherItem[]>(mockData);
 
@@ -70,7 +72,7 @@ export default function JournalVoucher() {
                             <Filter className="w-4 h-4" />
                             Filter
                         </Button>
-                        <Button className="gap-2">
+                        <Button className="gap-2" onClick={() => navigate("/finance/journal-voucher/new")}>
                             <Plus className="w-4 h-4" />
                             Add Journal Entry
                         </Button>
@@ -97,14 +99,14 @@ export default function JournalVoucher() {
                                 <TableCell className="font-medium">{item.account}</TableCell>
                                 <TableCell className="text-right">
                                     {item.debit > 0 ? (
-                                        <span className="text-destructive font-semibold">{item.debit.toLocaleString("en-IN")}</span>
+                                        <span className="text-destructive font-semibold">₹{item.debit.toLocaleString("en-IN")}</span>
                                     ) : (
                                         <span className="text-muted-foreground">-</span>
                                     )}
                                 </TableCell>
                                 <TableCell className="text-right">
                                     {item.credit > 0 ? (
-                                        <span className="text-success font-semibold">{item.credit.toLocaleString("en-IN")}</span>
+                                        <span className="text-success font-semibold">₹{item.credit.toLocaleString("en-IN")}</span>
                                     ) : (
                                         <span className="text-muted-foreground">-</span>
                                     )}

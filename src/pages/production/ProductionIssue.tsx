@@ -25,6 +25,7 @@ import { FilterDialog } from "@/components/filters/FilterDialog";
 
 interface CollectiveRecord {
   id: number;
+  pid: number,
   date: string;
   reference_no: string;
   karigar: string;
@@ -152,7 +153,7 @@ export default function ProductionIssue() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-card">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/production-material/${record.pid}/${record.id}`)}>
                           <Eye className="w-4 h-4 mr-2" /> View
                         </DropdownMenuItem>
                         <DropdownMenuItem>
